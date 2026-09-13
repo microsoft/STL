@@ -345,22 +345,20 @@ public:
     }
 };
 
-// Implements a DFA matching the regex of the rule GB9c. The DFA is:
+// Implements a DFA matching the regex on the left side of rule GB9c. The DFA is:
 //
-//                             Consonant
-//                       +-------------------+
-//                       |                   |
-// +---+   Consonant   +-v-+    Linker     +-+-+
-// | 1 +---------------> 2 +---------------> 3 |
-// +---+               ++-^+               ++-^+
-//                      | |                 | |
-//                      +-+                 +-+
-//                      Extend       Linker or Extend
+
+// +---+   Linker      +---+
+// | 1 +---------------> 2 |
+// +---+               ++-^+
+//                      | |
+//                      +-+
+//                     Extend
 //
-// State '3' is the accepting state.
+// State '2' is the accepting state.
 class _GB9c_regex {
 private:
-    enum _State_t : uint8_t { _Start, _Consonant, _Linker };
+    enum _State_t : uint8_t { _Start, _Linker };
 
     _State_t _State = _Start;
 
@@ -370,45 +368,21 @@ public:
     _NODISCARD constexpr bool _Match(const _Indic_Conjunct_Break_property_values _Left_InCB) noexcept {
         switch (_State) {
         case _Start:
-            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
-                _State = _Consonant;
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
+                _State = _Linker;
             }
             return false;
 
-        case _Consonant:
-            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
-                return false;
-            }
-
+        case _Linker:
             if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value) {
                 return false;
             }
-
-            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
-                _State = _Linker;
-                return true;
-            }
-            break;
-
-        case _Linker:
-            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
-                _State = _Consonant;
-                return false;
-            }
-
-            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value
-                || _Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
-                return true;
-            }
-            break;
+            return true;
 
         default:
             _STL_INTERNAL_CHECK(false);
-            break;
+            return false;
         }
-
-        _State = _Start;
-        return false;
     }
 };
 
@@ -485,6 +459,7 @@ public:
         auto _Left_InCB    = _Indic_Conjunct_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Left_ExtPic  = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Right_gbp    = _Grapheme_Break_property_values::_No_value;
+        auto _Right_InCB   = _Indic_Conjunct_Break_property_values::_No_value;
         auto _Right_ExtPic = _Extended_Pictographic_property_values::_No_value;
         size_t _Num_RIs    = 0;
         for (;; _Left_gbp    = _Right_gbp,
@@ -495,6 +470,7 @@ public:
                 return *this; // GB2 Any % eot
             }
             _Right_gbp    = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
+            _Right_InCB   = _Indic_Conjunct_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
             _Right_ExtPic = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
             // match GB9c and GB11 now, so that we're sure to update them for every character,
             // not just ones where the rules are considered
@@ -558,10 +534,9 @@ public:
                 continue; // GB9b Prepend x
             }
 
-            if (_GB9c_Match) {
-                // GB9c (since Unicode 15.1)
-                // \p{InCB=Consonant}[ \p{InCB=Extend} \p{InCB=Linker} ]* \p{InCB=Linker} [ \p{InCB=Extend}
-                // \p{InCB=Linker} ]* x \p{InCB=Consonant}
+            if (_GB9c_Match && _Right_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
+                // GB9c (since Unicode 18.0.0)
+                // \p{InCB=Linker} \p{InCB=Extend}* x \p{InCB=Consonant}
                 continue;
             }
 
