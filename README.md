@@ -145,13 +145,14 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
   + **You must install the Insiders IDE and the Preview build tools for STL development.** *See Note 1 below.*
   + Select the "Desktop development with C++" workload.
   + Select the following components at a minimum:
+    - "MSVC Build Tools for x64/x86 (Latest)" <!-- TRANSITION, DevCom-11142709 -->
     - "MSVC Build Tools for x64/x86 (Preview)"
     - "C++ CMake tools for Windows"
     - "MSVC AddressSanitizer"
     - "Windows 11 SDK (10.0.28000)" or later
     - "C++ Clang tools for Windows (22.1.3 - x64/x86)"
     - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Preview)"
-* Install [Python][] 3.14.6 or later.
+* Install [Python][] 3.14.7 or later.
   + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
 
@@ -215,6 +216,19 @@ To build the ARM64EC target:
 1. `popd`
 1. `cmake --preset ARM64EC`
 1. `cmake --build --preset ARM64EC`
+
+## Building ARM64 Natively
+
+By default, the x64 and x86 presets are configured to both build and run the tests.
+The ARM64 and ARM64EC presets assume that you're cross-compiling, so they enable an option `TESTS_BUILD_ONLY`
+to build test executables without running them. If you have an ARM64 machine, you'll want to use
+the native compiler, and you'll want to disable `TESTS_BUILD_ONLY`:
+
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat arm64 -vcvars_ver=preview`
+1. `popd`
+1. `cmake --preset ARM64 -DTESTS_BUILD_ONLY=OFF`
+1. `cmake --build --preset ARM64`
 
 # How To Consume
 

@@ -281,6 +281,7 @@ tests\GH_005816_numeric_limits_traps
 tests\GH_005968_headers_provide_begin_end
 tests\GH_005974_asan_annotate_optional
 tests\GH_006323_pwl_dist_rounding
+tests\GH_006381_replace_non_value_bool
 tests\LWG2381_num_get_floating_point
 tests\LWG2510_tag_classes
 tests\LWG2597_complex_branch_cut
@@ -395,6 +396,7 @@ tests\P0476R2_bit_cast
 tests\P0487R1_fixing_operator_shl_basic_istream_char_pointer
 tests\P0513R0_poisoning_the_hash
 tests\P0528R3_cmpxchg_pad
+tests\P0533R9_constexpr_for_cmath_and_cstdlib
 tests\P0553R4_bit_rotating_and_counting_functions
 tests\P0556R3_bit_integral_power_of_two_operations
 tests\P0586R2_integer_comparison
