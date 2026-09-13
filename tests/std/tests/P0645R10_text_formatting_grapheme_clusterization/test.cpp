@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdio>
 #include <format>
 #include <iterator>
 #include <span>
@@ -1353,18 +1354,24 @@ void test_unicode_decoding() {
 
 int main() {
     run_unicode_test_data_utf32();
+    std::printf("Passed run_unicode_test_data_utf32()");
     run_unicode_test_data_utf32_utf8_comparison();
+    std::printf("Passed run_unicode_test_data_utf32_utf8_comparison()");
 
     test_unicode_properties();
+    std::printf("Passed test_unicode_properties()");
     static_assert(test_unicode_properties());
 
     test_utf8_decode();
+    std::printf("Passed test_utf8_decode()");
     static_assert(test_utf8_decode());
 
     test_utf16_decode();
+    std::printf("Passed test_utf16_decode()");
     static_assert(test_utf16_decode());
 
     test_unicode_decoding();
+    std::printf("Passed test_unicode_decoding()");
 
     static_assert(forward_iterator<_Unicode_codepoint_iterator<char>>);
     static_assert(sentinel_for<default_sentinel_t, _Unicode_codepoint_iterator<char>>);
