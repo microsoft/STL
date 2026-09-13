@@ -1183,11 +1183,11 @@ void run_unicode_test_data_utf32() {
         size_t i = 0;
         while (iter != default_sentinel) {
             assert(i < test_case.breaks.size());
-            const char* fmt = "Iter: %lX, rhs: %lX\n";
-            char buf[200];
-            assert(*iter == test_case.code_points[test_case.breaks[i]]
-                   && snprintf(buf, sizeof buf, fmt, (unsigned long) *iter,
-                       (unsigned long) test_case.code_points[test_case.breaks[i]]));
+            if (*iter != test_case.code_points[test_case.breaks[i]]) {
+                fprintf(stderr, "i: %zu, breaks at i:, %zu, Iter: %lX, rhs: %lX\n", i, test_case.breaks[i],
+                    (unsigned long) *iter, (unsigned long) test_case.code_points[test_case.breaks[i]]);
+                assert(false);
+            }
             ++iter;
             ++i;
         }
