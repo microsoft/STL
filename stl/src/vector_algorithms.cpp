@@ -3219,8 +3219,6 @@ namespace {
                     return _Minmax_element_impl<_Mode, typename _Traits::_Neon, _Is_signed>(_First, _Last);
                 }
             }
-
-            return _Minmax_element_impl<_Mode, typename _Traits::_Scalar, _Is_signed>(_First, _Last);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 return _Minmax_element_impl<_Mode, typename _Traits::_Avx, _Is_signed>(_First, _Last);
@@ -3229,8 +3227,9 @@ namespace {
             if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
                 return _Minmax_element_impl<_Mode, typename _Traits::_Sse, _Is_signed>(_First, _Last);
             }
-            return _Minmax_element_impl<_Mode, typename _Traits::_Scalar, _Is_signed>(_First, _Last);
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+
+            return _Minmax_element_impl<_Mode, typename _Traits::_Scalar, _Is_signed>(_First, _Last);
         }
 
         template <_Min_max_mode _Mode, class _Traits, bool _Is_signed, bool _Unrolled = false>
