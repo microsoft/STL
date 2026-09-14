@@ -12010,13 +12010,13 @@ namespace {
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_1(void* const _Dest, const char* const _Src, const size_t _Size_bytes,
-            const size_t _Size_bits, const size_t _Size_chars, const char _Elem0, const char _Elem1) noexcept {
-            const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
-            const size_t _Step_in      = svcntb();
-            const size_t _Step_out     = _Step_in / 8;
-            const char* _Src_end       = _Src + _Size_convert;
-            uint8_t* _Dest_bytes       = static_cast<uint8_t*>(_Dest);
-            uint8_t* const _Dest_end   = _Dest_bytes + _Size_bytes;
+            const size_t _Size_bits, const size_t _Size_chars, const size_t _Size_convert, const char _Elem0,
+            const char _Elem1) noexcept {
+            const size_t _Step_in    = svcntb();
+            const size_t _Step_out   = _Step_in / 8;
+            const char* _Src_end     = _Src + _Size_convert;
+            uint8_t* _Dest_bytes     = static_cast<uint8_t*>(_Dest);
+            uint8_t* const _Dest_end = _Dest_bytes + _Size_bytes;
 
             const auto _True = svptrue_b8();
             const auto _Dx0  = svdup_u8(static_cast<uint8_t>(_Elem0));
@@ -12045,14 +12045,14 @@ namespace {
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_2(void* const _Dest, const wchar_t* const _Src, const size_t _Size_bytes,
-            const size_t _Size_bits, const size_t _Size_chars, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
-            const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
-            const size_t _Step_in      = svcntb();
-            const size_t _Step_out     = _Step_in / 8;
-            const size_t _Half_step    = _Step_in / 2;
-            const wchar_t* _Src_end    = _Src + _Size_convert;
-            uint8_t* _Dest_bytes       = static_cast<uint8_t*>(_Dest);
-            uint8_t* const _Dest_end   = _Dest_bytes + _Size_bytes;
+            const size_t _Size_bits, const size_t _Size_chars, const size_t _Size_convert, const wchar_t _Elem0,
+            const wchar_t _Elem1) noexcept {
+            const size_t _Step_in    = svcntb();
+            const size_t _Step_out   = _Step_in / 8;
+            const size_t _Half_step  = _Step_in / 2;
+            const wchar_t* _Src_end  = _Src + _Size_convert;
+            uint8_t* _Dest_bytes     = static_cast<uint8_t*>(_Dest);
+            uint8_t* const _Dest_end = _Dest_bytes + _Size_bytes;
 
             const auto _Pg  = svptrue_b16();
             const auto _Dx0 = svdup_u16(static_cast<uint16_t>(_Elem0));
@@ -12141,7 +12141,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
     if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
-        return _Impl_sve_1(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+        return _Impl_sve_1(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Size_convert, _Elem0, _Elem1);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
@@ -12160,7 +12160,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
     if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
-        return _Impl_sve_2(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+        return _Impl_sve_2(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Size_convert, _Elem0, _Elem1);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
