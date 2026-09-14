@@ -11672,13 +11672,15 @@ extern "C" {
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* const _Dest, const void* const _Src, const size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
     using namespace _Bitset_to_string;
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
+
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Size_bits >= 128) {
         _Impl_sve_1(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
         return;
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
     _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
@@ -11688,13 +11690,15 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(wchar_t* const _Dest, const void* const _Src,
     const size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
     using namespace _Bitset_to_string;
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
+
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Size_bits >= 128) {
         _Impl_sve_2(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
         return;
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
     _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
@@ -12134,13 +12138,14 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
     const char _Elem1) noexcept {
     using namespace _Bitset_from_string;
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
     if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
         return _Impl_sve_1(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
     return _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
@@ -12152,13 +12157,14 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
     const wchar_t _Elem1) noexcept {
     using namespace _Bitset_from_string;
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
     if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
         return _Impl_sve_2(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
     return _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
