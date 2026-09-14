@@ -12087,7 +12087,7 @@ namespace {
             const size_t _Size_chars, const size_t _Size_convert, const _Elem _Elem0, const _Elem _Elem1) noexcept {
             const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
 
-            for (size_t _Ix = _Size_bits; _Ix < _Size_chars; ++_Ix) {
+            for (size_t _Ix = _Size_convert; _Ix < _Size_chars; ++_Ix) {
                 if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) {
                     return false;
                 }
