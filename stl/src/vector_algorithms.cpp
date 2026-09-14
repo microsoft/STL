@@ -11590,7 +11590,7 @@ namespace {
 
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
-        __declspec(noinline) void __stdcall _Impl_sve_1(char* const _Dest, const void* _Src, const size_t _Size_bits,
+        __declspec(noinline) void _Impl_sve_1(char* const _Dest, const void* _Src, const size_t _Size_bits,
             const char _Elem0, const char _Elem1) noexcept {
             const size_t _Step_size_bits = svcntb();
             const size_t _Step_bytes     = _Step_size_bits / 8;
@@ -11617,7 +11617,7 @@ namespace {
 
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
-        __declspec(noinline) void __stdcall _Impl_sve_2(wchar_t* const _Dest, const void* _Src, const size_t _Size_bits,
+        __declspec(noinline) void _Impl_sve_2(wchar_t* const _Dest, const void* _Src, const size_t _Size_bits,
             const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
             const size_t _Step_size_bits = svcntb();
             const size_t _Step_bytes     = _Step_size_bits / 8;
