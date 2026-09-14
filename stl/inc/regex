@@ -3408,10 +3408,12 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Finalize_class() { // finalize bracke
 
     if (!_Coll_elems.empty()) {
         _Fill_coll_sequence_from_buf(_Node->_Coll, _Coll_elems, 2U);
+        _Coll_elems.clear();
     }
 
     if (!_Equivs.empty()) {
         _Fill_coll_sequence_from_buf(_Node->_Equiv, _Equivs, 1U);
+        _Equivs.clear();
     }
 }
 
