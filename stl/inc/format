@@ -353,7 +353,7 @@ public:
 // +---+               ++-^+
 //                      | |
 //                      +-+
-//                     Extend
+//               Extend or Linker
 //
 // State '2' is the accepting state.
 class _GB9c_regex {
@@ -370,19 +370,23 @@ public:
         case _Start:
             if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
                 _State = _Linker;
+                return true;
             }
             return false;
 
         case _Linker:
-            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value) {
-                return false;
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value
+                 || _Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
+                return true;
             }
-            return true;
+            break;
 
         default:
             _STL_INTERNAL_CHECK(false);
             return false;
         }
+        _State = _Start;
+        return false;
     }
 };
 
