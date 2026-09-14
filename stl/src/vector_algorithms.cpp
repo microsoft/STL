@@ -12105,20 +12105,6 @@ namespace {
 
             return true;
         }
-
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
-        template <class _Avx, class _Sse, class _Elem>
-        bool _Dispatch(void* _Dest, const _Elem* _Src, size_t _Size_bytes, size_t _Size_bits, size_t _Size_chars,
-            size_t _Size_convert, _Elem _Elem0, _Elem _Elem1) noexcept {
-            if (_Use_avx2() && _Size_bits >= 256) {
-                return _Impl<_Avx>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
-            } else if (_Use_sse42()) {
-                return _Impl<_Sse>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
-            } else {
-                return _Fallback(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
-            }
-        }
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } // namespace _Bitset_from_string
 } // unnamed namespace
 
@@ -12140,8 +12126,13 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
     return _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    return _Dispatch<_Traits_1_avx, _Traits_1_sse>(
-        _Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    if (_Use_avx2() && _Size_bits >= 256) {
+        return _Impl<_Traits_1_avx>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    } else if (_Use_sse42()) {
+        return _Impl<_Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    } else {
+        return _Fallback(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
@@ -12161,8 +12152,13 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
     return _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    return _Dispatch<_Traits_2_avx, _Traits_2_sse>(
-        _Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    if (_Use_avx2() && _Size_bits >= 256) {
+        return _Impl<_Traits_2_avx>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    } else if (_Use_sse42()) {
+        return _Impl<_Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    } else {
+        return _Fallback(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
