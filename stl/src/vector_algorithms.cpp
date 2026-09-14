@@ -12084,13 +12084,10 @@ namespace {
 
         template <class _Elem>
         bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
-            const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
+            const size_t _Size_chars, const size_t _Size_convert, const _Elem _Elem0, const _Elem _Elem1) noexcept {
             const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
-            size_t _Size_convert   = _Size_chars;
 
             if (_Size_chars > _Size_bits) {
-                _Size_convert = _Size_bits;
-
                 for (size_t _Ix = _Size_bits; _Ix < _Size_chars; ++_Ix) {
                     if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) {
                         return false;
@@ -12122,7 +12119,7 @@ namespace {
             } else if (_Use_sse42()) {
                 return _Impl<_Sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Size_convert, _Elem0, _Elem1);
             } else {
-                return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+                return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Size_convert, _Elem0, _Elem1);
             }
         }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
