@@ -376,7 +376,7 @@ public:
 
         case _Linker:
             if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value
-                 || _Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
+                || _Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
                 return true;
             }
             break;
