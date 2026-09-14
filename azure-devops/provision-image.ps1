@@ -59,9 +59,9 @@ foreach ($workload in $VisualStudioWorkloads) {
 
 # https://github.com/PowerShell/PowerShell/releases/latest
 if ($Provisioning_x64) {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.5/PowerShell-7.6.5-win-x64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.6/PowerShell-7.6.6-win-x64.msi'
 } else {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.5/PowerShell-7.6.5-win-arm64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.6/PowerShell-7.6.6-win-arm64.msi'
 }
 $PowerShellArgs = @('/quiet', '/norestart')
 
@@ -111,7 +111,10 @@ Function DownloadAndInstall {
     mkdir $tempPath -Force | Out-Null
     $fileName = [uri]::new($Url).Segments[-1]
     $installerPath = Join-Path $tempPath $fileName
-    curl.exe -L -o $installerPath -s -S $Url
+    curl.exe --fail --silent --show-error --location --output $installerPath $Url
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "curl.exe failed with non-zero exit code $LASTEXITCODE."
+    }
 
     Write-Host "Installing $Name..."
     $proc = Start-Process -FilePath $installerPath -ArgumentList $Args -Wait -PassThru
