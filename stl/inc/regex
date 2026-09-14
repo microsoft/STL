@@ -3618,7 +3618,7 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_equiv(const _Elem* const _First, const _Elem* const _Last) {
     // add elements of equivalence class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    typename _RxTraits::string_type _Str = _Traits.transform_primary(_First, _Last);
+    _String_type _Str                    = _Traits.transform_primary(_First, _Last);
 
     if (_Str.empty()) {
         _Xregex_error(regex_constants::error_collate);
