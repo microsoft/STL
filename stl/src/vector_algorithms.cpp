@@ -11588,6 +11588,8 @@ namespace {
             return *reinterpret_cast<const svbool_t*>(_Src);
         }
 
+        // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+        // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) void __stdcall _Impl_sve_1(char* const _Dest, const void* _Src, const size_t _Size_bits,
             const char _Elem0, const char _Elem1) noexcept {
             const size_t _Step_size_bits = svcntb();
@@ -11613,6 +11615,8 @@ namespace {
             _Impl<_Traits_1_neon>(_Dest, _Src, _Remaining_bits, _Elem0, _Elem1);
         }
 
+        // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+        // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) void __stdcall _Impl_sve_2(wchar_t* const _Dest, const void* _Src, const size_t _Size_bits,
             const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
             const size_t _Step_size_bits = svcntb();
@@ -11999,6 +12003,8 @@ namespace {
             return true;
         }
 
+        // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+        // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_1(void* const _Dest, const char* const _Src, const size_t _Size_bytes,
             const size_t _Size_bits, const size_t _Size_chars, const char _Elem0, const char _Elem1) noexcept {
             const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
@@ -12032,6 +12038,8 @@ namespace {
                 _Size_chars - _Size_convert, _Elem0, _Elem1);
         }
 
+        // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+        // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_2(void* const _Dest, const wchar_t* const _Src, const size_t _Size_bytes,
             const size_t _Size_bits, const size_t _Size_chars, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
             const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
