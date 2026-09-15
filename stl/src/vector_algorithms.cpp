@@ -11973,6 +11973,32 @@ namespace {
             return true;
         }
 
+        template <class _Elem>
+        bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_chars,
+            const size_t _Size_convert, const _Elem _Elem0, const _Elem _Elem1) noexcept {
+            const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
+
+            for (size_t _Ix = _Size_convert; _Ix < _Size_chars; ++_Ix) {
+                if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) {
+                    return false;
+                }
+            }
+
+            memset(_Dest, 0, _Size_bytes);
+
+            for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
+                const _Elem _Cur = _Src[_Size_convert - _Ix - 1];
+
+                if (_Cur != _Elem0 && _Cur != _Elem1) {
+                    return false;
+                }
+
+                _Dest_bytes[_Ix >> 3] |= static_cast<uint8_t>(_Cur == _Elem1) << (_Ix & 0x7);
+            }
+
+            return true;
+        }
+
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
         __forceinline void _Store_predicate(void* const _Dest, const svbool_t _Pred) noexcept {
             *reinterpret_cast<svbool_t*>(_Dest) = _Pred;
@@ -12079,32 +12105,6 @@ namespace {
                 _Size_chars - _Size_convert, _Elem0, _Elem1);
         }
 #endif // ^^^ defined(_M_ARM64) ^^^
-
-        template <class _Elem>
-        bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_chars,
-            const size_t _Size_convert, const _Elem _Elem0, const _Elem _Elem1) noexcept {
-            const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
-
-            for (size_t _Ix = _Size_convert; _Ix < _Size_chars; ++_Ix) {
-                if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) {
-                    return false;
-                }
-            }
-
-            memset(_Dest, 0, _Size_bytes);
-
-            for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
-                const _Elem _Cur = _Src[_Size_convert - _Ix - 1];
-
-                if (_Cur != _Elem0 && _Cur != _Elem1) {
-                    return false;
-                }
-
-                _Dest_bytes[_Ix >> 3] |= static_cast<uint8_t>(_Cur == _Elem1) << (_Ix & 0x7);
-            }
-
-            return true;
-        }
     } // namespace _Bitset_from_string
 } // unnamed namespace
 
