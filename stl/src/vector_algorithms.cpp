@@ -11974,15 +11974,21 @@ namespace {
         }
 
         template <class _Elem>
-        bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_chars,
-            const size_t _Size_convert, const _Elem _Elem0, const _Elem _Elem1) noexcept {
-            const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
-
+        bool _Validate_extra(const _Elem* const _Src, const size_t _Size_chars, const size_t _Size_convert,
+            const _Elem _Elem0, const _Elem _Elem1) noexcept {
             for (size_t _Ix = _Size_convert; _Ix < _Size_chars; ++_Ix) {
                 if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) {
                     return false;
                 }
             }
+
+            return true;
+        }
+
+        template <class _Elem>
+        bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_convert,
+            const _Elem _Elem0, const _Elem _Elem1) noexcept {
+            const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
 
             memset(_Dest, 0, _Size_bytes);
 
@@ -12006,14 +12012,7 @@ namespace {
 
         template <class _Elem>
         bool _Finish_sve(uint8_t* const _Dest, uint8_t* const _Dest_end, const _Elem* const _Src,
-            const size_t _Size_convert, const _Elem* const _Extra, const size_t _Extra_size, const _Elem _Elem0,
-            const _Elem _Elem1) noexcept {
-            for (size_t _Ix = 0; _Ix != _Extra_size; ++_Ix) {
-                if (const _Elem _Cur = _Extra[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) {
-                    return false;
-                }
-            }
-
+            const size_t _Size_convert, const _Elem _Elem0, const _Elem _Elem1) noexcept {
             if (_Dest != _Dest_end) {
                 memset(_Dest, 0, _Byte_length(_Dest, _Dest_end));
             }
@@ -12061,8 +12060,8 @@ namespace {
                 _Remaining -= _Step_in;
             }
 
-            return _Finish_sve(_Dest_bytes, _Dest_end, _Src, _Remaining, _Src + _Size_convert,
-                _Size_chars - _Size_convert, _Elem0, _Elem1);
+            return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
+                && _Finish_sve(_Dest_bytes, _Dest_end, _Src, _Remaining, _Elem0, _Elem1);
         }
 
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
@@ -12101,8 +12100,8 @@ namespace {
                 _Remaining -= _Step_in;
             }
 
-            return _Finish_sve(_Dest_bytes, _Dest_end, _Src, _Remaining, _Src + _Size_convert,
-                _Size_chars - _Size_convert, _Elem0, _Elem1);
+            return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
+                && _Finish_sve(_Dest_bytes, _Dest_end, _Src, _Remaining, _Elem0, _Elem1);
         }
 #endif // ^^^ defined(_M_ARM64) ^^^
     } // namespace _Bitset_from_string
@@ -12131,7 +12130,8 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
     } else if (_Use_sse42()) {
         return _Impl<_Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
     } else {
-        return _Fallback(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+        return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
+            && _Fallback(_Dest, _Src, _Size_bytes, _Size_convert, _Elem0, _Elem1);
     }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
@@ -12157,7 +12157,8 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
     } else if (_Use_sse42()) {
         return _Impl<_Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
     } else {
-        return _Fallback(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+        return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
+            && _Fallback(_Dest, _Src, _Size_bytes, _Size_convert, _Elem0, _Elem1);
     }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
