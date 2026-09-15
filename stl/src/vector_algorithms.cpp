@@ -12126,7 +12126,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
     return _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (_Use_avx2() && _Size_bits >= 256) {
+    if (_Use_avx2() && _Size_convert >= 256) {
         return _Impl<_Traits_1_avx>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
     } else if (_Use_sse42()) {
         return _Impl<_Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
@@ -12152,7 +12152,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
     return _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (_Use_avx2() && _Size_bits >= 256) {
+    if (_Use_avx2() && _Size_convert >= 256) {
         return _Impl<_Traits_2_avx>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
     } else if (_Use_sse42()) {
         return _Impl<_Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
