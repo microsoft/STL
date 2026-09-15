@@ -12055,23 +12055,23 @@ namespace {
             uint8_t* _Dest_bytes     = static_cast<uint8_t*>(_Dest);
             uint8_t* const _Dest_end = _Dest_bytes + _Size_bytes;
 
-            const auto _Pg  = svptrue_b16();
-            const auto _Dx0 = svdup_u16(static_cast<uint16_t>(_Elem0));
-            const auto _Dx1 = svdup_u16(static_cast<uint16_t>(_Elem1));
+            const auto _True = svptrue_b16();
+            const auto _Dx0  = svdup_u16(static_cast<uint16_t>(_Elem0));
+            const auto _Dx1  = svdup_u16(static_cast<uint16_t>(_Elem1));
 
             size_t _Remaining = _Size_convert;
             while (_Remaining >= _Step_in) {
                 _Src_end -= _Step_in;
-                const auto _Val_hi = svrev_u16(svld1_u16(_Pg, reinterpret_cast<const uint16_t*>(_Src_end)));
+                const auto _Val_hi = svrev_u16(svld1_u16(_True, reinterpret_cast<const uint16_t*>(_Src_end)));
                 const auto _Val_lo =
-                    svrev_u16(svld1_u16(_Pg, reinterpret_cast<const uint16_t*>(_Src_end + _Half_step)));
-                const auto _Ne0_hi     = svcmpne_u16(_Pg, _Val_hi, _Dx0);
-                const auto _Ex1_hi     = svcmpeq_u16(_Pg, _Val_hi, _Dx1);
-                const auto _Ne0_lo     = svcmpne_u16(_Pg, _Val_lo, _Dx0);
-                const auto _Ex1_lo     = svcmpeq_u16(_Pg, _Val_lo, _Dx1);
-                const auto _Invalid_hi = svbic_b_z(_Pg, _Ne0_hi, _Ex1_hi);
-                const auto _Invalid_lo = svbic_b_z(_Pg, _Ne0_lo, _Ex1_lo);
-                if (svptest_any(_Pg, _Invalid_hi) || svptest_any(_Pg, _Invalid_lo)) {
+                    svrev_u16(svld1_u16(_True, reinterpret_cast<const uint16_t*>(_Src_end + _Half_step)));
+                const auto _Ne0_hi     = svcmpne_u16(_True, _Val_hi, _Dx0);
+                const auto _Ex1_hi     = svcmpeq_u16(_True, _Val_hi, _Dx1);
+                const auto _Ne0_lo     = svcmpne_u16(_True, _Val_lo, _Dx0);
+                const auto _Ex1_lo     = svcmpeq_u16(_True, _Val_lo, _Dx1);
+                const auto _Invalid_hi = svbic_b_z(_True, _Ne0_hi, _Ex1_hi);
+                const auto _Invalid_lo = svbic_b_z(_True, _Ne0_lo, _Ex1_lo);
+                if (svptest_any(_True, _Invalid_hi) || svptest_any(_True, _Invalid_lo)) {
                     return false;
                 }
 
