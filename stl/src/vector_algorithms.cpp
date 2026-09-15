@@ -11939,8 +11939,8 @@ namespace {
         }
 
         template <class _Traits, class _Elem>
-        bool _Impl(void* _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_chars,
-            const size_t _Size_convert, const _Elem _Elem0, const _Elem _Elem1) noexcept {
+        bool _Impl(void* _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_convert,
+            const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
             [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
             const auto _Dx0 = _Traits::_Set(_Elem0);
             const auto _Dx1 = _Traits::_Set(_Elem1);
@@ -11974,7 +11974,7 @@ namespace {
         }
 
         template <class _Elem>
-        bool _Validate_extra(const _Elem* const _Src, const size_t _Size_chars, const size_t _Size_convert,
+        bool _Validate_extra(const _Elem* const _Src, const size_t _Size_convert, const size_t _Size_chars,
             const _Elem _Elem0, const _Elem _Elem1) noexcept {
             for (size_t _Ix = _Size_convert; _Ix < _Size_chars; ++_Ix) {
                 if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) {
@@ -12013,7 +12013,7 @@ namespace {
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_1(void* const _Dest, const char* const _Src, const size_t _Size_bytes,
-            const size_t _Size_chars, const size_t _Size_convert, const char _Elem0, const char _Elem1) noexcept {
+            const size_t _Size_convert, const size_t _Size_chars, const char _Elem0, const char _Elem1) noexcept {
             const size_t _Step_in    = svcntb();
             const size_t _Step_out   = _Step_in / 8;
             const char* _Src_end     = _Src + _Size_convert;
@@ -12040,14 +12040,14 @@ namespace {
                 _Remaining -= _Step_in;
             }
 
-            return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
+            return _Validate_extra(_Src, _Size_convert, _Size_chars, _Elem0, _Elem1)
                 && _Fallback(_Dest_bytes, _Src, _Byte_length(_Dest_bytes, _Dest_end), _Remaining, _Elem0, _Elem1);
         }
 
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_2(void* const _Dest, const wchar_t* const _Src, const size_t _Size_bytes,
-            const size_t _Size_chars, const size_t _Size_convert, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
+            const size_t _Size_convert, const size_t _Size_chars, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
             const size_t _Step_in    = svcntb();
             const size_t _Step_out   = _Step_in / 8;
             const size_t _Half_step  = _Step_in / 2;
@@ -12080,7 +12080,7 @@ namespace {
                 _Remaining -= _Step_in;
             }
 
-            return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
+            return _Validate_extra(_Src, _Size_convert, _Size_chars, _Elem0, _Elem1)
                 && _Fallback(_Dest_bytes, _Src, _Byte_length(_Dest_bytes, _Dest_end), _Remaining, _Elem0, _Elem1);
         }
 #endif // ^^^ defined(_M_ARM64) ^^^
@@ -12098,19 +12098,19 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
-        return _Impl_sve_1(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+        return _Impl_sve_1(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    return _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    return _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (_Use_avx2() && _Size_convert >= 256) {
-        return _Impl<_Traits_1_avx>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+        return _Impl<_Traits_1_avx>(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
     } else if (_Use_sse42()) {
-        return _Impl<_Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+        return _Impl<_Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
     } else {
-        return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
+        return _Validate_extra(_Src, _Size_convert, _Size_chars, _Elem0, _Elem1)
             && _Fallback(_Dest, _Src, _Size_bytes, _Size_convert, _Elem0, _Elem1);
     }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
@@ -12125,19 +12125,19 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
-        return _Impl_sve_2(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+        return _Impl_sve_2(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    return _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+    return _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (_Use_avx2() && _Size_convert >= 256) {
-        return _Impl<_Traits_2_avx>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+        return _Impl<_Traits_2_avx>(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
     } else if (_Use_sse42()) {
-        return _Impl<_Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_chars, _Size_convert, _Elem0, _Elem1);
+        return _Impl<_Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
     } else {
-        return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
+        return _Validate_extra(_Src, _Size_convert, _Size_chars, _Elem0, _Elem1)
             && _Fallback(_Dest, _Src, _Size_bytes, _Size_convert, _Elem0, _Elem1);
     }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
