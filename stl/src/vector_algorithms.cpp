@@ -12010,26 +12010,6 @@ namespace {
             *reinterpret_cast<svbool_t*>(_Dest) = _Pred;
         }
 
-        template <class _Elem>
-        bool _Finish_sve(uint8_t* const _Dest, uint8_t* const _Dest_end, const _Elem* const _Src,
-            const size_t _Size_convert, const _Elem _Elem0, const _Elem _Elem1) noexcept {
-            if (_Dest != _Dest_end) {
-                memset(_Dest, 0, _Byte_length(_Dest, _Dest_end));
-            }
-
-            for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
-                const _Elem _Cur = _Src[_Size_convert - _Ix - 1];
-
-                if (_Cur != _Elem0 && _Cur != _Elem1) {
-                    return false;
-                }
-
-                _Dest[_Ix >> 3] |= static_cast<uint8_t>(_Cur == _Elem1) << (_Ix & 0x7);
-            }
-
-            return true;
-        }
-
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_1(void* const _Dest, const char* const _Src, const size_t _Size_bytes,
@@ -12061,7 +12041,7 @@ namespace {
             }
 
             return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
-                && _Finish_sve(_Dest_bytes, _Dest_end, _Src, _Remaining, _Elem0, _Elem1);
+                && _Fallback(_Dest_bytes, _Src, _Byte_length(_Dest_bytes, _Dest_end), _Remaining, _Elem0, _Elem1);
         }
 
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
@@ -12101,7 +12081,7 @@ namespace {
             }
 
             return _Validate_extra(_Src, _Size_chars, _Size_convert, _Elem0, _Elem1)
-                && _Finish_sve(_Dest_bytes, _Dest_end, _Src, _Remaining, _Elem0, _Elem1);
+                && _Fallback(_Dest_bytes, _Src, _Byte_length(_Dest_bytes, _Dest_end), _Remaining, _Elem0, _Elem1);
         }
 #endif // ^^^ defined(_M_ARM64) ^^^
     } // namespace _Bitset_from_string
