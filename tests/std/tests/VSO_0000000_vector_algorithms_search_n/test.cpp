@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <limits>
 #include <random>
@@ -150,15 +151,14 @@ void test_search_n(mt19937_64& gen) {
 }
 
 void test_vector_algorithms(mt19937_64& gen) {
-    test_search_n<char>(gen);
-    test_search_n<signed char>(gen);
-    test_search_n<unsigned char>(gen);
-    test_search_n<short>(gen);
-    test_search_n<unsigned short>(gen);
-    test_search_n<int>(gen);
-    test_search_n<unsigned int>(gen);
-    test_search_n<long long>(gen);
-    test_search_n<unsigned long long>(gen);
+    test_search_n<int8_t>(gen);
+    test_search_n<uint8_t>(gen);
+    test_search_n<int16_t>(gen);
+    test_search_n<uint16_t>(gen);
+    test_search_n<int32_t>(gen);
+    test_search_n<uint32_t>(gen);
+    test_search_n<int64_t>(gen);
+    test_search_n<uint64_t>(gen);
 }
 
 int main() {
