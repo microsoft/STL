@@ -159,12 +159,15 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_search_n<unsigned int>(gen);
     test_search_n<long long>(gen);
     test_search_n<unsigned long long>(gen);
+}
+
+int main() {
+    std::mt19937_64 gen;
+    initialize_randomness(gen);
+
+    run_tests_with_different_isa_levels([&] { test_vector_algorithms(gen); });
 
     // Test only one case with forward iterators. It is a different and complex code path, hence it's worth testing,
     // but it is not vectorized, so there's no point in trying different types.
     test_search_n<short, true>(gen);
-}
-
-int main() {
-    run_randomized_tests_with_different_isa_levels(test_vector_algorithms);
 }
