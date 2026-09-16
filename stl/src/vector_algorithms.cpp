@@ -1088,10 +1088,6 @@ namespace {
         struct _Traits_1_neon : _Traits_1_base, _Traits_neon_base {
             using _Vec_t = int8x16_t;
 
-            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
-                return _Val;
-            }
-
             static _Vec_t _Zero() noexcept {
                 return vdupq_n_s8(0);
             }
@@ -1201,11 +1197,8 @@ namespace {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
             }
 
-            static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
-                alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][16] = {
-                    {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
-                    {}};
-                return _mm_sub_epi8(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
+            static __m128i _Sign_correction(const __m128i _Val) noexcept {
+                return _mm_sub_epi8(_Val, _mm_set1_epi8(static_cast<char>(0x80)));
             }
 
             static __m128i _Inc(const __m128i _Idx) noexcept {
@@ -1291,13 +1284,8 @@ namespace {
                 return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
             }
 
-            static __m256i _Sign_correction(const __m256i _Val, const bool _Sign) noexcept {
-                alignas(32) static constexpr _Unsigned_t _Sign_corrections[2][32] = {
-                    {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-                        0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
-                    {}};
-                return _mm256_sub_epi8(
-                    _Val, _mm256_load_si256(reinterpret_cast<const __m256i*>(_Sign_corrections[_Sign])));
+            static __m256i _Sign_correction(const __m256i _Val) noexcept {
+                return _mm256_sub_epi8(_Val, _mm256_set1_epi8(static_cast<char>(0x80)));
             }
 
             static __m256i _Inc(const __m256i _Idx) noexcept {
@@ -1401,10 +1389,6 @@ namespace {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_2_neon : _Traits_2_base, _Traits_neon_base {
             using _Vec_t = int16x8_t;
-
-            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
-                return _Val;
-            }
 
             static _Vec_t _Zero() noexcept {
                 return vdupq_n_s16(0);
@@ -1515,10 +1499,8 @@ namespace {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
             }
 
-            static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
-                alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][8] = {
-                    0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, {}};
-                return _mm_sub_epi16(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
+            static __m128i _Sign_correction(const __m128i _Val) noexcept {
+                return _mm_sub_epi16(_Val, _mm_set1_epi16(static_cast<short>(0x8000)));
             }
 
             static __m128i _Inc(const __m128i _Idx) noexcept {
@@ -1602,11 +1584,8 @@ namespace {
                 return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
             }
 
-            static __m256i _Sign_correction(const __m256i _Val, const bool _Sign) noexcept {
-                alignas(32) static constexpr _Unsigned_t _Sign_corrections[2][16] = {0x8000, 0x8000, 0x8000, 0x8000,
-                    0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, {}};
-                return _mm256_sub_epi16(
-                    _Val, _mm256_load_si256(reinterpret_cast<const __m256i*>(_Sign_corrections[_Sign])));
+            static __m256i _Sign_correction(const __m256i _Val) noexcept {
+                return _mm256_sub_epi16(_Val, _mm256_set1_epi16(static_cast<short>(0x8000)));
             }
 
             static __m256i _Inc(const __m256i _Idx) noexcept {
@@ -1712,10 +1691,6 @@ namespace {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_4_neon : _Traits_4_base, _Traits_neon_base {
             using _Vec_t = int32x4_t;
-
-            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
-                return _Val;
-            }
 
             static _Vec_t _Zero() noexcept {
                 return vdupq_n_s32(0);
@@ -1826,10 +1801,8 @@ namespace {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
             }
 
-            static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
-                alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][4] = {
-                    0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, {}};
-                return _mm_sub_epi32(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
+            static __m128i _Sign_correction(const __m128i _Val) noexcept {
+                return _mm_sub_epi32(_Val, _mm_set1_epi32(static_cast<int>(0x8000'0000)));
             }
 
             static __m128i _Inc(const __m128i _Idx) noexcept {
@@ -1910,11 +1883,8 @@ namespace {
                 return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
             }
 
-            static __m256i _Sign_correction(const __m256i _Val, const bool _Sign) noexcept {
-                alignas(32) static constexpr _Unsigned_t _Sign_corrections[2][8] = {0x8000'0000UL, 0x8000'0000UL,
-                    0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, {}};
-                return _mm256_sub_epi32(
-                    _Val, _mm256_load_si256(reinterpret_cast<const __m256i*>(_Sign_corrections[_Sign])));
+            static __m256i _Sign_correction(const __m256i _Val) noexcept {
+                return _mm256_sub_epi32(_Val, _mm256_set1_epi32(static_cast<int>(0x8000'0000)));
             }
 
             static __m256i _Inc(const __m256i _Idx) noexcept {
@@ -2013,10 +1983,6 @@ namespace {
         struct _Traits_8_neon : _Traits_8_base, _Traits_neon_base {
             using _Vec_t = int64x2_t;
 
-            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
-                return _Val;
-            }
-
             // Compresses a 128-bit Mask of 2 64-bit values into a 64-bit Mask of 2 32-bit values.
             static uint64_t _Mask(const _Vec_t _Val) noexcept {
                 const uint32x2_t _Res = vreinterpret_u32_s32(vmovn_s64(_Val));
@@ -2108,10 +2074,8 @@ namespace {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
             }
 
-            static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
-                alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][2] = {
-                    0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, {}};
-                return _mm_sub_epi64(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
+            static __m128i _Sign_correction(const __m128i _Val) noexcept {
+                return _mm_sub_epi64(_Val, _mm_set1_epi64x(static_cast<long long>(0x8000'0000'0000'0000ULL)));
             }
 
             static __m128i _Inc(const __m128i _Idx) noexcept {
@@ -2196,11 +2160,8 @@ namespace {
                 return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
             }
 
-            static __m256i _Sign_correction(const __m256i _Val, const bool _Sign) noexcept {
-                alignas(32) static constexpr _Unsigned_t _Sign_corrections[2][4] = {0x8000'0000'0000'0000ULL,
-                    0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, {}};
-                return _mm256_sub_epi64(
-                    _Val, _mm256_load_si256(reinterpret_cast<const __m256i*>(_Sign_corrections[_Sign])));
+            static __m256i _Sign_correction(const __m256i _Val) noexcept {
+                return _mm256_sub_epi64(_Val, _mm256_set1_epi64x(static_cast<long long>(0x8000'0000'0000'0000ULL)));
             }
 
             static __m256i _Inc(const __m256i _Idx) noexcept {
@@ -2315,10 +2276,6 @@ namespace {
             using _Idx_t                            = int32x4_t;
             static constexpr bool _Has_unsigned_cmp = false;
 
-            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
-                return _Val;
-            }
-
             static _Idx_t _Zero() noexcept {
                 return vdupq_n_s32(0);
             }
@@ -2411,10 +2368,6 @@ namespace {
                 return _mm_loadu_ps(reinterpret_cast<const float*>(_Src));
             }
 
-            static __m128 _Sign_correction(const __m128 _Val, bool) noexcept {
-                return _Val;
-            }
-
             static __m128i _Inc(const __m128i _Idx) noexcept {
                 return _mm_add_epi32(_Idx, _mm_set1_epi32(1));
             }
@@ -2492,10 +2445,6 @@ namespace {
 
             static __m256 _Load_mask(const void* const _Src, const __m256i _Mask) noexcept {
                 return _mm256_maskload_ps(reinterpret_cast<const float*>(_Src), _Mask);
-            }
-
-            static __m256 _Sign_correction(const __m256 _Val, bool) noexcept {
-                return _Val;
             }
 
             static __m256i _Inc(const __m256i _Idx) noexcept {
@@ -2583,10 +2532,6 @@ namespace {
             using _Vec_t                            = float64x2_t;
             using _Idx_t                            = int64x2_t;
             static constexpr bool _Has_unsigned_cmp = false;
-
-            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
-                return _Val;
-            }
 
             static _Idx_t _Zero() noexcept {
                 return vdupq_n_s64(0);
@@ -2681,10 +2626,6 @@ namespace {
                 return _mm_loadu_pd(reinterpret_cast<const double*>(_Src));
             }
 
-            static __m128d _Sign_correction(const __m128d _Val, bool) noexcept {
-                return _Val;
-            }
-
             static __m128i _Inc(const __m128i _Idx) noexcept {
                 return _mm_add_epi64(_Idx, _mm_set1_epi64x(1));
             }
@@ -2760,10 +2701,6 @@ namespace {
 
             static __m256d _Load_mask(const void* const _Src, const __m256i _Mask) noexcept {
                 return _mm256_maskload_pd(reinterpret_cast<const double*>(_Src), _Mask);
-            }
-
-            static __m256d _Sign_correction(const __m256d _Val, bool) noexcept {
-                return _Val;
             }
 
             static __m256i _Inc(const __m256i _Idx) noexcept {
@@ -2934,23 +2871,16 @@ namespace {
             return _Res;
         }
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
-        template <_Min_max_mode _Mode, class _Traits, bool _Sign>
+        template <_Min_max_mode _Mode, class _Traits, bool _Is_signed>
         auto _Minmax_element_impl(const void* _First, const void* const _Last) noexcept {
-#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-        template <_Min_max_mode _Mode, class _Traits>
-        auto _Minmax_element_impl(const void* _First, const void* const _Last, const bool _Sign) noexcept {
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
             _Min_max_element_t _Res = {_First, _First};
             auto _Cur_min_val       = _Traits::_Init_min_val;
             auto _Cur_max_val       = _Traits::_Init_max_val;
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
-            if constexpr (!_Sign && _Traits::_Has_unsigned_cmp) {
+            if constexpr (!_Is_signed && _Traits::_Has_unsigned_cmp) {
                 _Cur_min_val = -1;
                 _Cur_max_val = 0;
             }
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
 
             if constexpr (_Traits::_Vectorized) {
                 auto _Base                = static_cast<const char*>(_First);
@@ -2968,7 +2898,10 @@ namespace {
                 _Advance_bytes(_Stop_at, _Portion_byte_size);
 
                 // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-                auto _Cur_vals     = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
+                auto _Cur_vals = _Traits::_Load(_First);
+                if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
+                    _Cur_vals = _Traits::_Sign_correction(_Cur_vals);
+                }
                 auto _Cur_vals_min = _Cur_vals; // vector of vertical minimum values
                 auto _Cur_idx_min  = _Traits::_Zero(); // vector of vertical minimum indices
                 auto _Cur_vals_max = _Cur_vals; // vector of vertical maximum values
@@ -2977,42 +2910,42 @@ namespace {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
                 const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
-                    if constexpr (_Sign || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
                         return _Traits::_Cmp_gt(_First, _Second);
                     } else {
                         return _Traits::_Cmp_gt_u(_First, _Second);
                     }
                 };
                 const auto _Min_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    if constexpr (_Sign || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
                         return _Traits::_Min(_First, _Second, _Mask);
                     } else {
                         return _Traits::_Min_u(_First, _Second, _Mask);
                     }
                 };
                 const auto _Max_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    if constexpr (_Sign || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
                         return _Traits::_Max(_First, _Second, _Mask);
                     } else {
                         return _Traits::_Max_u(_First, _Second, _Mask);
                     }
                 };
                 const auto _H_min_wrap = [](const auto _Vals) noexcept {
-                    if constexpr (_Sign || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
                         return _Traits::_H_min(_Vals);
                     } else {
                         return _Traits::_H_min_u(_Vals);
                     }
                 };
                 const auto _H_max_wrap = [](const auto _Vals) noexcept {
-                    if constexpr (_Sign || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
                         return _Traits::_H_max(_Vals);
                     } else {
                         return _Traits::_H_max_u(_Vals);
                     }
                 };
                 const auto _Less_wrap = [](const auto _Lhs, const auto _Rhs) noexcept {
-                    if constexpr (_Sign || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
                         return _Lhs < _Rhs;
                     } else {
                         using _UTy = _Traits::_Unsigned_t;
@@ -3080,7 +3013,10 @@ namespace {
                         // This is the main part, finding vertical minimum/maximum
 
                         // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-                        _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
+                        _Cur_vals = _Traits::_Load(_First);
+                        if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
+                            _Cur_vals = _Traits::_Sign_correction(_Cur_vals);
+                        }
 
                         _Update_min_max(_Cur_vals, _Blend_idx_0, _Blend_idx_1);
                     } else {
@@ -3098,8 +3034,10 @@ namespace {
 
                             if (_Last_portion && _Tail_byte_size != 0) {
                                 const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size);
-                                const auto _Tail_vals =
-                                    _Traits::_Sign_correction(_Traits::_Load_mask(_First, _Tail_mask), _Sign);
+                                auto _Tail_vals       = _Traits::_Load_mask(_First, _Tail_mask);
+                                if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
+                                    _Tail_vals = _Traits::_Sign_correction(_Tail_vals);
+                                }
                                 _Cur_vals = _Traits::_Blendval(_Cur_vals, _Tail_vals, _Tail_mask);
 
                                 const auto _Blend_idx_0_mask = [_Tail_mask](const auto _Prev, const auto _Cur,
@@ -3218,7 +3156,10 @@ namespace {
                             // Indices will be relative to the new base
                             _Base = static_cast<const char*>(_First);
                             // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-                            _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
+                            _Cur_vals = _Traits::_Load(_First);
+                            if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
+                                _Cur_vals = _Traits::_Sign_correction(_Cur_vals);
+                            }
 
                             if constexpr ((_Mode & _Mode_min) != 0) {
                                 _Cur_vals_min = _Cur_vals;
@@ -3253,19 +3194,19 @@ namespace {
                 constexpr _UTy _Correction = _Traits::_Has_unsigned_cmp ? 0 : _UTy{1} << (sizeof(_UTy) * 8 - 1);
 
                 if constexpr (_Mode == _Mode_min) {
-                    if (_Sign) {
+                    if constexpr (_Is_signed) {
                         return _Min_tail(_First, _Last, _Res._Min, static_cast<_STy>(_Cur_min_val));
                     } else {
                         return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min_val + _Correction));
                     }
                 } else if constexpr (_Mode == _Mode_max) {
-                    if (_Sign) {
+                    if constexpr (_Is_signed) {
                         return _Max_tail(_First, _Last, _Res._Max, static_cast<_STy>(_Cur_max_val));
                     } else {
                         return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max_val + _Correction));
                     }
                 } else {
-                    if (_Sign) {
+                    if constexpr (_Is_signed) {
                         return _Both_tail(
                             _First, _Last, _Res, static_cast<_STy>(_Cur_min_val), static_cast<_STy>(_Cur_max_val));
                     } else {
@@ -3276,31 +3217,30 @@ namespace {
             }
         }
 
-        template <_Min_max_mode _Mode, class _Traits, bool _Sign>
+        template <_Min_max_mode _Mode, class _Traits, bool _Is_signed>
         auto __stdcall _Minmax_element_disp(const void* const _First, const void* const _Last) noexcept {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
             if constexpr (!std::is_same_v<typename _Traits::_Neon, _Traits_8_neon>) {
                 if (_Byte_length(_First, _Last) >= 16) {
-                    return _Minmax_element_impl<_Mode, typename _Traits::_Neon, _Sign>(_First, _Last);
+                    return _Minmax_element_impl<_Mode, typename _Traits::_Neon, _Is_signed>(_First, _Last);
                 }
             }
-
-            return _Minmax_element_impl<_Mode, typename _Traits::_Scalar, _Sign>(_First, _Last);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
-                return _Minmax_element_impl<_Mode, typename _Traits::_Avx>(_First, _Last, _Sign);
+                return _Minmax_element_impl<_Mode, typename _Traits::_Avx, _Is_signed>(_First, _Last);
             }
 
             if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
-                return _Minmax_element_impl<_Mode, typename _Traits::_Sse>(_First, _Last, _Sign);
+                return _Minmax_element_impl<_Mode, typename _Traits::_Sse, _Is_signed>(_First, _Last);
             }
-            return _Minmax_element_impl<_Mode, typename _Traits::_Scalar>(_First, _Last, _Sign);
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+
+            return _Minmax_element_impl<_Mode, typename _Traits::_Scalar, _Is_signed>(_First, _Last);
         }
 
-        template <_Min_max_mode _Mode, class _Traits, bool _Sign, bool _Unrolled = false>
+        template <_Min_max_mode _Mode, class _Traits, bool _Is_signed, bool _Unrolled = false>
         auto _Minmax_impl(const void* _First, const void* const _Last) noexcept {
-            using _Ty    = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
+            using _Ty    = std::conditional_t<_Is_signed, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
             using _VecTy = _Traits::_Vec_t;
 
             _Ty _Cur_min_val; // initialized in both of the branches below
@@ -3317,7 +3257,7 @@ namespace {
                 _Advance_bytes(_Stop_at, _Vec_byte_size);
 
                 // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
-                constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign && !_Traits::_Has_unsigned_cmp;
+                constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Is_signed && !_Traits::_Has_unsigned_cmp;
 
                 _VecTy _Cur_vals[_Lanes];
                 _VecTy _Cur_vals_min[_Lanes]; // vector of vertical minimum values
@@ -3325,7 +3265,7 @@ namespace {
                 for (size_t _Lane = 0; _Lane < _Lanes; ++_Lane) {
                     _Cur_vals[_Lane] = _Traits::_Load(static_cast<const uint8_t*>(_First) + _Lane * _Traits::_Vec_size);
                     if constexpr (_Sign_correction) {
-                        _Cur_vals[_Lane] = _Traits::_Sign_correction(_Cur_vals[_Lane], false);
+                        _Cur_vals[_Lane] = _Traits::_Sign_correction(_Cur_vals[_Lane]);
                     }
                     _Cur_vals_min[_Lane] = _Cur_vals[_Lane];
                     _Cur_vals_max[_Lane] = _Cur_vals[_Lane];
@@ -3333,7 +3273,7 @@ namespace {
 
                 const auto _Update_min_max = [&](const auto _Cur_vals, size_t _Lane = 0) noexcept {
                     if constexpr ((_Mode & _Mode_min) != 0) {
-                        if constexpr (_Sign || _Sign_correction) {
+                        if constexpr (_Is_signed || _Sign_correction) {
                             _Cur_vals_min[_Lane] =
                                 _Traits::_Min(_Cur_vals_min[_Lane], _Cur_vals); // Update the current minimum
                         } else {
@@ -3343,7 +3283,7 @@ namespace {
                     }
 
                     if constexpr ((_Mode & _Mode_max) != 0) {
-                        if constexpr (_Sign || _Sign_correction) {
+                        if constexpr (_Is_signed || _Sign_correction) {
                             _Cur_vals_max[_Lane] =
                                 _Traits::_Max(_Cur_vals_max[_Lane], _Cur_vals); // Update the current maximum
                         } else {
@@ -3364,7 +3304,7 @@ namespace {
                                 _Traits::_Load(static_cast<const uint8_t*>(_First) + _Lane * _Traits::_Vec_size);
 
                             if constexpr (_Sign_correction) {
-                                _Cur_vals[_Lane] = _Traits::_Sign_correction(_Cur_vals[_Lane], false);
+                                _Cur_vals[_Lane] = _Traits::_Sign_correction(_Cur_vals[_Lane]);
                             }
 
                             _Update_min_max(_Cur_vals[_Lane], _Lane);
@@ -3377,7 +3317,7 @@ namespace {
                                 _Cur_vals[0] = _Traits::_Load(_First);
 
                                 if constexpr (_Sign_correction) {
-                                    _Cur_vals[0] = _Traits::_Sign_correction(_Cur_vals[0], false);
+                                    _Cur_vals[0] = _Traits::_Sign_correction(_Cur_vals[0]);
                                 }
 
                                 _Update_min_max(_Cur_vals[0], 0);
@@ -3393,7 +3333,7 @@ namespace {
                                 auto _Tail_vals       = _Traits::_Load_mask(_First, _Tail_mask);
 
                                 if constexpr (_Sign_correction) {
-                                    _Tail_vals = _Traits::_Sign_correction(_Tail_vals, false);
+                                    _Tail_vals = _Traits::_Sign_correction(_Tail_vals);
                                 }
 
                                 _Tail_vals = _Traits::_Blendval(_Cur_vals[0], _Tail_vals, _Tail_mask);
@@ -3407,7 +3347,7 @@ namespace {
                         // Reached end. Compute horizontal min and/or max.
 
                         if constexpr ((_Mode & _Mode_min) != 0) {
-                            if constexpr (_Sign || _Sign_correction) {
+                            if constexpr (_Is_signed || _Sign_correction) {
                                 if constexpr (_Unrolled) {
                                     for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
                                         _Cur_vals_min[0] = _Traits::_Min(_Cur_vals_min[0], _Cur_vals_min[_Lane]);
@@ -3431,7 +3371,7 @@ namespace {
                         }
 
                         if constexpr ((_Mode & _Mode_max) != 0) {
-                            if constexpr (_Sign || _Sign_correction) {
+                            if constexpr (_Is_signed || _Sign_correction) {
                                 if constexpr (_Unrolled) {
                                     for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
                                         _Cur_vals_max[0] = _Traits::_Max(_Cur_vals_max[0], _Cur_vals_max[_Lane]);
@@ -3504,45 +3444,46 @@ namespace {
             } else if constexpr (_Mode == _Mode_max) {
                 return _Cur_max_val;
             } else {
-                using _Rx = std::conditional_t<_Sign, typename _Traits::_Minmax_i_t, typename _Traits::_Minmax_u_t>;
+                using _Rx =
+                    std::conditional_t<_Is_signed, typename _Traits::_Minmax_i_t, typename _Traits::_Minmax_u_t>;
                 return _Rx{_Cur_min_val, _Cur_max_val};
             }
         }
 
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
         // TRANSITION, DevCom-10767462
-        template <_Min_max_mode _Mode, class _Traits, bool _Sign>
+        template <_Min_max_mode _Mode, class _Traits, bool _Is_signed>
         auto _Minmax_impl_wrap(const void* const _First, const void* const _Last) noexcept {
-            auto _Rx = _Minmax_impl<_Mode, _Traits, _Sign>(_First, _Last);
+            auto _Rx = _Minmax_impl<_Mode, _Traits, _Is_signed>(_First, _Last);
             _mm256_zeroupper();
             return _Rx;
         }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
-        template <_Min_max_mode _Mode, class _Traits, bool _Sign>
+        template <_Min_max_mode _Mode, class _Traits, bool _Is_signed>
         auto __stdcall _Minmax_disp(const void* const _First, const void* const _Last) noexcept {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
             if (_Byte_length(_First, _Last) >= 32) {
-                return _Minmax_impl<_Mode, typename _Traits::_Neon, _Sign, true>(_First, _Last);
+                return _Minmax_impl<_Mode, typename _Traits::_Neon, _Is_signed, true>(_First, _Last);
             }
 
             if (_Byte_length(_First, _Last) >= 16) {
-                return _Minmax_impl<_Mode, typename _Traits::_Neon, _Sign, false>(_First, _Last);
+                return _Minmax_impl<_Mode, typename _Traits::_Neon, _Is_signed, false>(_First, _Last);
             }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 if constexpr (_Traits::_Avx::_Is_floating) {
-                    return _Minmax_impl_wrap<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
+                    return _Minmax_impl_wrap<_Mode, typename _Traits::_Avx, _Is_signed>(_First, _Last);
                 } else {
-                    return _Minmax_impl<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
+                    return _Minmax_impl<_Mode, typename _Traits::_Avx, _Is_signed>(_First, _Last);
                 }
             }
 
             if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
-                return _Minmax_impl<_Mode, typename _Traits::_Sse, _Sign>(_First, _Last);
+                return _Minmax_impl<_Mode, typename _Traits::_Sse, _Is_signed>(_First, _Last);
             }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
-            return _Minmax_impl<_Mode, typename _Traits::_Scalar, _Sign>(_First, _Last);
+            return _Minmax_impl<_Mode, typename _Traits::_Scalar, _Is_signed>(_First, _Last);
         }
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
@@ -3648,8 +3589,8 @@ namespace {
                     auto _Right = _Traits::_Load(static_cast<const _Ty*>(_First) + _Right_off);
 
                     if constexpr (_Sign_cor) {
-                        _Left  = _Traits::_Sign_correction(_Left, false);
-                        _Right = _Traits::_Sign_correction(_Right, false);
+                        _Left  = _Traits::_Sign_correction(_Left);
+                        _Right = _Traits::_Sign_correction(_Right);
                     }
 
                     const auto _Is_less = _Traits::_Cmp_gt(_Right, _Left);
@@ -3673,8 +3614,8 @@ namespace {
                         auto _Right = _Traits::_Load_mask(static_cast<const _Ty*>(_First) + _Right_off, _Tail_mask);
 
                         if constexpr (_Sign_cor) {
-                            _Left  = _Traits::_Sign_correction(_Left, false);
-                            _Right = _Traits::_Sign_correction(_Right, false);
+                            _Left  = _Traits::_Sign_correction(_Left);
+                            _Right = _Traits::_Sign_correction(_Right);
                         }
 
                         const auto _Is_less = _Traits::_Cmp_gt(_Right, _Left);
@@ -3767,11 +3708,11 @@ const void* __stdcall __std_min_element_8u(const void* const _First, const void*
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
 const void* __stdcall __std_min_element_f_(const void* const _First, const void* const _Last) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_f, false>(_First, _Last);
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_f, true>(_First, _Last);
 }
 
 const void* __stdcall __std_min_element_d_(const void* const _First, const void* const _Last) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_d, false>(_First, _Last);
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_d, true>(_First, _Last);
 }
 
 #ifndef _M_ARM64
@@ -3861,11 +3802,11 @@ const void* __stdcall __std_max_element_8u(const void* const _First, const void*
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
 const void* __stdcall __std_max_element_f_(const void* const _First, const void* const _Last) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_f, false>(_First, _Last);
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_f, true>(_First, _Last);
 }
 
 const void* __stdcall __std_max_element_d_(const void* const _First, const void* const _Last) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_d, false>(_First, _Last);
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_d, true>(_First, _Last);
 }
 
 #ifndef _M_ARM64
@@ -3955,11 +3896,11 @@ _Min_max_element_t __stdcall __std_minmax_element_8u(const void* const _First, c
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
 _Min_max_element_t __stdcall __std_minmax_element_f_(const void* const _First, const void* const _Last) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_f, false>(_First, _Last);
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_f, true>(_First, _Last);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_d_(const void* const _First, const void* const _Last) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_d, false>(_First, _Last);
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_d, true>(_First, _Last);
 }
 
 #ifndef _M_ARM64
