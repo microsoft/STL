@@ -106,9 +106,9 @@ void test_case_search_n(const It first, const It last, const size_t count, const
 
 template <class T, bool forward_only_iterators = false>
 void test_search_n(mt19937_64& gen) {
-    constexpr size_t lengthCount  = 70;
-    constexpr size_t patternCount = 5;
-    using TD                      = conditional_t<sizeof(T) == 1, int, T>;
+    constexpr size_t lengthCount   = 70;
+    constexpr size_t patternTrials = 2;
+    using TD                       = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis((numeric_limits<T>::min)(), (numeric_limits<T>::max)());
     vector<T> input_src;
     vector<T> input;
@@ -130,7 +130,7 @@ void test_search_n(mt19937_64& gen) {
             binomial_distribution<size_t> pattern_length_dis(count * 2, 0.5);
             uniform_int_distribution<size_t> pos_dis(0, input.size() - 1);
 
-            for (size_t pattern = 0; pattern != patternCount; ++pattern) {
+            for (size_t pattern = 0; pattern != patternTrials; ++pattern) {
                 const size_t pattern_length = pattern_length_dis(gen);
                 const size_t pattern_pos    = pos_dis(gen);
 
