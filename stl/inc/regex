@@ -1334,59 +1334,44 @@ struct _Buf { // character buffer
         return _Chrs;
     }
 
-    void _Insert2(_Elem _Ch) { // append _Ch
-        if (_Sz <= _Nchrs) {
-            _Expand2(1U);
-        }
+    void _Assign(const _Elem* _First, const _Elem* _Last) { // assign character sequence to buffer
+        _STL_INTERNAL_CHECK(!_Chrs);
 
-        _Chrs[_Nchrs++] = _Ch;
-    }
-
-    template <class _FwdIt>
-    void _Insert2(_FwdIt _First, _FwdIt _Last) { // append multiple characters
-        while (_First != _Last) {
-            _Insert2(*_First++);
-        }
-    }
-
-private:
-    unsigned int _Calculate_expansion(unsigned int _Increase) const {
         constexpr size_t _Max_elems      = static_cast<size_t>(-1) / sizeof(_Elem);
         constexpr unsigned int _Max_uint = static_cast<unsigned int>(-1);
         constexpr unsigned int _Max      = _Max_elems < _Max_uint ? static_cast<unsigned int>(_Max_elems) : _Max_uint;
 
-        constexpr unsigned int _Buf_incr = 16U;
-
-        if (_Increase < _Buf_incr) {
-            _Increase = _Buf_incr;
-        }
-
-        if (_Increase < (_Sz >> 1)) {
-            _Increase = _Sz >> 1;
-        }
-
-        if (_Max <= _Increase || _Max - _Increase <= _Sz) {
-            return _Max;
-        }
-
-        return _Sz + _Increase;
-    }
-
-    void _Expand2(const unsigned int _Min_increase) { // expand buffer by at least _Min_increase
-        const unsigned int _Len = _Calculate_expansion(_Min_increase);
-        if (_Len - _Sz < _Min_increase) {
-            _Xregex_error(regex_constants::error_space);
-        }
-        _Elem* _Tmp = static_cast<_Elem*>(_CSTD realloc(_Chrs, sizeof(_Elem) * static_cast<size_t>(_Len)));
-        if (!_Tmp) {
+        const auto _Diff = _Last - _First;
+        if (_Diff < 0 || static_cast<size_t>(_Diff) > _Max) {
             _Xregex_error(regex_constants::error_space);
         }
 
-        _Chrs = _Tmp;
-        _Sz   = _Len;
+        const auto _Len = static_cast<unsigned int>(_Diff);
+        _Chrs           = static_cast<_Elem*>(_CSTD malloc(sizeof(_Elem) * _Len));
+        if (!_Chrs) {
+            _Xregex_error(regex_constants::error_space);
+        }
+
+        _Sz = _Len;
+        _STD _Uninitialized_copy_unchecked(_First, _Last, _Chrs);
+        _Nchrs = _Len;
     }
 
-    unsigned int _Sz    = 0;
+    void _Assign(_Elem _Ch) { // assign single character to buffer
+        _STL_INTERNAL_CHECK(!_Chrs);
+
+        _Chrs = static_cast<_Elem*>(_CSTD malloc(sizeof(_Elem)));
+        if (!_Chrs) {
+            _Xregex_error(regex_constants::error_space);
+        }
+
+        _Sz    = 1U;
+        *_Chrs = _Ch;
+        _Nchrs = 1U;
+    }
+
+private:
+    unsigned int _Sz    = 0; // TRANSITION, ABI: preserved for binary compatibility
     unsigned int _Nchrs = 0;
     _Elem* _Chrs        = nullptr;
 };
@@ -3363,7 +3348,7 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Emit_str_node() { // emit string node
 
     auto _Node = new _Node_str<_Elem>;
     _Link_node(_Node);
-    _Node->_Data._Insert2(_Chars.data(), _Chars.data() + _Chars.size());
+    _Node->_Data._Assign(_Chars.data(), _Chars.data() + _Chars.size());
     _Chars.clear();
 }
 
@@ -3396,13 +3381,13 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Finalize_class() { // finalize bracke
 
     if (!_Chars.empty()) {
         _Node->_Large = new _Buf<_Elem>;
-        _Node->_Large->_Insert2(_Chars.data(), _Chars.data() + _Chars.size());
+        _Node->_Large->_Assign(_Chars.data(), _Chars.data() + _Chars.size());
         _Chars.clear();
     }
 
     if (!_Ranges.empty()) {
         _Node->_Ranges = new _Buf<_Elem>;
-        _Node->_Ranges->_Insert2(_Ranges.data(), _Ranges.data() + _Ranges.size());
+        _Node->_Ranges->_Assign(_Ranges.data(), _Ranges.data() + _Ranges.size());
         _Ranges.clear();
     }
 
@@ -3608,7 +3593,7 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Fill_coll_sequence_from_buf(
             _Seq->_Next = _Seq_start;
             _Seq_start  = _Seq;
             auto _Start = _Elems_of_length.data();
-            _Seq->_Data._Insert2(_Start, _Start + _Elems_of_length.size());
+            _Seq->_Data._Assign(_Start, _Start + _Elems_of_length.size());
             _Elems_of_length.clear();
         }
 
@@ -3749,7 +3734,7 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_nongroup_rep(int _Min, int _Max, 
         _Emit_str_node();
         auto _Node = new _Node_str<_Elem>;
         _Link_node(_Node);
-        _Node->_Data._Insert2(_Last_char);
+        _Node->_Data._Assign(_Last_char);
     }
 
     return _Generate_rep(_Current, _Min, _Max, _Greedy);
