@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
+#include <numeric>
 #include <random>
 #include <type_traits>
 #include <vector>
@@ -106,7 +107,8 @@ void test_case_search_n(const It first, const It last, const size_t count, const
 
 template <class T, bool forward_only_iterators = false>
 void test_search_n(mt19937_64& gen) {
-    constexpr size_t lengthCount   = 70;
+    constexpr size_t countBound    = 70;
+    constexpr size_t countTrials   = 10;
     constexpr size_t patternTrials = 2;
     using TD                       = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis((numeric_limits<T>::min)(), (numeric_limits<T>::max)());
@@ -115,8 +117,16 @@ void test_search_n(mt19937_64& gen) {
     input_src.reserve(dataCount);
     input.reserve(dataCount);
 
+    vector<size_t> count_vec(countBound);
+    iota(count_vec.begin(), count_vec.end(), size_t{0});
+
     for (;;) {
-        for (size_t count = 0; count != lengthCount; ++count) {
+        shuffle(count_vec.begin(), count_vec.end(), gen); // shuffle before each round of trials
+
+        for (size_t trial = 0; trial != countTrials; ++trial) {
+            assert(trial < count_vec.size());
+            const size_t count = count_vec[trial]; // sample a value in [0, countBound) without reuse
+
             input = input_src;
 
             const T val = static_cast<T>(dis(gen));
