@@ -1506,7 +1506,11 @@ void test_vector_algorithms(mt19937_64& gen) {
 
     {
         const auto start_time = steady_clock::now();
+#if _VECTORIZED_ROTATE
         test_rotate<char>(gen, 20000); // one very long rotate run to exercise some strategies
+#else // ^^^ _VECTORIZED_ROTATE / !_VECTORIZED_ROTATE vvv
+        test_rotate<char>(gen);
+#endif // ^^^ !_VECTORIZED_ROTATE ^^^
         test_rotate<signed char>(gen);
         test_rotate<unsigned char>(gen);
         test_rotate<short>(gen);
