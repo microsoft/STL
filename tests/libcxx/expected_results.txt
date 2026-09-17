@@ -1161,9 +1161,6 @@ std/algorithms/alg.sorting/alg.set.operations/set.symmetric.difference/ranges_se
 std/algorithms/alg.sorting/alg.set.operations/set.union/ranges_set_union.pass.cpp:0 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/set.union/ranges_set_union.pass.cpp:1 SKIPPED
 
-# Not analyzed. Clang emits a -Wundefined-inline warning.
-std/utilities/variant/variant.relops/three_way.pass.cpp:2 FAIL
-
 # Not analyzed.
 # MSVC error C2719: '_Fun_': formal parameter with requested alignment of 128 won't be aligned
 # Clang error: unknown attribute 'no_unique_address' ignored [-Werror,-Wunknown-attributes]
