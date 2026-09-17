@@ -690,3 +690,9 @@ int main() {
 #endif // ^^^ _HAS_CXX26 && defined(_MSVC_LIBC_MATH) ^^^
 #endif // ^^^ defined(__cpp_lib_constexpr_cmath) ^^^
 }
+
+#ifdef _USE_MATH_DEFINES
+static_assert(static_cast<int>(M_PI * 100.0) == 314, "Unexpected value for M_PI, reboot universe and try again.");
+#elif defined(M_PI)
+static_assert(false, "When _USE_MATH_DEFINES is not defined, M_PI should not be defined.");
+#endif // ^^^ defined(M_PI) ^^^
