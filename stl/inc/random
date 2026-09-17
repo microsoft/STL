@@ -4190,7 +4190,7 @@ public:
     }
 
     _NODISCARD friend bool operator==(const discrete_distribution& _Left, const discrete_distribution& _Right) {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -4353,7 +4353,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const piecewise_constant_distribution& _Left, const piecewise_constant_distribution& _Right) {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -4628,7 +4628,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const piecewise_linear_distribution& _Left, const piecewise_linear_distribution& _Right) {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
