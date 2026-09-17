@@ -813,56 +813,29 @@ _INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 template <class>
 constexpr bool _Disable_ASan_container_annotations_for_allocator = false;
 
-struct _Asan_aligned_pointers {
-    const void* _First;
-    const void* _End;
-
-    _NODISCARD constexpr const void* _Clamp_to_end(const void* _Mid) const noexcept {
-        _STL_INTERNAL_CHECK(_Mid >= _First);
-        if (_Mid > _End) {
-            return _End;
-        } else {
-            return _Mid;
-        }
-    }
-};
-
 // The way that ASan shadow memory works, each eight byte block of memory ("shadow memory section")
 // has a single byte to mark it as either poison or valid.
 // Each section has 0 to 8 "valid" bytes followed by poison bytes, so:
 // ```
-//   [ v v v p p p p p ]
+//   [ v v v p p p p p ] (encoded as 03 for 'first 3 bytes are valid')
 // ```
 // or
 // ```
-//   [ v v v v v v v v ]
+//   [ v v v v v v v v ] (encoded as 00 for 'all bytes valid')
 // ```
 // are okay, but
 // ```
 //   [ p p p p v v v v ]
 // ```
-// is not.
-//
-// This function exists to fix up `first` and `end` pointers so that one can call
-// `__sanitizer_annotate_contiguous_container`:
-//
-//   - `__sanitizer_annotate_contiguous_container` checks that `first` is aligned to an 8-byte boundary
-//   - if `end` is not aligned to an 8-byte boundary, `__sanitizer_annotate_contiguous_container` still poisons the
-//     remaining bytes in the shadow memory section.
-//
-// Because of the second property, we can only mark poison up to the final aligned address before the true `last`.
-// Otherwise, we'd poison the memory _after_ `last` as well.
-// For the first property, we can assume that everything before `first` in the shadow memory section is valid
-// (since otherwise we couldn't mark `first` valid), and so we just return back the first address in
-// `first`'s shadow memory section.
+// is not. There are no semantics for describing the first X bytes as being poisoned.
 //
 // ### Example
 //
 // ```cpp
 // struct alignas(8) cat {
-//     int meow; // bytes [0, 4)
+//     int meow;        // bytes [0, 4)
 //     char buffer[16]; // bytes [4, 20)
-//     int purr; // bytes [20, 24)
+//     int purr;        // bytes [20, 24)
 // };
 // ```
 //
@@ -883,41 +856,90 @@ struct _Asan_aligned_pointers {
 //    |  meow |               buffer                | purr  |
 //   [ v v v v p p p p ][ p p p p p p p p ][ v v v v v v v v ]
 //           sm1                sm2                sm3
+// Shadow:    04                fc                 00
 // ```
 //
-// We call `aligned = _Get_asan_aligned_first_end(cat.buffer, cat.buffer + 16);`, and we get back
+// For this, we can call `__sanitizer_annotate_contiguous_container`.
+// Since container poisoning is a set of valid bytes followed by a set of poisoned bytes, we describe this fully to ASan
+// by passing a pointer to the first valid byte, the middle pointer (pointing to the first poisoned byte), and the end
+// pointer. For the unaligned beginning pointer, ASan will handle the unalignment assuming the bytes to the left are
+// valid. For the unaligned end pointer, since there are no 'first X bytes are poisoned' semantics, ASan will just mark
+// the entire shadow memory section as valid.
 //
-// ```cpp
-// aligned = {
-//     ._First = &cat.meow,
-//     ._End = cat.buffer + 12,
-// };
-// ```
-//
-// Then, we poison as much of buffer as we can via
+// To generate the above shadow memory state, we would call like this:
 //
 // ```cpp
 // __sanitizer_annotate_contiguous_container(
-//     aligned._First,
-//     aligned._End,
-//     cat.buffer,
-//     aligned._Clamp_to_end(cat.buffer + 16));
+//     cat.buffer,      // First
+//     cat.buffer + 16  // End
+//     cat.buffer + 16, // Old middle pointer
+//     cat.buffer);     // New middle pointer
 // ```
 //
-// We are allowed to assume that `&cat.meow` is valid, since otherwise `cat.buffer + [0, 4)` could not be valid.
-// We cannot poison up to `cat.buffer + 16`, since then `&purr` could not be valid.
-// Thus, this results in the shadow memory state from the second example.
-_NODISCARD inline _Asan_aligned_pointers _Get_asan_aligned_first_end(
-    const void* const _First, const void* const _End) noexcept {
-    return {
-        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_First) & ~_Asan_granularity_mask),
-        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_End) & ~_Asan_granularity_mask),
-    };
-}
-
-// When we can assume that the allocator we are using will always align allocations to the 8-byte,
-// we can simply push the `_End` pointer to the end of the shadow memory section.
-// This is _not_ safe in general (see _Get_asan_aligned_first_end's comment for why).
+// Correctly describing the old middle pointer is important since ASan will not check state before the existing shadow
+// memory state performing the transformation.
+//
+// In cases where unalignment must be supported, we can miss coverage due to ASan's 8-byte alignment requirements.
+// However, most allocators on Windows will only return 8-byte aligned pointers. This gives us an opportunity to provide
+// extra coverage, because if everything is 8-byte aligned, we can extend, instead of reduce, the concept of the end of
+// the buffer to the next 8-byte aligned boundary. _Get_asan_aligned_after is a helper function provided for this.
+//
+// ### Example
+//
+// Let's say we took the above struct, aligned the members, and shortened the buffer to 12, and left our annotation code
+// the same.
+// ```cpp
+// struct alignas(8) cat {
+//     int alignas(8) meow;        // bytes [0, 4)
+//     char alignas(8) buffer[12]; // bytes [8, 20)
+//     int alignas(8) purr;        // bytes [24, 28)
+// };
+//
+// ...
+//
+// __sanitizer_annotate_contiguous_container(
+//     cat.buffer,      // First
+//     cat.buffer + 12  // End
+//     cat.buffer + 12, // Old middle pointer
+//     cat.buffer       // New middle pointer
+// ```
+//
+// Under this, the shadow buffer would look like this:
+// ```
+//   |  meow |  pad     |  buffer                  |  pad     | purr  | pad    |
+//  [ v v v v v v v v ][ p p p p p p p p ][ v v v v v v v v ][ v v v v v v v v ]
+//          sm1                sm2                sm3                sm4
+// Shadow:  00                 fc                 00                 00
+// ```
+//
+// Currently, there is no coverage on the last 4 bytes of the buffer due to the previous rules,
+// but when everything is 8-byte aligned, we can use the fact there is padding to extend the poisoning.
+//
+// ```
+// char *end = _Get_asan_aligned_after(cat.buffer + 12);
+// __sanitizer_annotate_contiguous_container(
+//     cat.buffer,      // First
+//     end,             // End
+//     end,             // Old middle pointer
+//     cat.buffer);     // New middle pointer
+// ```
+//
+// With this adjustment, the shadow has full coverage of the buffer, and we are not poisoning any memory that will be
+// accessed, just padding.
+// ```
+//   |  meow |  pad     |  buffer                  |  pad     | purr  | pad    |
+//  [ v v v v v v v v ][ p p p p p p p p ][ p p p p p p p p ][ v v v v v v v v ]
+//          sm1                sm2                sm3                sm4
+// Shadow:  00                 fc                 fc                 00
+// ```
+//
+// This example is conceptually the same for why we can apply this technique in general to any allocator guaranteed to
+// only return 8-byte aligned pointers.
+//
+// Note that caution is warranted with this technique, particularly when differentiating between clearing the
+// annotation (e.g. during destruction when we want everything valid) and setting the annotation to be fully valid
+// (which would leave poisoning bytes in the padding).
+//
 _NODISCARD inline const void* _Get_asan_aligned_after(const void* const _End) noexcept {
     return reinterpret_cast<const void*>(
         (reinterpret_cast<uintptr_t>(_End) + _Asan_granularity_mask) & ~_Asan_granularity_mask);
