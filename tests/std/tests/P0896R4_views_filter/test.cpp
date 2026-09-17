@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstddef>
 #include <forward_list>
@@ -374,6 +375,55 @@ static_assert(CanArrow<
     ranges::iterator_t<decltype(ranges::subrange<arrowed_iterator<arrow_status::good>>{} | views::filter(is_even))>>);
 static_assert(!CanArrow<
     ranges::iterator_t<decltype(ranges::subrange<arrowed_iterator<arrow_status::bad>>{} | views::filter(is_even))>>);
+
+// Verify filter_view with a common underlying range.
+using CommonStorage = array<int, 6>;
+using CommonBase    = ranges::ref_view<CommonStorage>;
+using CommonView    = ranges::filter_view<CommonBase, Pred>;
+
+using CommonBaseIterator = ranges::iterator_t<CommonBase>;
+using CommonIterator     = ranges::iterator_t<CommonView>;
+
+// P3059R2: users must not be able to construct filter_view::iterator
+// directly from the parent filter_view and the underlying iterator.
+static_assert(!constructible_from<CommonIterator, CommonView&, CommonBaseIterator>);
+
+// The iterator must remain copyable and movable through its public interface.
+static_assert(copy_constructible<CommonIterator>);
+static_assert(move_constructible<CommonIterator>);
+// A sentinel type for constructing a non-common underlying range.
+struct int_sentinel {
+    int* last = nullptr;
+
+    friend constexpr bool operator==(int* const iterator, const int_sentinel sentinel) noexcept {
+        return iterator == sentinel.last;
+    }
+
+    friend constexpr bool operator==(const int_sentinel sentinel, int* const iterator) noexcept {
+        return iterator == sentinel.last;
+    }
+};
+
+static_assert(sentinel_for<int_sentinel, int*>);
+
+// filter_view has a distinct sentinel only when its underlying range is
+// not a common_range.
+using NonCommonBase = ranges::subrange<int*, int_sentinel>;
+using NonCommonView = ranges::filter_view<NonCommonBase, Pred>;
+
+using NonCommonBaseIterator = ranges::iterator_t<NonCommonBase>;
+using NonCommonIterator     = ranges::iterator_t<NonCommonView>;
+using NonCommonSentinel     = ranges::sentinel_t<NonCommonView>;
+
+static_assert(!ranges::common_range<NonCommonBase>);
+static_assert(!same_as<NonCommonIterator, NonCommonSentinel>);
+
+// P3059R2: the iterator constructor must not be publicly accessible.
+static_assert(!constructible_from<NonCommonIterator, NonCommonView&, NonCommonBaseIterator>);
+
+// P3059R2: the sentinel constructor taking the parent filter_view must
+// not be publicly accessible.
+static_assert(!constructible_from<NonCommonSentinel, NonCommonView&>);
 
 int main() {
     // Validate views
