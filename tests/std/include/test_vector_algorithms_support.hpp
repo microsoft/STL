@@ -72,7 +72,7 @@ template <class TestFunc>
 void run_tests_with_different_isa_levels(TestFunc tests) {
     tests();
 
-#if !defined(_M_CEE_PURE)
+#if _USE_STD_VECTOR_ALGORITHMS
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     // No STL_TEST_DOWNLEVEL_MACHINE logic here because MSVC-internal testing currently doesn't support SVE
 
@@ -100,7 +100,7 @@ void run_tests_with_different_isa_levels(TestFunc tests) {
 
     __isa_enabled = original_isa;
 #endif // ^^^ defined(_M_IX86) || defined(_M_X64) ^^^
-#endif // ^^^ !defined(_M_CEE_PURE) ^^^
+#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
 }
 
 template <class TestFunc>
