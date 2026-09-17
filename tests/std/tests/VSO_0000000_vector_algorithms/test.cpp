@@ -38,6 +38,10 @@ using chrono::steady_clock;
 
 map<pair<int, string>, steady_clock::duration> elapsed_time;
 
+#if defined(TEST_PART) && (TEST_PART < 1 || TEST_PART > 4)
+static_assert(false, "If TEST_PART is defined, it must be within [1, 4].");
+#endif
+
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
@@ -1255,6 +1259,9 @@ void test_swap_arrays(mt19937_64& gen) {
 }
 
 void test_vector_algorithms(mt19937_64& gen) {
+    (void) gen;
+
+#if !defined(TEST_PART) || TEST_PART == 1
     {
         const auto start_time = steady_clock::now();
         test_adjacent_difference<char>(gen);
@@ -1378,7 +1385,9 @@ void test_vector_algorithms(mt19937_64& gen) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(60, "search")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == 1 ^^^
 
+#if !defined(TEST_PART) || TEST_PART == 2
     {
         const auto start_time = steady_clock::now();
         test_min_max_element<char>(gen);
@@ -1441,7 +1450,9 @@ void test_vector_algorithms(mt19937_64& gen) {
         elapsed_time[make_pair(90, "includes")] += finish_time - start_time;
     }
 #endif // _HAS_CXX17
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == 2 ^^^
 
+#if !defined(TEST_PART) || TEST_PART == 3
     {
         const auto start_time = steady_clock::now();
         test_replace<char>(gen);
@@ -1573,6 +1584,7 @@ void test_vector_algorithms(mt19937_64& gen) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(170, "test_swap_arrays")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == 3 ^^^
 }
 
 template <typename Container1, typename Container2>
@@ -2142,6 +2154,7 @@ int main() {
 #else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
         test_vector_algorithms(gen);
 
+#if !defined(TEST_PART) || TEST_PART == 4
         {
             const auto start_time = steady_clock::now();
             test_various_containers();
@@ -2162,6 +2175,7 @@ int main() {
             const auto finish_time = steady_clock::now();
             elapsed_time[make_pair(1020, "test_string")] += finish_time - start_time;
         }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == 4 ^^^
 #endif // ^^^ normal test coverage ^^^
     });
 
