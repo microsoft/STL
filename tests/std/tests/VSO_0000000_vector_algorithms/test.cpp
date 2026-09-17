@@ -5,14 +5,17 @@
 #include <array>
 #include <bitset>
 #include <cassert>
+#include <chrono>
 #include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <deque>
 #include <functional>
+#include <iostream>
 #include <limits>
 #include <list>
+#include <map>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -31,6 +34,9 @@
 #include <test_vector_algorithms_support.hpp>
 
 using namespace std;
+using chrono::steady_clock;
+
+map<pair<int, string>, steady_clock::duration> elapsed_time;
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 #ifdef __clang__
@@ -1249,234 +1255,324 @@ void test_swap_arrays(mt19937_64& gen) {
 }
 
 void test_vector_algorithms(mt19937_64& gen) {
-    test_adjacent_difference<char>(gen);
-    test_adjacent_difference<signed char>(gen);
-    test_adjacent_difference<unsigned char>(gen);
-    test_adjacent_difference<short>(gen);
-    test_adjacent_difference<unsigned short>(gen);
-    test_adjacent_difference<int>(gen);
-    test_adjacent_difference<unsigned int>(gen);
-    test_adjacent_difference<long long>(gen);
-    test_adjacent_difference<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_adjacent_difference<char>(gen);
+        test_adjacent_difference<signed char>(gen);
+        test_adjacent_difference<unsigned char>(gen);
+        test_adjacent_difference<short>(gen);
+        test_adjacent_difference<unsigned short>(gen);
+        test_adjacent_difference<int>(gen);
+        test_adjacent_difference<unsigned int>(gen);
+        test_adjacent_difference<long long>(gen);
+        test_adjacent_difference<unsigned long long>(gen);
 
-    test_adjacent_difference_with_heterogeneous_types();
+        test_adjacent_difference_with_heterogeneous_types();
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(0, "adjacent_difference")] += finish_time - start_time;
+    }
 
-    test_adjacent_find<char>(gen);
-    test_adjacent_find<signed char>(gen);
-    test_adjacent_find<unsigned char>(gen);
-    test_adjacent_find<short>(gen);
-    test_adjacent_find<unsigned short>(gen);
-    test_adjacent_find<int>(gen);
-    test_adjacent_find<unsigned int>(gen);
-    test_adjacent_find<long long>(gen);
-    test_adjacent_find<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_adjacent_find<char>(gen);
+        test_adjacent_find<signed char>(gen);
+        test_adjacent_find<unsigned char>(gen);
+        test_adjacent_find<short>(gen);
+        test_adjacent_find<unsigned short>(gen);
+        test_adjacent_find<int>(gen);
+        test_adjacent_find<unsigned int>(gen);
+        test_adjacent_find<long long>(gen);
+        test_adjacent_find<unsigned long long>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(10, "adjacent_find")] += finish_time - start_time;
+    }
 
-    test_count<char>(gen);
-    test_count<signed char>(gen);
-    test_count<unsigned char>(gen);
-    test_count<short>(gen);
-    test_count<unsigned short>(gen);
-    test_count<int>(gen);
-    test_count<unsigned int>(gen);
-    test_count<long long>(gen);
-    test_count<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_count<char>(gen);
+        test_count<signed char>(gen);
+        test_count<unsigned char>(gen);
+        test_count<short>(gen);
+        test_count<unsigned short>(gen);
+        test_count<int>(gen);
+        test_count<unsigned int>(gen);
+        test_count<long long>(gen);
+        test_count<unsigned long long>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(20, "count")] += finish_time - start_time;
+    }
 
-    test_find<char>(gen);
-    test_find<signed char>(gen);
-    test_find<unsigned char>(gen);
-    test_find<short>(gen);
-    test_find<unsigned short>(gen);
-    test_find<int>(gen);
-    test_find<unsigned int>(gen);
-    test_find<long long>(gen);
-    test_find<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_find<char>(gen);
+        test_find<signed char>(gen);
+        test_find<unsigned char>(gen);
+        test_find<short>(gen);
+        test_find<unsigned short>(gen);
+        test_find<int>(gen);
+        test_find<unsigned int>(gen);
+        test_find<long long>(gen);
+        test_find<unsigned long long>(gen);
 
 #if _HAS_CXX20
-    test_gh_4449<uint8_t>();
-    test_gh_4449<uint16_t>();
-    test_gh_4449<uint32_t>();
-    test_gh_4449<uint64_t>();
+        test_gh_4449<uint8_t>();
+        test_gh_4449<uint16_t>();
+        test_gh_4449<uint32_t>();
+        test_gh_4449<uint64_t>();
 #endif // _HAS_CXX20
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(30, "find")] += finish_time - start_time;
+    }
 
 #if _HAS_CXX23
-    test_find_last<char>(gen);
-    test_find_last<signed char>(gen);
-    test_find_last<unsigned char>(gen);
-    test_find_last<short>(gen);
-    test_find_last<unsigned short>(gen);
-    test_find_last<int>(gen);
-    test_find_last<unsigned int>(gen);
-    test_find_last<long long>(gen);
-    test_find_last<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_find_last<char>(gen);
+        test_find_last<signed char>(gen);
+        test_find_last<unsigned char>(gen);
+        test_find_last<short>(gen);
+        test_find_last<unsigned short>(gen);
+        test_find_last<int>(gen);
+        test_find_last<unsigned int>(gen);
+        test_find_last<long long>(gen);
+        test_find_last<unsigned long long>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(40, "find_last")] += finish_time - start_time;
+    }
 #endif // _HAS_CXX23
 
-    test_find_first_of<char>(gen);
-    test_find_first_of<signed char>(gen);
-    test_find_first_of<unsigned char>(gen);
-    test_find_first_of<short>(gen);
-    test_find_first_of<unsigned short>(gen);
-    test_find_first_of<int>(gen);
-    test_find_first_of<unsigned int>(gen);
-    test_find_first_of<long long>(gen);
-    test_find_first_of<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_find_first_of<char>(gen);
+        test_find_first_of<signed char>(gen);
+        test_find_first_of<unsigned char>(gen);
+        test_find_first_of<short>(gen);
+        test_find_first_of<unsigned short>(gen);
+        test_find_first_of<int>(gen);
+        test_find_first_of<unsigned int>(gen);
+        test_find_first_of<long long>(gen);
+        test_find_first_of<unsigned long long>(gen);
 
-    test_find_first_of_containers<vector<char>, vector<signed char>>();
-    test_find_first_of_containers<vector<char>, vector<unsigned char>>();
-    test_find_first_of_containers<vector<wchar_t>, vector<char>>();
-    test_find_first_of_containers<const vector<char>, const vector<char>>();
-    test_find_first_of_containers<vector<char>, const vector<char>>();
-    test_find_first_of_containers<const vector<wchar_t>, vector<wchar_t>>();
-    test_find_first_of_containers<vector<char>, vector<int>>();
+        test_find_first_of_containers<vector<char>, vector<signed char>>();
+        test_find_first_of_containers<vector<char>, vector<unsigned char>>();
+        test_find_first_of_containers<vector<wchar_t>, vector<char>>();
+        test_find_first_of_containers<const vector<char>, const vector<char>>();
+        test_find_first_of_containers<vector<char>, const vector<char>>();
+        test_find_first_of_containers<const vector<wchar_t>, vector<wchar_t>>();
+        test_find_first_of_containers<vector<char>, vector<int>>();
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(50, "find_first_of")] += finish_time - start_time;
+    }
 
-    test_search<char>(gen);
-    test_search<signed char>(gen);
-    test_search<unsigned char>(gen);
-    test_search<short>(gen);
-    test_search<unsigned short>(gen);
-    test_search<int>(gen);
-    test_search<unsigned int>(gen);
-    test_search<long long>(gen);
-    test_search<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_search<char>(gen);
+        test_search<signed char>(gen);
+        test_search<unsigned char>(gen);
+        test_search<short>(gen);
+        test_search<unsigned short>(gen);
+        test_search<int>(gen);
+        test_search<unsigned int>(gen);
+        test_search<long long>(gen);
+        test_search<unsigned long long>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(60, "search")] += finish_time - start_time;
+    }
 
-    test_min_max_element<char>(gen);
-    test_min_max_element<signed char>(gen);
-    test_min_max_element<unsigned char>(gen);
-    test_min_max_element<short>(gen);
-    test_min_max_element<unsigned short>(gen);
-    test_min_max_element<int>(gen);
-    test_min_max_element<unsigned int>(gen);
-    test_min_max_element<long long>(gen);
-    test_min_max_element<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_min_max_element<char>(gen);
+        test_min_max_element<signed char>(gen);
+        test_min_max_element<unsigned char>(gen);
+        test_min_max_element<short>(gen);
+        test_min_max_element<unsigned short>(gen);
+        test_min_max_element<int>(gen);
+        test_min_max_element<unsigned int>(gen);
+        test_min_max_element<long long>(gen);
+        test_min_max_element<unsigned long long>(gen);
 
-    test_min_max_element_pointers(gen);
+        test_min_max_element_pointers(gen);
 
-    test_min_max_element_special_cases<int8_t, 16>(); // SSE2 vectors
-    test_min_max_element_special_cases<int8_t, 32>(); // AVX2 vectors
-    test_min_max_element_special_cases<int8_t, 64>(); // AVX512 vectors
+        test_min_max_element_special_cases<int8_t, 16>(); // SSE2 vectors
+        test_min_max_element_special_cases<int8_t, 32>(); // AVX2 vectors
+        test_min_max_element_special_cases<int8_t, 64>(); // AVX512 vectors
 
-    // Test VSO-1558536, a regression caused by GH-2447 that was specific to 64-bit types on x86.
-    test_case_min_max_element(vector<uint64_t>{10, 0x8000'0000ULL, 20, 30});
-    test_case_min_max_element(vector<uint64_t>{10, 20, 0xD000'0000'B000'0000ULL, 30, 0xC000'0000'A000'0000ULL});
-    test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
-    test_case_min_max_element(
-        vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
+        // Test VSO-1558536, a regression caused by GH-2447 that was specific to 64-bit types on x86.
+        test_case_min_max_element(vector<uint64_t>{10, 0x8000'0000ULL, 20, 30});
+        test_case_min_max_element(vector<uint64_t>{10, 20, 0xD000'0000'B000'0000ULL, 30, 0xC000'0000'A000'0000ULL});
+        test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
+        test_case_min_max_element(
+            vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
 
-    test_gh_6373();
+        test_gh_6373();
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(70, "minmax_element")] += finish_time - start_time;
+    }
 
-    test_is_sorted_until<char>(gen);
-    test_is_sorted_until<signed char>(gen);
-    test_is_sorted_until<unsigned char>(gen);
-    test_is_sorted_until<short>(gen);
-    test_is_sorted_until<unsigned short>(gen);
-    test_is_sorted_until<int>(gen);
-    test_is_sorted_until<unsigned int>(gen);
-    test_is_sorted_until<long long>(gen);
-    test_is_sorted_until<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_is_sorted_until<char>(gen);
+        test_is_sorted_until<signed char>(gen);
+        test_is_sorted_until<unsigned char>(gen);
+        test_is_sorted_until<short>(gen);
+        test_is_sorted_until<unsigned short>(gen);
+        test_is_sorted_until<int>(gen);
+        test_is_sorted_until<unsigned int>(gen);
+        test_is_sorted_until<long long>(gen);
+        test_is_sorted_until<unsigned long long>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(80, "is_sorted_until")] += finish_time - start_time;
+    }
 
     // std::includes has been there forever, but we use std::sample in the test, and that one is C++17
 #if _HAS_CXX17
-    test_includes<char>(gen);
-    test_includes<signed char>(gen);
-    test_includes<unsigned char>(gen);
-    test_includes<short>(gen);
-    test_includes<unsigned short>(gen);
-    test_includes<int>(gen);
-    test_includes<unsigned int>(gen);
-    test_includes<long long>(gen);
-    test_includes<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_includes<char>(gen);
+        test_includes<signed char>(gen);
+        test_includes<unsigned char>(gen);
+        test_includes<short>(gen);
+        test_includes<unsigned short>(gen);
+        test_includes<int>(gen);
+        test_includes<unsigned int>(gen);
+        test_includes<long long>(gen);
+        test_includes<unsigned long long>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(90, "includes")] += finish_time - start_time;
+    }
 #endif // _HAS_CXX17
 
-    test_replace<char>(gen);
-    test_replace<signed char>(gen);
-    test_replace<unsigned char>(gen);
-    test_replace<short>(gen);
-    test_replace<unsigned short>(gen);
-    test_replace<int>(gen);
-    test_replace<unsigned int>(gen);
-    test_replace<long long>(gen);
-    test_replace<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_replace<char>(gen);
+        test_replace<signed char>(gen);
+        test_replace<unsigned char>(gen);
+        test_replace<short>(gen);
+        test_replace<unsigned short>(gen);
+        test_replace<int>(gen);
+        test_replace<unsigned int>(gen);
+        test_replace<long long>(gen);
+        test_replace<unsigned long long>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(100, "replace")] += finish_time - start_time;
+    }
 
-    test_reverse<char>(gen);
-    test_reverse<signed char>(gen);
-    test_reverse<unsigned char>(gen);
-    test_reverse<short>(gen);
-    test_reverse<unsigned short>(gen);
-    test_reverse<int>(gen);
-    test_reverse<unsigned int>(gen);
-    test_reverse<long long>(gen);
-    test_reverse<unsigned long long>(gen);
-    test_reverse<float>(gen);
-    test_reverse<double>(gen);
-    test_reverse<long double>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_reverse<char>(gen);
+        test_reverse<signed char>(gen);
+        test_reverse<unsigned char>(gen);
+        test_reverse<short>(gen);
+        test_reverse<unsigned short>(gen);
+        test_reverse<int>(gen);
+        test_reverse<unsigned int>(gen);
+        test_reverse<long long>(gen);
+        test_reverse<unsigned long long>(gen);
+        test_reverse<float>(gen);
+        test_reverse<double>(gen);
+        test_reverse<long double>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(110, "reverse")] += finish_time - start_time;
+    }
 
-    test_reverse_copy<char>(gen);
-    test_reverse_copy<signed char>(gen);
-    test_reverse_copy<unsigned char>(gen);
-    test_reverse_copy<short>(gen);
-    test_reverse_copy<unsigned short>(gen);
-    test_reverse_copy<int>(gen);
-    test_reverse_copy<unsigned int>(gen);
-    test_reverse_copy<long long>(gen);
-    test_reverse_copy<unsigned long long>(gen);
-    test_reverse_copy<float>(gen);
-    test_reverse_copy<double>(gen);
-    test_reverse_copy<long double>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_reverse_copy<char>(gen);
+        test_reverse_copy<signed char>(gen);
+        test_reverse_copy<unsigned char>(gen);
+        test_reverse_copy<short>(gen);
+        test_reverse_copy<unsigned short>(gen);
+        test_reverse_copy<int>(gen);
+        test_reverse_copy<unsigned int>(gen);
+        test_reverse_copy<long long>(gen);
+        test_reverse_copy<unsigned long long>(gen);
+        test_reverse_copy<float>(gen);
+        test_reverse_copy<double>(gen);
+        test_reverse_copy<long double>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(120, "reverse_copy")] += finish_time - start_time;
+    }
 
-    test_rotate<char>(gen, 20000); // one real long rotate run, as for smaller arrays some strategies aren't executed
-    test_rotate<signed char>(gen);
-    test_rotate<unsigned char>(gen);
-    test_rotate<short>(gen);
-    test_rotate<unsigned short>(gen);
-    test_rotate<int>(gen);
-    test_rotate<unsigned int>(gen);
-    test_rotate<long long>(gen);
-    test_rotate<unsigned long long>(gen);
-    test_rotate<float>(gen);
-    test_rotate<double>(gen);
-    test_rotate<long double>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_rotate<char>(gen, 20000); // one very long rotate run to exercise some strategies
+        test_rotate<signed char>(gen);
+        test_rotate<unsigned char>(gen);
+        test_rotate<short>(gen);
+        test_rotate<unsigned short>(gen);
+        test_rotate<int>(gen);
+        test_rotate<unsigned int>(gen);
+        test_rotate<long long>(gen);
+        test_rotate<unsigned long long>(gen);
+        test_rotate<float>(gen);
+        test_rotate<double>(gen);
+        test_rotate<long double>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(130, "rotate")] += finish_time - start_time;
+    }
 
-    test_remove<char>(gen);
-    test_remove<signed char>(gen);
-    test_remove<unsigned char>(gen);
-    test_remove<short>(gen);
-    test_remove<unsigned short>(gen);
-    test_remove<int>(gen);
-    test_remove<unsigned int>(gen);
-    test_remove<long long>(gen);
-    test_remove<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_remove<char>(gen);
+        test_remove<signed char>(gen);
+        test_remove<unsigned char>(gen);
+        test_remove<short>(gen);
+        test_remove<unsigned short>(gen);
+        test_remove<int>(gen);
+        test_remove<unsigned int>(gen);
+        test_remove<long long>(gen);
+        test_remove<unsigned long long>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(140, "remove")] += finish_time - start_time;
+    }
 
-    test_unique<char>(gen);
-    test_unique<signed char>(gen);
-    test_unique<unsigned char>(gen);
-    test_unique<short>(gen);
-    test_unique<unsigned short>(gen);
-    test_unique<int>(gen);
-    test_unique<unsigned int>(gen);
-    test_unique<long long>(gen);
-    test_unique<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_unique<char>(gen);
+        test_unique<signed char>(gen);
+        test_unique<unsigned char>(gen);
+        test_unique<short>(gen);
+        test_unique<unsigned short>(gen);
+        test_unique<int>(gen);
+        test_unique<unsigned int>(gen);
+        test_unique<long long>(gen);
+        test_unique<unsigned long long>(gen);
 
-    test_unique<long*>(gen);
+        test_unique<long*>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(150, "unique")] += finish_time - start_time;
+    }
 
-    test_swap_ranges<char>(gen);
-    test_swap_ranges<short>(gen);
-    test_swap_ranges<int>(gen);
-    test_swap_ranges<unsigned int>(gen);
-    test_swap_ranges<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_swap_ranges<char>(gen);
+        test_swap_ranges<short>(gen);
+        test_swap_ranges<int>(gen);
+        test_swap_ranges<unsigned int>(gen);
+        test_swap_ranges<unsigned long long>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(160, "swap_ranges")] += finish_time - start_time;
+    }
 
-    test_swap_arrays<uint8_t, 1>(gen);
-    test_swap_arrays<uint16_t, 1>(gen);
-    test_swap_arrays<uint32_t, 1>(gen);
-    test_swap_arrays<uint64_t, 1>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_swap_arrays<uint8_t, 1>(gen);
+        test_swap_arrays<uint16_t, 1>(gen);
+        test_swap_arrays<uint32_t, 1>(gen);
+        test_swap_arrays<uint64_t, 1>(gen);
 
-    test_swap_arrays<uint8_t, 47>(gen);
-    test_swap_arrays<uint16_t, 47>(gen);
-    test_swap_arrays<uint32_t, 47>(gen);
-    test_swap_arrays<uint64_t, 47>(gen);
+        test_swap_arrays<uint8_t, 47>(gen);
+        test_swap_arrays<uint16_t, 47>(gen);
+        test_swap_arrays<uint32_t, 47>(gen);
+        test_swap_arrays<uint64_t, 47>(gen);
 
-    test_swap_arrays<uint8_t, 512>(gen);
-    test_swap_arrays<uint16_t, 512>(gen);
-    test_swap_arrays<uint32_t, 512>(gen);
-    test_swap_arrays<uint64_t, 512>(gen);
+        test_swap_arrays<uint8_t, 512>(gen);
+        test_swap_arrays<uint16_t, 512>(gen);
+        test_swap_arrays<uint32_t, 512>(gen);
+        test_swap_arrays<uint64_t, 512>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(170, "test_swap_arrays")] += finish_time - start_time;
+    }
 }
 
 template <typename Container1, typename Container2>
@@ -2045,9 +2141,39 @@ int main() {
         test_replace<unsigned long long>(gen);
 #else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
         test_vector_algorithms(gen);
-        test_various_containers();
-        test_bitset(gen);
-        test_string(gen);
+
+        {
+            const auto start_time = steady_clock::now();
+            test_various_containers();
+            const auto finish_time = steady_clock::now();
+            elapsed_time[make_pair(1000, "test_various_containers")] += finish_time - start_time;
+        }
+
+        {
+            const auto start_time = steady_clock::now();
+            test_bitset(gen);
+            const auto finish_time = steady_clock::now();
+            elapsed_time[make_pair(1010, "test_bitset")] += finish_time - start_time;
+        }
+
+        {
+            const auto start_time = steady_clock::now();
+            test_string(gen);
+            const auto finish_time = steady_clock::now();
+            elapsed_time[make_pair(1020, "test_string")] += finish_time - start_time;
+        }
 #endif // ^^^ normal test coverage ^^^
     });
+
+    {
+        cout << endl;
+        steady_clock::duration total_time{};
+        for (const auto& pair_dur : elapsed_time) {
+            total_time += pair_dur.second;
+            const auto ms = chrono::duration_cast<chrono::milliseconds>(pair_dur.second);
+            cout << pair_dur.first.second << ": " << ms.count() << " ms" << endl;
+        }
+        cout << endl;
+        cout << "Total: " << chrono::duration_cast<chrono::milliseconds>(total_time).count() << " ms" << endl;
+    }
 }
