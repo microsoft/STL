@@ -1697,15 +1697,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 #if !defined(TEST_PART) || TEST_PART == 1
     {
         const auto start_time = steady_clock::now();
-        test_adjacent_difference<char>(gen);
-        test_adjacent_difference<signed char>(gen);
-        test_adjacent_difference<unsigned char>(gen);
-        test_adjacent_difference<short>(gen);
-        test_adjacent_difference<unsigned short>(gen);
-        test_adjacent_difference<int>(gen);
-        test_adjacent_difference<unsigned int>(gen);
-        test_adjacent_difference<long long>(gen);
-        test_adjacent_difference<unsigned long long>(gen);
+        test_adjacent_difference<int8_t>(gen);
+        test_adjacent_difference<uint8_t>(gen);
+        test_adjacent_difference<int16_t>(gen);
+        test_adjacent_difference<uint16_t>(gen);
+        test_adjacent_difference<int32_t>(gen);
+        test_adjacent_difference<uint32_t>(gen);
+        test_adjacent_difference<int64_t>(gen);
+        test_adjacent_difference<uint64_t>(gen);
 
         test_adjacent_difference_with_heterogeneous_types();
         const auto finish_time = steady_clock::now();
@@ -1714,45 +1713,42 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 
     {
         const auto start_time = steady_clock::now();
-        test_adjacent_find<char>(gen);
-        test_adjacent_find<signed char>(gen);
-        test_adjacent_find<unsigned char>(gen);
-        test_adjacent_find<short>(gen);
-        test_adjacent_find<unsigned short>(gen);
-        test_adjacent_find<int>(gen);
-        test_adjacent_find<unsigned int>(gen);
-        test_adjacent_find<long long>(gen);
-        test_adjacent_find<unsigned long long>(gen);
+        test_adjacent_find<int8_t>(gen);
+        test_adjacent_find<uint8_t>(gen);
+        test_adjacent_find<int16_t>(gen);
+        test_adjacent_find<uint16_t>(gen);
+        test_adjacent_find<int32_t>(gen);
+        test_adjacent_find<uint32_t>(gen);
+        test_adjacent_find<int64_t>(gen);
+        test_adjacent_find<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(10, "adjacent_find")] += finish_time - start_time;
     }
 
     {
         const auto start_time = steady_clock::now();
-        test_count<char>(gen);
-        test_count<signed char>(gen);
-        test_count<unsigned char>(gen);
-        test_count<short>(gen);
-        test_count<unsigned short>(gen);
-        test_count<int>(gen);
-        test_count<unsigned int>(gen);
-        test_count<long long>(gen);
-        test_count<unsigned long long>(gen);
+        test_count<int8_t>(gen);
+        test_count<uint8_t>(gen);
+        test_count<int16_t>(gen);
+        test_count<uint16_t>(gen);
+        test_count<int32_t>(gen);
+        test_count<uint32_t>(gen);
+        test_count<int64_t>(gen);
+        test_count<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(20, "count")] += finish_time - start_time;
     }
 
     {
         const auto start_time = steady_clock::now();
-        test_find<char>(gen);
-        test_find<signed char>(gen);
-        test_find<unsigned char>(gen);
-        test_find<short>(gen);
-        test_find<unsigned short>(gen);
-        test_find<int>(gen);
-        test_find<unsigned int>(gen);
-        test_find<long long>(gen);
-        test_find<unsigned long long>(gen);
+        test_find<int8_t>(gen);
+        test_find<uint8_t>(gen);
+        test_find<int16_t>(gen);
+        test_find<uint16_t>(gen);
+        test_find<int32_t>(gen);
+        test_find<uint32_t>(gen);
+        test_find<int64_t>(gen);
+        test_find<uint64_t>(gen);
 
 #if _HAS_CXX20
         test_gh_4449<uint8_t>();
@@ -1767,15 +1763,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 #if _HAS_CXX23
     {
         const auto start_time = steady_clock::now();
-        test_find_last<char>(gen);
-        test_find_last<signed char>(gen);
-        test_find_last<unsigned char>(gen);
-        test_find_last<short>(gen);
-        test_find_last<unsigned short>(gen);
-        test_find_last<int>(gen);
-        test_find_last<unsigned int>(gen);
-        test_find_last<long long>(gen);
-        test_find_last<unsigned long long>(gen);
+        test_find_last<int8_t>(gen);
+        test_find_last<uint8_t>(gen);
+        test_find_last<int16_t>(gen);
+        test_find_last<uint16_t>(gen);
+        test_find_last<int32_t>(gen);
+        test_find_last<uint32_t>(gen);
+        test_find_last<int64_t>(gen);
+        test_find_last<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(40, "find_last")] += finish_time - start_time;
     }
@@ -1783,15 +1778,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 
     {
         const auto start_time = steady_clock::now();
-        test_find_first_of<char>(gen);
-        test_find_first_of<signed char>(gen);
-        test_find_first_of<unsigned char>(gen);
-        test_find_first_of<short>(gen);
-        test_find_first_of<unsigned short>(gen);
-        test_find_first_of<int>(gen);
-        test_find_first_of<unsigned int>(gen);
-        test_find_first_of<long long>(gen);
-        test_find_first_of<unsigned long long>(gen);
+        test_find_first_of<int8_t>(gen);
+        test_find_first_of<uint8_t>(gen);
+        test_find_first_of<int16_t>(gen);
+        test_find_first_of<uint16_t>(gen);
+        test_find_first_of<int32_t>(gen);
+        test_find_first_of<uint32_t>(gen);
+        test_find_first_of<int64_t>(gen);
+        test_find_first_of<uint64_t>(gen);
 
         test_find_first_of_containers<vector<char>, vector<signed char>>();
         test_find_first_of_containers<vector<char>, vector<unsigned char>>();
@@ -1806,15 +1800,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 
     {
         const auto start_time = steady_clock::now();
-        test_search<char>(gen);
-        test_search<signed char>(gen);
-        test_search<unsigned char>(gen);
-        test_search<short>(gen);
-        test_search<unsigned short>(gen);
-        test_search<int>(gen);
-        test_search<unsigned int>(gen);
-        test_search<long long>(gen);
-        test_search<unsigned long long>(gen);
+        test_search<int8_t>(gen);
+        test_search<uint8_t>(gen);
+        test_search<int16_t>(gen);
+        test_search<uint16_t>(gen);
+        test_search<int32_t>(gen);
+        test_search<uint32_t>(gen);
+        test_search<int64_t>(gen);
+        test_search<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(60, "search")] += finish_time - start_time;
     }
@@ -1823,15 +1816,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 #if !defined(TEST_PART) || TEST_PART == 2
     {
         const auto start_time = steady_clock::now();
-        test_min_max_element<char>(gen);
-        test_min_max_element<signed char>(gen);
-        test_min_max_element<unsigned char>(gen);
-        test_min_max_element<short>(gen);
-        test_min_max_element<unsigned short>(gen);
-        test_min_max_element<int>(gen);
-        test_min_max_element<unsigned int>(gen);
-        test_min_max_element<long long>(gen);
-        test_min_max_element<unsigned long long>(gen);
+        test_min_max_element<int8_t>(gen);
+        test_min_max_element<uint8_t>(gen);
+        test_min_max_element<int16_t>(gen);
+        test_min_max_element<uint16_t>(gen);
+        test_min_max_element<int32_t>(gen);
+        test_min_max_element<uint32_t>(gen);
+        test_min_max_element<int64_t>(gen);
+        test_min_max_element<uint64_t>(gen);
 
         test_min_max_element_pointers(gen);
 
@@ -1853,15 +1845,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 
     {
         const auto start_time = steady_clock::now();
-        test_is_sorted_until<char>(gen);
-        test_is_sorted_until<signed char>(gen);
-        test_is_sorted_until<unsigned char>(gen);
-        test_is_sorted_until<short>(gen);
-        test_is_sorted_until<unsigned short>(gen);
-        test_is_sorted_until<int>(gen);
-        test_is_sorted_until<unsigned int>(gen);
-        test_is_sorted_until<long long>(gen);
-        test_is_sorted_until<unsigned long long>(gen);
+        test_is_sorted_until<int8_t>(gen);
+        test_is_sorted_until<uint8_t>(gen);
+        test_is_sorted_until<int16_t>(gen);
+        test_is_sorted_until<uint16_t>(gen);
+        test_is_sorted_until<int32_t>(gen);
+        test_is_sorted_until<uint32_t>(gen);
+        test_is_sorted_until<int64_t>(gen);
+        test_is_sorted_until<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(80, "is_sorted_until")] += finish_time - start_time;
     }
@@ -1870,15 +1861,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 #if _HAS_CXX17
     {
         const auto start_time = steady_clock::now();
-        test_includes<char>(gen);
-        test_includes<signed char>(gen);
-        test_includes<unsigned char>(gen);
-        test_includes<short>(gen);
-        test_includes<unsigned short>(gen);
-        test_includes<int>(gen);
-        test_includes<unsigned int>(gen);
-        test_includes<long long>(gen);
-        test_includes<unsigned long long>(gen);
+        test_includes<int8_t>(gen);
+        test_includes<uint8_t>(gen);
+        test_includes<int16_t>(gen);
+        test_includes<uint16_t>(gen);
+        test_includes<int32_t>(gen);
+        test_includes<uint32_t>(gen);
+        test_includes<int64_t>(gen);
+        test_includes<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(90, "includes")] += finish_time - start_time;
     }
@@ -1888,51 +1878,42 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 #if !defined(TEST_PART) || TEST_PART == 3
     {
         const auto start_time = steady_clock::now();
-        test_replace<char>(gen);
-        test_replace<signed char>(gen);
-        test_replace<unsigned char>(gen);
-        test_replace<short>(gen);
-        test_replace<unsigned short>(gen);
-        test_replace<int>(gen);
-        test_replace<unsigned int>(gen);
-        test_replace<long long>(gen);
-        test_replace<unsigned long long>(gen);
+        test_replace<int8_t>(gen);
+        test_replace<uint8_t>(gen);
+        test_replace<int16_t>(gen);
+        test_replace<uint16_t>(gen);
+        test_replace<int32_t>(gen);
+        test_replace<uint32_t>(gen);
+        test_replace<int64_t>(gen);
+        test_replace<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(100, "replace")] += finish_time - start_time;
     }
 
     {
         const auto start_time = steady_clock::now();
-        test_reverse<char>(gen);
-        test_reverse<signed char>(gen);
-        test_reverse<unsigned char>(gen);
-        test_reverse<short>(gen);
-        test_reverse<unsigned short>(gen);
-        test_reverse<int>(gen);
-        test_reverse<unsigned int>(gen);
-        test_reverse<long long>(gen);
-        test_reverse<unsigned long long>(gen);
-        test_reverse<float>(gen);
-        test_reverse<double>(gen);
-        test_reverse<long double>(gen);
+        test_reverse<int8_t>(gen);
+        test_reverse<uint8_t>(gen);
+        test_reverse<int16_t>(gen);
+        test_reverse<uint16_t>(gen);
+        test_reverse<int32_t>(gen);
+        test_reverse<uint32_t>(gen);
+        test_reverse<int64_t>(gen);
+        test_reverse<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(110, "reverse")] += finish_time - start_time;
     }
 
     {
         const auto start_time = steady_clock::now();
-        test_reverse_copy<char>(gen);
-        test_reverse_copy<signed char>(gen);
-        test_reverse_copy<unsigned char>(gen);
-        test_reverse_copy<short>(gen);
-        test_reverse_copy<unsigned short>(gen);
-        test_reverse_copy<int>(gen);
-        test_reverse_copy<unsigned int>(gen);
-        test_reverse_copy<long long>(gen);
-        test_reverse_copy<unsigned long long>(gen);
-        test_reverse_copy<float>(gen);
-        test_reverse_copy<double>(gen);
-        test_reverse_copy<long double>(gen);
+        test_reverse_copy<int8_t>(gen);
+        test_reverse_copy<uint8_t>(gen);
+        test_reverse_copy<int16_t>(gen);
+        test_reverse_copy<uint16_t>(gen);
+        test_reverse_copy<int32_t>(gen);
+        test_reverse_copy<uint32_t>(gen);
+        test_reverse_copy<int64_t>(gen);
+        test_reverse_copy<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(120, "reverse_copy")] += finish_time - start_time;
     }
@@ -1940,51 +1921,45 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
     {
         const auto start_time = steady_clock::now();
 #if _VECTORIZED_ROTATE
-        test_rotate<char>(gen, 20000); // one very long rotate run to exercise some strategies
+        test_rotate<int8_t>(gen, 20000); // one very long rotate run to exercise some strategies
 #else // ^^^ _VECTORIZED_ROTATE / !_VECTORIZED_ROTATE vvv
-        test_rotate<char>(gen);
+        test_rotate<int8_t>(gen);
 #endif // ^^^ !_VECTORIZED_ROTATE ^^^
-        test_rotate<signed char>(gen);
-        test_rotate<unsigned char>(gen);
-        test_rotate<short>(gen);
-        test_rotate<unsigned short>(gen);
-        test_rotate<int>(gen);
-        test_rotate<unsigned int>(gen);
-        test_rotate<long long>(gen);
-        test_rotate<unsigned long long>(gen);
-        test_rotate<float>(gen);
-        test_rotate<double>(gen);
-        test_rotate<long double>(gen);
+        test_rotate<uint8_t>(gen);
+        test_rotate<int16_t>(gen);
+        test_rotate<uint16_t>(gen);
+        test_rotate<int32_t>(gen);
+        test_rotate<uint32_t>(gen);
+        test_rotate<int64_t>(gen);
+        test_rotate<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(130, "rotate")] += finish_time - start_time;
     }
 
     {
         const auto start_time = steady_clock::now();
-        test_remove<char>(gen);
-        test_remove<signed char>(gen);
-        test_remove<unsigned char>(gen);
-        test_remove<short>(gen);
-        test_remove<unsigned short>(gen);
-        test_remove<int>(gen);
-        test_remove<unsigned int>(gen);
-        test_remove<long long>(gen);
-        test_remove<unsigned long long>(gen);
+        test_remove<int8_t>(gen);
+        test_remove<uint8_t>(gen);
+        test_remove<int16_t>(gen);
+        test_remove<uint16_t>(gen);
+        test_remove<int32_t>(gen);
+        test_remove<uint32_t>(gen);
+        test_remove<int64_t>(gen);
+        test_remove<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(140, "remove")] += finish_time - start_time;
     }
 
     {
         const auto start_time = steady_clock::now();
-        test_unique<char>(gen);
-        test_unique<signed char>(gen);
-        test_unique<unsigned char>(gen);
-        test_unique<short>(gen);
-        test_unique<unsigned short>(gen);
-        test_unique<int>(gen);
-        test_unique<unsigned int>(gen);
-        test_unique<long long>(gen);
-        test_unique<unsigned long long>(gen);
+        test_unique<int8_t>(gen);
+        test_unique<uint8_t>(gen);
+        test_unique<int16_t>(gen);
+        test_unique<uint16_t>(gen);
+        test_unique<int32_t>(gen);
+        test_unique<uint32_t>(gen);
+        test_unique<int64_t>(gen);
+        test_unique<uint64_t>(gen);
 
         test_unique<long*>(gen);
         const auto finish_time = steady_clock::now();
@@ -1993,11 +1968,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 
     {
         const auto start_time = steady_clock::now();
-        test_swap_ranges<char>(gen);
-        test_swap_ranges<short>(gen);
-        test_swap_ranges<int>(gen);
-        test_swap_ranges<unsigned int>(gen);
-        test_swap_ranges<unsigned long long>(gen);
+        test_swap_ranges<int8_t>(gen);
+        test_swap_ranges<uint8_t>(gen);
+        test_swap_ranges<int16_t>(gen);
+        test_swap_ranges<uint16_t>(gen);
+        test_swap_ranges<int32_t>(gen);
+        test_swap_ranges<uint32_t>(gen);
+        test_swap_ranges<int64_t>(gen);
+        test_swap_ranges<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(160, "swap_ranges")] += finish_time - start_time;
     }
@@ -2046,15 +2024,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 
     {
         const auto start_time = steady_clock::now();
-        test_mismatch_and_lex_compare_family<char>(gen);
-        test_mismatch_and_lex_compare_family<signed char>(gen);
-        test_mismatch_and_lex_compare_family<unsigned char>(gen);
-        test_mismatch_and_lex_compare_family<short>(gen);
-        test_mismatch_and_lex_compare_family<unsigned short>(gen);
-        test_mismatch_and_lex_compare_family<int>(gen);
-        test_mismatch_and_lex_compare_family<unsigned int>(gen);
-        test_mismatch_and_lex_compare_family<long long>(gen);
-        test_mismatch_and_lex_compare_family<unsigned long long>(gen);
+        test_mismatch_and_lex_compare_family<int8_t>(gen);
+        test_mismatch_and_lex_compare_family<uint8_t>(gen);
+        test_mismatch_and_lex_compare_family<int16_t>(gen);
+        test_mismatch_and_lex_compare_family<uint16_t>(gen);
+        test_mismatch_and_lex_compare_family<int32_t>(gen);
+        test_mismatch_and_lex_compare_family<uint32_t>(gen);
+        test_mismatch_and_lex_compare_family<int64_t>(gen);
+        test_mismatch_and_lex_compare_family<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(190, "test_mismatch_and_lex_compare_family")] += finish_time - start_time;
     }
@@ -2062,15 +2039,14 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 #if _HAS_CXX20
     {
         const auto start_time = steady_clock::now();
-        test_mismatch_only_triplets<char>(gen);
-        test_mismatch_only_triplets<signed char>(gen);
-        test_mismatch_only_triplets<unsigned char>(gen);
-        test_mismatch_only_triplets<short>(gen);
-        test_mismatch_only_triplets<unsigned short>(gen);
-        test_mismatch_only_triplets<int>(gen);
-        test_mismatch_only_triplets<unsigned int>(gen);
-        test_mismatch_only_triplets<long long>(gen);
-        test_mismatch_only_triplets<unsigned long long>(gen);
+        test_mismatch_only_triplets<int8_t>(gen);
+        test_mismatch_only_triplets<uint8_t>(gen);
+        test_mismatch_only_triplets<int16_t>(gen);
+        test_mismatch_only_triplets<uint16_t>(gen);
+        test_mismatch_only_triplets<int32_t>(gen);
+        test_mismatch_only_triplets<uint32_t>(gen);
+        test_mismatch_only_triplets<int64_t>(gen);
+        test_mismatch_only_triplets<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(200, "test_mismatch_only_triplets")] += finish_time - start_time;
     }
@@ -2091,10 +2067,10 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
 
     {
         const auto start_time = steady_clock::now();
-        test_mismatch_sizes_and_alignments::test<char>();
-        test_mismatch_sizes_and_alignments::test<short>();
-        test_mismatch_sizes_and_alignments::test<int>();
-        test_mismatch_sizes_and_alignments::test<long long>();
+        test_mismatch_sizes_and_alignments::test<int8_t>();
+        test_mismatch_sizes_and_alignments::test<int16_t>();
+        test_mismatch_sizes_and_alignments::test<int32_t>();
+        test_mismatch_sizes_and_alignments::test<int64_t>();
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(220, "test_mismatch_sizes_and_alignments")] += finish_time - start_time;
     }
@@ -2656,15 +2632,15 @@ int main() {
         (void) level;
 #ifdef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
         // Test the algorithms that *aren't* vectorized for ARM64EC:
-        test_min_max_element<long long>(gen);
-        test_min_max_element<unsigned long long>(gen);
+        test_min_max_element<int64_t>(gen);
+        test_min_max_element<uint64_t>(gen);
 
         test_min_max_element_pointers(gen);
 
-        test_replace<int>(gen);
-        test_replace<unsigned int>(gen);
-        test_replace<long long>(gen);
-        test_replace<unsigned long long>(gen);
+        test_replace<int32_t>(gen);
+        test_replace<uint32_t>(gen);
+        test_replace<int64_t>(gen);
+        test_replace<uint64_t>(gen);
 #else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
         test_vector_algorithms(gen, level);
 
