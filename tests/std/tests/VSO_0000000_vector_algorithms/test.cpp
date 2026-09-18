@@ -39,9 +39,37 @@ using chrono::steady_clock;
 
 map<pair<int, string>, steady_clock::duration> elapsed_time;
 
-#if defined(TEST_PART) && (TEST_PART < 1 || TEST_PART > 4)
-static_assert(false, "If TEST_PART is defined, it must be within [1, 4].");
+#if defined(TEST_PART) && (TEST_PART < 1 || TEST_PART > 6)
+static_assert(false, "If TEST_PART is defined, it must be within [1, 6].");
 #endif
+
+// Binpack the tests into roughly equal parts, according to how much time they take:
+#define PART_ADJACENT_DIFFERENCE     1
+#define PART_ADJACENT_FIND           1
+#define PART_COUNT                   1
+#define PART_FIND                    1
+#define PART_FIND_LAST               1
+#define PART_FIND_FIRST_OF           1
+#define PART_SEARCH                  1
+#define PART_MINMAX_ELEMENT          2
+#define PART_IS_SORTED_UNTIL         1
+#define PART_INCLUDES                2
+#define PART_REPLACE                 2
+#define PART_REVERSE                 4
+#define PART_REVERSE_COPY            4
+#define PART_ROTATE                  3
+#define PART_REMOVE                  4
+#define PART_UNIQUE                  6
+#define PART_SWAP_RANGES             5
+#define PART_TEST_SWAP_ARRAYS        5
+#define PART_SEARCH_N                3
+#define PART_TEST_MISMATCH_ONE       5
+#define PART_TEST_MISMATCH_TWO       4
+#define PART_TEST_MISMATCH_THREE     4
+#define PART_TEST_MISMATCH_FOUR      4
+#define PART_TEST_VARIOUS_CONTAINERS 6
+#define PART_TEST_BITSET             6
+#define PART_TEST_STRING             6
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 #ifdef __clang__
@@ -1694,7 +1722,7 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
     (void) gen;
     (void) level;
 
-#if !defined(TEST_PART) || TEST_PART == 1
+#if !defined(TEST_PART) || TEST_PART == PART_ADJACENT_DIFFERENCE
     {
         const auto start_time = steady_clock::now();
         test_adjacent_difference<int8_t>(gen);
@@ -1710,7 +1738,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(0, "adjacent_difference")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_ADJACENT_DIFFERENCE ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_ADJACENT_FIND
     {
         const auto start_time = steady_clock::now();
         test_adjacent_find<int8_t>(gen);
@@ -1724,7 +1754,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(10, "adjacent_find")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_ADJACENT_FIND ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_COUNT
     {
         const auto start_time = steady_clock::now();
         test_count<int8_t>(gen);
@@ -1738,7 +1770,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(20, "count")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_COUNT ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_FIND
     {
         const auto start_time = steady_clock::now();
         test_find<int8_t>(gen);
@@ -1759,7 +1793,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(30, "find")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_FIND ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_FIND_LAST
 #if _HAS_CXX23
     {
         const auto start_time = steady_clock::now();
@@ -1775,7 +1811,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         elapsed_time[make_pair(40, "find_last")] += finish_time - start_time;
     }
 #endif // _HAS_CXX23
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_FIND_LAST ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_FIND_FIRST_OF
     {
         const auto start_time = steady_clock::now();
         test_find_first_of<int8_t>(gen);
@@ -1797,7 +1835,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(50, "find_first_of")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_FIND_FIRST_OF ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_SEARCH
     {
         const auto start_time = steady_clock::now();
         test_search<int8_t>(gen);
@@ -1811,9 +1851,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(60, "search")] += finish_time - start_time;
     }
-#endif // ^^^ !defined(TEST_PART) || TEST_PART == 1 ^^^
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_SEARCH ^^^
 
-#if !defined(TEST_PART) || TEST_PART == 2
+#if !defined(TEST_PART) || TEST_PART == PART_MINMAX_ELEMENT
     {
         const auto start_time = steady_clock::now();
         test_min_max_element<int8_t>(gen);
@@ -1842,7 +1882,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(70, "minmax_element")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_MINMAX_ELEMENT ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_IS_SORTED_UNTIL
     {
         const auto start_time = steady_clock::now();
         test_is_sorted_until<int8_t>(gen);
@@ -1856,7 +1898,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(80, "is_sorted_until")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_IS_SORTED_UNTIL ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_INCLUDES
     // std::includes has been there forever, but we use std::sample in the test, and that one is C++17
 #if _HAS_CXX17
     {
@@ -1873,9 +1917,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         elapsed_time[make_pair(90, "includes")] += finish_time - start_time;
     }
 #endif // _HAS_CXX17
-#endif // ^^^ !defined(TEST_PART) || TEST_PART == 2 ^^^
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_INCLUDES ^^^
 
-#if !defined(TEST_PART) || TEST_PART == 3
+#if !defined(TEST_PART) || TEST_PART == PART_REPLACE
     {
         const auto start_time = steady_clock::now();
         test_replace<int8_t>(gen);
@@ -1889,7 +1933,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(100, "replace")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_REPLACE ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_REVERSE
     {
         const auto start_time = steady_clock::now();
         test_reverse<int8_t>(gen);
@@ -1903,7 +1949,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(110, "reverse")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_REVERSE ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_REVERSE_COPY
     {
         const auto start_time = steady_clock::now();
         test_reverse_copy<int8_t>(gen);
@@ -1917,7 +1965,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(120, "reverse_copy")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_REVERSE_COPY ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_ROTATE
     {
         const auto start_time = steady_clock::now();
 #if _VECTORIZED_ROTATE
@@ -1935,7 +1985,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(130, "rotate")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_ROTATE ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_REMOVE
     {
         const auto start_time = steady_clock::now();
         test_remove<int8_t>(gen);
@@ -1949,7 +2001,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(140, "remove")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_REMOVE ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_UNIQUE
     {
         const auto start_time = steady_clock::now();
         test_unique<int8_t>(gen);
@@ -1965,7 +2019,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(150, "unique")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_UNIQUE ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_SWAP_RANGES
     {
         const auto start_time = steady_clock::now();
         test_swap_ranges<int8_t>(gen);
@@ -1979,7 +2035,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(160, "swap_ranges")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_SWAP_RANGES ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_SWAP_ARRAYS
     {
         const auto start_time = steady_clock::now();
         test_swap_arrays<uint8_t, 1>(gen);
@@ -1999,8 +2057,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(170, "test_swap_arrays")] += finish_time - start_time;
     }
-#endif // ^^^ !defined(TEST_PART) || TEST_PART == 3 ^^^
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_SWAP_ARRAYS ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_SEARCH_N
     {
         const auto start_time = steady_clock::now();
         test_search_n<int8_t>(gen);
@@ -2021,7 +2080,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(180, "search_n")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_SEARCH_N ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_ONE
     {
         const auto start_time = steady_clock::now();
         test_mismatch_and_lex_compare_family<int8_t>(gen);
@@ -2033,9 +2094,11 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         test_mismatch_and_lex_compare_family<int64_t>(gen);
         test_mismatch_and_lex_compare_family<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
-        elapsed_time[make_pair(190, "test_mismatch_and_lex_compare_family")] += finish_time - start_time;
+        elapsed_time[make_pair(190, "test_mismatch_one")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_ONE ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_TWO
 #if _HAS_CXX20
     {
         const auto start_time = steady_clock::now();
@@ -2048,10 +2111,12 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         test_mismatch_only_triplets<int64_t>(gen);
         test_mismatch_only_triplets<uint64_t>(gen);
         const auto finish_time = steady_clock::now();
-        elapsed_time[make_pair(200, "test_mismatch_only_triplets")] += finish_time - start_time;
+        elapsed_time[make_pair(200, "test_mismatch_two")] += finish_time - start_time;
     }
 #endif // _HAS_CXX20
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_TWO ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_THREE
     {
         const auto start_time = steady_clock::now();
         test_mismatch_and_lex_compare_family_containers<vector<char>, vector<signed char>>();
@@ -2062,9 +2127,11 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         test_mismatch_and_lex_compare_family_containers<const vector<wchar_t>, vector<wchar_t>>();
         test_mismatch_and_lex_compare_family_containers<vector<char>, vector<int>>();
         const auto finish_time = steady_clock::now();
-        elapsed_time[make_pair(210, "test_mismatch_and_lex_compare_family_containers")] += finish_time - start_time;
+        elapsed_time[make_pair(210, "test_mismatch_three")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_THREE ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_FOUR
     {
         const auto start_time = steady_clock::now();
         test_mismatch_sizes_and_alignments::test<int8_t>();
@@ -2072,8 +2139,9 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         test_mismatch_sizes_and_alignments::test<int32_t>();
         test_mismatch_sizes_and_alignments::test<int64_t>();
         const auto finish_time = steady_clock::now();
-        elapsed_time[make_pair(220, "test_mismatch_sizes_and_alignments")] += finish_time - start_time;
+        elapsed_time[make_pair(220, "test_mismatch_four")] += finish_time - start_time;
     }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_FOUR ^^^
 }
 
 template <typename Container1, typename Container2>
@@ -2644,28 +2712,32 @@ int main() {
 #else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
         test_vector_algorithms(gen, level);
 
-#if !defined(TEST_PART) || TEST_PART == 4
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_VARIOUS_CONTAINERS
         {
             const auto start_time = steady_clock::now();
             test_various_containers();
             const auto finish_time = steady_clock::now();
             elapsed_time[make_pair(1000, "test_various_containers")] += finish_time - start_time;
         }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_VARIOUS_CONTAINERS ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_BITSET
         {
             const auto start_time = steady_clock::now();
             test_bitset(gen);
             const auto finish_time = steady_clock::now();
             elapsed_time[make_pair(1010, "test_bitset")] += finish_time - start_time;
         }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_BITSET ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_STRING
         {
             const auto start_time = steady_clock::now();
             test_string(gen);
             const auto finish_time = steady_clock::now();
             elapsed_time[make_pair(1020, "test_string")] += finish_time - start_time;
         }
-#endif // ^^^ !defined(TEST_PART) || TEST_PART == 4 ^^^
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_STRING ^^^
 #endif // ^^^ normal test coverage ^^^
     });
 
