@@ -1690,8 +1690,9 @@ namespace test_mismatch_sizes_and_alignments {
     }
 } // namespace test_mismatch_sizes_and_alignments
 
-void test_vector_algorithms(mt19937_64& gen) {
+void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
     (void) gen;
+    (void) level;
 
 #if !defined(TEST_PART) || TEST_PART == 1
     {
@@ -2033,9 +2034,11 @@ void test_vector_algorithms(mt19937_64& gen) {
         test_search_n<int64_t>(gen);
         test_search_n<uint64_t>(gen);
 
-        // Test only one case with forward iterators. It is a different and complex code path,
-        // hence it's worth testing, but it is not vectorized, so there's no point in trying different types.
-        test_search_n<short, true>(gen);
+        if (level == IsaLevel::Original) {
+            // Test only one case with forward iterators. It is a different and complex code path,
+            // hence it's worth testing, but it is not vectorized, so there's no point in trying different types.
+            test_search_n<short, true>(gen);
+        }
 
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(180, "search_n")] += finish_time - start_time;
@@ -2649,7 +2652,8 @@ int main() {
 #if _HAS_CXX20
     assert(test_constexpr());
 #endif // _HAS_CXX20
-    run_randomized_tests_with_different_isa_levels([](mt19937_64& gen) {
+    run_randomized_tests_with_different_isa_levels([](mt19937_64& gen, const IsaLevel level) {
+        (void) level;
 #ifdef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
         // Test the algorithms that *aren't* vectorized for ARM64EC:
         test_min_max_element<long long>(gen);
@@ -2662,7 +2666,7 @@ int main() {
         test_replace<long long>(gen);
         test_replace<unsigned long long>(gen);
 #else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
-        test_vector_algorithms(gen);
+        test_vector_algorithms(gen, level);
 
 #if !defined(TEST_PART) || TEST_PART == 4
         {
