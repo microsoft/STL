@@ -1309,7 +1309,7 @@ struct forward_iter_adaptor {
         return *this;
     }
     constexpr forward_iter_adaptor operator++(int) {
-        forward_iter_adaptor old;
+        forward_iter_adaptor old = *this;
         ++ptr;
         return old;
     }
