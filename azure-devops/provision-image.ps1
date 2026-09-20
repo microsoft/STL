@@ -13,10 +13,14 @@ creates a 1ES Hosted Pool that will spin up copies of the image as worker VMs, a
 
 .PARAMETER Arch
 The architecture can be either x64 or arm64.
+
+.PARAMETER DiskType
+The disk type can be either NVMe or SCSI.
 #>
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [Parameter(Mandatory)][ValidateSet('x64', 'arm64')][String]$Arch
+  [Parameter(Mandatory)][ValidateSet('x64', 'arm64')][String]$Arch,
+  [Parameter(Mandatory)][ValidateSet('NVMe', 'SCSI')][String]$DiskType
 )
 
 $ErrorActionPreference = 'Stop'
@@ -184,7 +188,7 @@ Write-Host 'Enabling long paths...'
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' `
   -Value 1 -PropertyType DWORD -Force | Out-Null
 
-if ($Provisioning_x64) {
+if ($DiskType -ieq 'NVMe') {
   Write-Host 'Enabling native NVMe...'
   EnableNativeNVMe
 }

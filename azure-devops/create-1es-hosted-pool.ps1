@@ -294,7 +294,7 @@ $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceId $VM.ID `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1" `
-  -Parameter @{ 'Arch' = $Arch; }
+  -Parameter @{ 'Arch' = $Arch; 'DiskType' = $DiskType; }
 
 Write-Host $ProvisionImageResult.value.Message
 
