@@ -12,6 +12,9 @@
 
 using namespace std;
 
+// Generator: tools/unicode_properties_parse/grapheme_break_test_data_gen.py
+// Beginning of generated data - DO NOT EDIT manually!
+
 // GraphemeBreakTest-18.0.0.txt
 // Date: 2026-06-12, 00:44:16 GMT
 template <typename T>
