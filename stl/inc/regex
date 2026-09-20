@@ -1352,9 +1352,9 @@ struct _Buf { // character buffer
             _Xregex_error(regex_constants::error_space);
         }
 
-        _Sz = _Len;
-        _STD _Uninitialized_copy_unchecked(_First, _Last, _Chrs);
+        _Sz    = _Len;
         _Nchrs = _Len;
+        _STD _Uninitialized_copy_unchecked(_First, _Last, _Chrs);
     }
 
     void _Assign(_Elem _Ch) { // assign single character to buffer
@@ -1366,8 +1366,8 @@ struct _Buf { // character buffer
         }
 
         _Sz    = 1U;
-        *_Chrs = _Ch;
         _Nchrs = 1U;
+        *_Chrs = _Ch;
     }
 
 private:
