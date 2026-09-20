@@ -261,9 +261,8 @@ constexpr bool test_lwg3785() {
 enum class restriction_kind {
     emplace_back,
     push_back,
-    emplace,
-    insert,
     emplace_hint,
+    insert,
 };
 
 template <restriction_kind K, class T, class A = std::allocator<T>>
@@ -327,8 +326,8 @@ public:
     }
 
     template <class... Args>
-    constexpr iterator emplace(const const_iterator it, Args&&... args)
-        requires (K == restriction_kind::emplace)
+    constexpr iterator emplace_hint(const const_iterator it, Args&&... args)
+        requires (K == restriction_kind::emplace_hint)
     {
         return base_type::emplace(it, std::forward<Args>(args)...);
     }
@@ -342,13 +341,6 @@ public:
         requires (K == restriction_kind::insert)
     {
         return base_type::emplace(it, std::move(t));
-    }
-
-    template <class... Args>
-    constexpr iterator emplace_hint(const const_iterator it, Args&&... args)
-        requires (K == restriction_kind::emplace_hint)
-    {
-        return base_type::emplace(it, std::forward<Args>(args)...);
     }
 };
 
