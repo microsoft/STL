@@ -1334,7 +1334,7 @@ struct _Buf { // character buffer
         return _Chrs;
     }
 
-    void _Assign(const _Elem* _First, const _Elem* _Last) { // assign character sequence to buffer
+    void _Assign(const _Elem* const _First, const _Elem* const _Last) { // assign character sequence to buffer
         _STL_INTERNAL_CHECK(!_Chrs);
 
         constexpr size_t _Max_elems      = static_cast<size_t>(-1) / sizeof(_Elem);
