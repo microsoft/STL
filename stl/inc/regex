@@ -1334,27 +1334,25 @@ struct _Buf { // character buffer
         return _Chrs;
     }
 
-    void _Assign(const _Elem* const _First, const _Elem* const _Last) { // assign character sequence to buffer
+    void _Assign(const _Elem* const _First, const size_t _Len) { // assign character sequence to buffer
         _STL_INTERNAL_CHECK(!_Chrs);
 
         constexpr size_t _Max_elems      = static_cast<size_t>(-1) / sizeof(_Elem);
         constexpr unsigned int _Max_uint = static_cast<unsigned int>(-1);
         constexpr unsigned int _Max      = _Max_elems < _Max_uint ? static_cast<unsigned int>(_Max_elems) : _Max_uint;
 
-        const auto _Diff = _Last - _First;
-        if (_Diff < 0 || static_cast<size_t>(_Diff) > _Max) {
+        if (_Len > _Max) {
             _Xregex_error(regex_constants::error_space);
         }
 
-        const auto _Len = static_cast<unsigned int>(_Diff);
-        _Chrs           = static_cast<_Elem*>(_CSTD malloc(sizeof(_Elem) * _Len));
+        _Chrs = static_cast<_Elem*>(_CSTD malloc(sizeof(_Elem) * _Len));
         if (!_Chrs) {
             _Xregex_error(regex_constants::error_space);
         }
 
-        _Sz    = _Len;
-        _Nchrs = _Len;
-        _STD _Uninitialized_copy_unchecked(_First, _Last, _Chrs);
+        _Sz    = static_cast<unsigned int>(_Len);
+        _Nchrs = static_cast<unsigned int>(_Len);
+        _STD _Uninitialized_copy_unchecked(_First, _First + _Len, _Chrs);
     }
 
     void _Assign(_Elem _Ch) { // assign single character to buffer
@@ -3348,7 +3346,7 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Emit_str_node() { // emit string node
 
     auto _Node = new _Node_str<_Elem>;
     _Link_node(_Node);
-    _Node->_Data._Assign(_Chars.data(), _Chars.data() + _Chars.size());
+    _Node->_Data._Assign(_Chars.data(), _Chars.size());
     _Chars.clear();
 }
 
@@ -3381,13 +3379,13 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Finalize_class() { // finalize bracke
 
     if (!_Chars.empty()) {
         _Node->_Large = new _Buf<_Elem>;
-        _Node->_Large->_Assign(_Chars.data(), _Chars.data() + _Chars.size());
+        _Node->_Large->_Assign(_Chars.data(), _Chars.size());
         _Chars.clear();
     }
 
     if (!_Ranges.empty()) {
         _Node->_Ranges = new _Buf<_Elem>;
-        _Node->_Ranges->_Assign(_Ranges.data(), _Ranges.data() + _Ranges.size());
+        _Node->_Ranges->_Assign(_Ranges.data(), _Ranges.size());
         _Ranges.clear();
     }
 
@@ -3592,8 +3590,7 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Fill_coll_sequence_from_buf(
             auto _Seq   = new _Sequence<_Elem>(_Length);
             _Seq->_Next = _Seq_start;
             _Seq_start  = _Seq;
-            auto _Start = _Elems_of_length.data();
-            _Seq->_Data._Assign(_Start, _Start + _Elems_of_length.size());
+            _Seq->_Data._Assign(_Elems_of_length.data(), _Elems_of_length.size());
             _Elems_of_length.clear();
         }
 
