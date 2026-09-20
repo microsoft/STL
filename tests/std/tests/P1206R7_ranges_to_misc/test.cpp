@@ -263,6 +263,7 @@ enum class restriction_kind {
     push_back,
     emplace,
     insert,
+    emplace_hint,
 };
 
 template <restriction_kind K, class T, class A = std::allocator<T>>
@@ -342,6 +343,13 @@ public:
     {
         return base_type::emplace(it, std::move(t));
     }
+
+    template <class... Args>
+    constexpr iterator emplace_hint(const const_iterator it, Args&&... args)
+        requires (K == restriction_kind::emplace_hint)
+    {
+        return base_type::emplace(it, std::forward<Args>(args)...);
+    }
 };
 
 template <restriction_kind K>
@@ -386,7 +394,7 @@ constexpr void test_lwg4016_per_kind() {
 constexpr bool test_lwg4016() {
     test_lwg4016_per_kind<restriction_kind::emplace_back>();
     test_lwg4016_per_kind<restriction_kind::push_back>();
-    test_lwg4016_per_kind<restriction_kind::emplace>();
+    test_lwg4016_per_kind<restriction_kind::emplace_hint>(); // lwg4121
     test_lwg4016_per_kind<restriction_kind::insert>();
     return true;
 }
