@@ -296,19 +296,19 @@ def generate_data_tables() -> str:
     and EastAsianWidth.txt.
 
     GraphemeBreakProperty.txt can be found at
-    https://www.unicode.org/Public/18.0.0/ucd/auxiliary/GraphemeBreakProperty.txt
+    https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakProperty.txt
 
     emoji-data.txt can be found at
-    https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt
+    https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt
 
     DerivedGeneralCategory.txt can be found at
-    https://www.unicode.org/Public/18.0.0/ucd/extracted/DerivedGeneralCategory.txt
+    https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedGeneralCategory.txt
 
     DerivedCoreProperties.txt can be found at
-    https://www.unicode.org/Public/18.0.0/ucd/DerivedCoreProperties.txt
+    https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt
 
     EastAsianWidth.txt can be found at
-    https://www.unicode.org/Public/18.0.0/ucd/EastAsianWidth.txt
+    https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
 
     All files are expected to be in the same directory as this script.
     """
