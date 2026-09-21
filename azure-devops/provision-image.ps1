@@ -85,22 +85,6 @@ if ($Provisioning_x64) {
 }
 $CudaArgs = @('-s', '-n')
 
-<#
-.SYNOPSIS
-Download and install a component.
-
-.DESCRIPTION
-DownloadAndInstall downloads an executable from the given URL, and runs it with the given command-line arguments.
-
-.PARAMETER Name
-The name of the component, to be displayed in logging messages.
-
-.PARAMETER Url
-The URL of the installer.
-
-.PARAMETER Args
-The command-line arguments to pass to the installer.
-#>
 Function DownloadAndInstall {
   [CmdletBinding(PositionalBinding=$false)]
   Param(
@@ -144,14 +128,8 @@ Function DownloadAndInstall {
   }
 }
 
-<#
-.SYNOPSIS
-Enables native NVMe support.
-
-.DESCRIPTION
-Native NVMe support is opt-in for Windows Server 2025.
-TRANSITION, this will be enabled by default for the next version of Windows Server.
-#>
+# Native NVMe support is opt-in for Windows Server 2025.
+# TRANSITION, this will be enabled by default for the next version of Windows Server.
 Function EnableNativeNVMe {
   $registryKey = 'HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides'
   $valueName = '1176759950'
