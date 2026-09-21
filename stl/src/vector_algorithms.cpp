@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cwchar>
+#include <limits>
 #include <type_traits>
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
@@ -1074,9 +1075,6 @@ namespace {
             using _Signed_t   = int8_t;
             using _Unsigned_t = uint8_t;
 
-            static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7F);
-            static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x80);
-
             using _Minmax_i_t = _Min_max_1i;
             using _Minmax_u_t = _Min_max_1u;
 
@@ -1376,9 +1374,6 @@ namespace {
             using _Signed_t   = int16_t;
             using _Unsigned_t = uint16_t;
 
-            static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF);
-            static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000);
-
             using _Minmax_i_t = _Min_max_2i;
             using _Minmax_u_t = _Min_max_2u;
 
@@ -1677,9 +1672,6 @@ namespace {
             using _Minmax_i_t = _Min_max_4i;
             using _Minmax_u_t = _Min_max_4u;
 
-            static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFFUL);
-            static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000UL);
-
 #ifdef _WIN64
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
@@ -1970,9 +1962,6 @@ namespace {
             using _Signed_t   = int64_t;
             using _Unsigned_t = uint64_t;
 
-            static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFF'FFFF'FFFFULL);
-            static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000'0000'0000ULL);
-
             using _Minmax_i_t = _Min_max_8i;
             using _Minmax_u_t = _Min_max_8u;
 
@@ -2256,9 +2245,6 @@ namespace {
             using _Signed_t   = float;
             using _Unsigned_t = void;
 
-            static constexpr _Signed_t _Init_min_val = __builtin_huge_valf();
-            static constexpr _Signed_t _Init_max_val = -__builtin_huge_valf();
-
             using _Minmax_i_t = _Min_max_f;
             using _Minmax_u_t = void;
 
@@ -2517,9 +2503,6 @@ namespace {
 
             using _Signed_t   = double;
             using _Unsigned_t = void;
-
-            static constexpr _Signed_t _Init_min_val = __builtin_huge_val();
-            static constexpr _Signed_t _Init_max_val = -__builtin_huge_val();
 
             using _Minmax_i_t = _Min_max_d;
             using _Minmax_u_t = void;
@@ -2873,13 +2856,20 @@ namespace {
 
         template <_Min_max_mode _Mode, class _Traits, bool _Is_signed>
         auto _Minmax_element_impl(const void* _First, const void* const _Last) noexcept {
-            _Min_max_element_t _Res = {_First, _First};
-            auto _Cur_min_val       = _Traits::_Init_min_val;
-            auto _Cur_max_val       = _Traits::_Init_max_val;
+            constexpr bool _Use_signed_type = _Is_signed || !_Traits::_Has_unsigned_cmp;
+            using _Ty =
+                std::conditional_t<_Use_signed_type, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
-            if constexpr (!_Is_signed && _Traits::_Has_unsigned_cmp) {
-                _Cur_min_val = -1;
-                _Cur_max_val = 0;
+            _Min_max_element_t _Res = {_First, _First};
+            _Ty _Cur_min_val;
+            _Ty _Cur_max_val;
+
+            if constexpr (_Traits::_Is_floating) {
+                _Cur_min_val = std::numeric_limits<_Ty>::infinity();
+                _Cur_max_val = -std::numeric_limits<_Ty>::infinity();
+            } else {
+                _Cur_min_val = std::numeric_limits<_Ty>::max();
+                _Cur_max_val = std::numeric_limits<_Ty>::min();
             }
 
             if constexpr (_Traits::_Vectorized) {
@@ -2909,42 +2899,42 @@ namespace {
                 auto _Cur_idx      = _Traits::_Zero(); // current vector of indices
 
                 const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_Cmp_gt(_First, _Second);
                     } else {
                         return _Traits::_Cmp_gt_u(_First, _Second);
                     }
                 };
                 const auto _Min_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_Min(_First, _Second, _Mask);
                     } else {
                         return _Traits::_Min_u(_First, _Second, _Mask);
                     }
                 };
                 const auto _Max_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_Max(_First, _Second, _Mask);
                     } else {
                         return _Traits::_Max_u(_First, _Second, _Mask);
                     }
                 };
                 const auto _H_min_wrap = [](const auto _Vals) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_H_min(_Vals);
                     } else {
                         return _Traits::_H_min_u(_Vals);
                     }
                 };
                 const auto _H_max_wrap = [](const auto _Vals) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_H_max(_Vals);
                     } else {
                         return _Traits::_H_max_u(_Vals);
                     }
                 };
                 const auto _Less_wrap = [](const auto _Lhs, const auto _Rhs) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Lhs < _Rhs;
                     } else {
                         using _UTy = _Traits::_Unsigned_t;
