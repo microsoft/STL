@@ -2908,7 +2908,6 @@ namespace {
                 auto _Cur_idx_max  = _Traits::_Zero(); // vector of vertical maximum indices
                 auto _Cur_idx      = _Traits::_Zero(); // current vector of indices
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
                 const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
                     if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
                         return _Traits::_Cmp_gt(_First, _Second);
@@ -2952,20 +2951,6 @@ namespace {
                         return static_cast<_UTy>(_Lhs) < static_cast<_UTy>(_Rhs);
                     }
                 };
-#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-                const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
-                    return _Traits::_Cmp_gt(_First, _Second);
-                };
-                const auto _Min_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    return _Traits::_Min(_First, _Second, _Mask);
-                };
-                const auto _Max_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    return _Traits::_Max(_First, _Second, _Mask);
-                };
-                const auto _H_min_wrap = [](const auto _Vals) noexcept { return _Traits::_H_min(_Vals); };
-                const auto _H_max_wrap = [](const auto _Vals) noexcept { return _Traits::_H_max(_Vals); };
-                const auto _Less_wrap  = [](const auto _Lhs, const auto _Rhs) noexcept { return _Lhs < _Rhs; };
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
                 const auto _Update_min_max = [&](const auto _Cur_vals, [[maybe_unused]] const auto _Blend_idx_0,
                                                  const auto _Blend_idx_1) noexcept {
