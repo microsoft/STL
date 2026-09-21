@@ -467,7 +467,7 @@ public:
         auto _Right_ExtPic = _Extended_Pictographic_property_values::_No_value;
         size_t _Num_RIs    = 0;
         for (;; _Left_gbp    = _Right_gbp,
-                _Left_InCB   = _Indic_Conjunct_Break_property_data._Get_property_for_codepoint(*_WrappedIter),
+                _Left_InCB   = _Right_InCB,
                 _Left_ExtPic = _Right_ExtPic) {
             ++_WrappedIter;
             if (_WrappedIter == default_sentinel) {
