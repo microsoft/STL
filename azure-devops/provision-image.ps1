@@ -79,9 +79,9 @@ $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 
 
 # https://developer.nvidia.com/cuda-toolkit
 if ($Provisioning_x64) {
-  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.3.1/local_installers/cuda_13.3.1_windows.exe'
+  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.4.2/local_installers/cuda_13.4.2_windows_x86_64.exe'
 } else {
-  $CudaUrl = 'CUDA is not installed for ARM64'
+  $CudaUrl = 'CUDA supports ARM64, but is not yet installed here'
 }
 $CudaArgs = @('-s', '-n')
 
@@ -174,7 +174,7 @@ DownloadAndInstall   -Name 'PowerShell'    -Url $PowerShellUrl   -Args $PowerShe
 DownloadAndInstall   -Name 'Python'        -Url $PythonUrl       -Args $PythonArgs
 DownloadAndInstall   -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
 if ($Provisioning_x64) {
-  DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
+DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
 }
 
 Write-Host 'Setting environment variables...'
