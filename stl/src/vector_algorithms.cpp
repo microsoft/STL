@@ -1070,8 +1070,6 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_1_base {
-            static constexpr bool _Is_floating = false;
-
             using _Signed_t   = int8_t;
             using _Unsigned_t = uint8_t;
 
@@ -1369,8 +1367,6 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_2_base {
-            static constexpr bool _Is_floating = false;
-
             using _Signed_t   = int16_t;
             using _Unsigned_t = uint16_t;
 
@@ -1664,8 +1660,6 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_4_base {
-            static constexpr bool _Is_floating = false;
-
             using _Signed_t   = int32_t;
             using _Unsigned_t = uint32_t;
 
@@ -1957,8 +1951,6 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_8_base {
-            static constexpr bool _Is_floating = false;
-
             using _Signed_t   = int64_t;
             using _Unsigned_t = uint64_t;
 
@@ -2240,8 +2232,6 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_f_base {
-            static constexpr bool _Is_floating = true;
-
             using _Signed_t   = float;
             using _Unsigned_t = void;
 
@@ -2499,8 +2489,6 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_d_base {
-            static constexpr bool _Is_floating = true;
-
             using _Signed_t   = double;
             using _Unsigned_t = void;
 
@@ -2864,7 +2852,7 @@ namespace {
             _Ty _Cur_min_val;
             _Ty _Cur_max_val;
 
-            if constexpr (_Traits::_Is_floating) {
+            if constexpr (std::is_floating_point_v<_Ty>) {
                 _Cur_min_val = std::numeric_limits<_Ty>::infinity();
                 _Cur_max_val = -std::numeric_limits<_Ty>::infinity();
             } else {
@@ -3154,7 +3142,7 @@ namespace {
                 _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
             }
 
-            if constexpr (_Traits::_Is_floating) {
+            if constexpr (std::is_floating_point_v<_Ty>) {
                 if constexpr (_Mode == _Mode_min) {
                     return _Min_tail(_First, _Last, _Res._Min, _Cur_min_val);
                 } else if constexpr (_Mode == _Mode_max) {
@@ -3447,7 +3435,7 @@ namespace {
             }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
-                if constexpr (_Traits::_Avx::_Is_floating) {
+                if constexpr (std::is_floating_point_v<typename _Traits::_Avx::_Signed_t>) {
                     return _Minmax_impl_wrap<_Mode, typename _Traits::_Avx, _Is_signed>(_First, _Last);
                 } else {
                     return _Minmax_impl<_Mode, typename _Traits::_Avx, _Is_signed>(_First, _Last);
