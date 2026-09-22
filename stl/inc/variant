@@ -1376,8 +1376,8 @@ _NODISCARD constexpr bool operator>=(const variant<_Types...>& _Left, const vari
 }
 
 #if _HAS_CXX20
-// This is equivalent to `compare_three_way`,
-// except for no support for non-const comparison, simpler constraints, and explicit return type.
+// This is equivalent to `compare_three_way`, except for having simpler constraints,
+// an explicit (trailing) return type, and no support for non-const comparison.
 struct _Simpler_compare_three_way {
     template <class _Ty1, class _Ty2>
     _NODISCARD static constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right)
