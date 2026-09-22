@@ -1380,10 +1380,9 @@ _NODISCARD constexpr bool operator>=(const variant<_Types...>& _Left, const vari
 // except for no support for non-const comparison, simpler constraints, and explicit return type.
 struct _Simpler_compare_three_way {
     template <class _Ty1, class _Ty2>
-    _NODISCARD static constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right) //
-        noexcept(noexcept(_Left <=> _Right)) //
-        /*-*/ -> decltype(_Left <=> _Right) {
-        /*------*/ return _Left <=> _Right;
+    _NODISCARD static constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right)
+        noexcept(noexcept(_Left <=> _Right)) -> decltype(_Left <=> _Right) {
+        return _Left <=> _Right;
     }
 };
 
