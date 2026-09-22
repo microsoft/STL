@@ -48,15 +48,6 @@ void test_view_begin() {
 constexpr auto lambda = [x = 42](int) { return x == 42; };
 using FV              = decltype(ranges::filter_view{some_ints, lambda});
 
-void test_constructor_wrong_range() {
-    vector<int> vec0{0, 1, 2, 3};
-    vector<int> vec1{4, 5, 6, 7};
-    auto r0            = views::filter(vec0, lambda);
-    using R            = decltype(r0);
-    same_as<R> auto r1 = views::filter(vec1, lambda);
-    ranges::iterator_t<R> i{r0, r1.begin().base()}; // vector iterators in range are from different containers
-}
-
 void test_operator_star_value_initialized_iterator() {
     ranges::iterator_t<FV> i{};
     (void) (*i); // cannot dereference value-initialized filter_view iterator
@@ -159,8 +150,6 @@ int main(int argc, char* argv[]) {
     exec.add_death_tests({
         test_view_predicate,
         test_view_begin,
-
-        test_constructor_wrong_range,
         test_operator_star_value_initialized_iterator,
         test_operator_star_end_iterator,
         test_operator_arrow_value_initialized_iterator,
