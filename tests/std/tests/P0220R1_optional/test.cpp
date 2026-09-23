@@ -8607,6 +8607,173 @@ namespace msvc {
         }
     } // namespace lwg3886
 
+    namespace lwg4072 {
+        // LWG-4072 "std::optional comparisons: constrain harder"
+
+        template <class, class, class = void>
+        constexpr bool has_cmp_eq = false;
+        template <class T, class U>
+        constexpr bool has_cmp_eq<T, U, std::void_t<decltype(std::declval<T>() == std::declval<U>())>> = true;
+
+        template <class, class, class = void>
+        constexpr bool has_cmp_neq = false;
+        template <class T, class U>
+        constexpr bool has_cmp_neq<T, U, std::void_t<decltype(std::declval<T>() != std::declval<U>())>> = true;
+
+        template <class, class, class = void>
+        constexpr bool has_cmp_lt = false;
+        template <class T, class U>
+        constexpr bool has_cmp_lt<T, U, std::void_t<decltype(std::declval<T>() < std::declval<U>())>> = true;
+
+        template <class, class, class = void>
+        constexpr bool has_cmp_lteq = false;
+        template <class T, class U>
+        constexpr bool has_cmp_lteq<T, U, std::void_t<decltype(std::declval<T>() <= std::declval<U>())>> = true;
+
+        template <class, class, class = void>
+        constexpr bool has_cmp_gt = false;
+        template <class T, class U>
+        constexpr bool has_cmp_gt<T, U, std::void_t<decltype(std::declval<T>() > std::declval<U>())>> = true;
+
+        template <class, class, class = void>
+        constexpr bool has_cmp_gteq = false;
+        template <class T, class U>
+        constexpr bool has_cmp_gteq<T, U, std::void_t<decltype(std::declval<T>() >= std::declval<U>())>> = true;
+
+        struct tester {};
+
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator==(const tester& a, const T& t) {
+            return t.compare(a) == 0;
+        }
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator==(const T& t, const tester& a) {
+            return t.compare(a) == 0;
+        }
+
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator!=(const tester& a, const T& t) {
+            return t.compare(a) != 0;
+        }
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator!=(const T& t, const tester& a) {
+            return t.compare(a) != 0;
+        }
+
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator<(const tester& a, const T& t) {
+            return t.compare(a) > 0;
+        }
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        bool operator<(const T& t, const tester& a) {
+            return t.compare(a) < 0;
+        }
+
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator<=(const tester& a, const T& t) {
+            return t.compare(a) >= 0;
+        }
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator<=(const T& t, const tester& a) {
+            return t.compare(a) <= 0;
+        }
+
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator>(const tester& a, const T& t) {
+            return t.compare(a) < 0;
+        }
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator>(const T& t, const tester& a) {
+            return t.compare(a) > 0;
+        }
+
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator>=(const tester& a, const T& t) {
+            return t.compare(a) <= 0;
+        }
+        template <class T, std::enable_if_t<std::is_class_v<T>, int> = 0> // intentionally underconstrained
+        constexpr bool operator>=(const T& t, const tester& a) {
+            return t.compare(a) >= 0;
+        }
+
+        template <class T, class U>
+        constexpr std::optional<bool> try_cmp_eq(const T& t, const U& u) {
+            if constexpr (has_cmp_eq<const T&, const U&>) {
+                return t == u;
+            } else {
+                return {};
+            }
+        }
+
+        template <class T, class U>
+        constexpr std::optional<bool> try_cmp_neq(const T& t, const U& u) {
+            if constexpr (has_cmp_neq<const T&, const U&>) {
+                return t != u;
+            } else {
+                return {};
+            }
+        }
+
+        template <class T, class U>
+        constexpr std::optional<bool> try_cmp_lt(const T& t, const U& u) {
+            if constexpr (has_cmp_lt<const T&, const U&>) {
+                return t < u;
+            } else {
+                return {};
+            }
+        }
+
+        template <class T, class U>
+        constexpr std::optional<bool> try_cmp_lteq(const T& t, const U& u) {
+            if constexpr (has_cmp_lteq<const T&, const U&>) {
+                return t <= u;
+            } else {
+                return {};
+            }
+        }
+
+        template <class T, class U>
+        constexpr std::optional<bool> try_cmp_gt(const T& t, const U& u) {
+            if constexpr (has_cmp_gt<const T&, const U&>) {
+                return t > u;
+            } else {
+                return {};
+            }
+        }
+
+        template <class T, class U>
+        constexpr std::optional<bool> try_cmp_gteq(const T& t, const U& u) {
+            if constexpr (has_cmp_gteq<const T&, const U&>) {
+                return t >= u;
+            } else {
+                return {};
+            }
+        }
+
+        constexpr bool run_test() {
+            std::optional<tester> ot;
+            std::optional<int> oi;
+
+            assert(try_cmp_eq(oi, oi) == std::optional<bool>{true});
+            assert(try_cmp_neq(oi, oi) == std::optional<bool>{false});
+            assert(try_cmp_lt(oi, oi) == std::optional<bool>{false});
+            assert(try_cmp_lteq(oi, oi) == std::optional<bool>{true});
+            assert(try_cmp_gt(oi, oi) == std::optional<bool>{false});
+            assert(try_cmp_gteq(oi, oi) == std::optional<bool>{true});
+
+            assert(try_cmp_eq(oi, ot) == std::optional<bool>{});
+            assert(try_cmp_neq(oi, ot) == std::optional<bool>{});
+            assert(try_cmp_lt(oi, ot) == std::optional<bool>{});
+            assert(try_cmp_lteq(oi, ot) == std::optional<bool>{});
+            assert(try_cmp_gt(oi, ot) == std::optional<bool>{});
+            assert(try_cmp_gteq(oi, ot) == std::optional<bool>{});
+
+            return true;
+        }
+
+        static_assert(run_test());
+    } // namespace lwg4072
+
     namespace lwg4497 {
         // LWG-4497 nullopt_t should be comparable
         static_assert(std::nullopt == std::nullopt);
@@ -8805,6 +8972,328 @@ namespace msvc {
             }
         }
     } // namespace assign_cv
+
+    namespace comparison_constraints {
+        // If the return type of operator@ is not bool, there will be a hard error.
+
+        template <class, class, class = void>
+        constexpr bool has_usual_cmp_eq = false;
+        template <class T, class U>
+        constexpr bool has_usual_cmp_eq<T, U, std::void_t<decltype(std::declval<T>() == std::declval<U>())>> =
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() == std::declval<U>()), bool>, bool>{true};
+
+        template <class, class, class = void>
+        constexpr bool has_usual_cmp_neq = false;
+        template <class T, class U>
+        constexpr bool has_usual_cmp_neq<T, U, std::void_t<decltype(std::declval<T>() != std::declval<U>())>> =
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() != std::declval<U>()), bool>, bool>{true};
+
+        template <class, class, class = void>
+        constexpr bool has_usual_cmp_lt = false;
+        template <class T, class U>
+        constexpr bool has_usual_cmp_lt<T, U, std::void_t<decltype(std::declval<T>() < std::declval<U>())>> =
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() < std::declval<U>()), bool>, bool>{true};
+
+        template <class, class, class = void>
+        constexpr bool has_usual_cmp_lteq = false;
+        template <class T, class U>
+        constexpr bool has_usual_cmp_lteq<T, U, std::void_t<decltype(std::declval<T>() <= std::declval<U>())>> =
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() <= std::declval<U>()), bool>, bool>{true};
+
+        template <class, class, class = void>
+        constexpr bool has_usual_cmp_gt = false;
+        template <class T, class U>
+        constexpr bool has_usual_cmp_gt<T, U, std::void_t<decltype(std::declval<T>() > std::declval<U>())>> =
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() > std::declval<U>()), bool>, bool>{true};
+
+        template <class, class, class = void>
+        constexpr bool has_usual_cmp_gteq = false;
+        template <class T, class U>
+        constexpr bool has_usual_cmp_gteq<T, U, std::void_t<decltype(std::declval<T>() >= std::declval<U>())>> =
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() >= std::declval<U>()), bool>, bool>{true};
+
+        struct noop {};
+
+        static_assert(has_usual_cmp_eq<std::optional<int>, std::optional<int>>);
+        static_assert(has_usual_cmp_neq<std::optional<int>, std::optional<int>>);
+        static_assert(has_usual_cmp_lt<std::optional<int>, std::optional<int>>);
+        static_assert(has_usual_cmp_gt<std::optional<int>, std::optional<int>>);
+        static_assert(has_usual_cmp_lteq<std::optional<int>, std::optional<int>>);
+        static_assert(has_usual_cmp_gteq<std::optional<int>, std::optional<int>>);
+
+        static_assert(has_usual_cmp_eq<std::optional<int>, std::optional<long>>);
+        static_assert(has_usual_cmp_neq<std::optional<int>, std::optional<long>>);
+        static_assert(has_usual_cmp_lt<std::optional<int>, std::optional<long>>);
+        static_assert(has_usual_cmp_gt<std::optional<int>, std::optional<long>>);
+        static_assert(has_usual_cmp_lteq<std::optional<int>, std::optional<long>>);
+        static_assert(has_usual_cmp_gteq<std::optional<int>, std::optional<long>>);
+        static_assert(has_usual_cmp_eq<std::optional<long>, std::optional<int>>);
+        static_assert(has_usual_cmp_neq<std::optional<long>, std::optional<int>>);
+        static_assert(has_usual_cmp_lt<std::optional<long>, std::optional<int>>);
+        static_assert(has_usual_cmp_gt<std::optional<long>, std::optional<int>>);
+        static_assert(has_usual_cmp_lteq<std::optional<long>, std::optional<int>>);
+        static_assert(has_usual_cmp_gteq<std::optional<long>, std::optional<int>>);
+
+        static_assert(!has_usual_cmp_eq<std::optional<noop>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_neq<std::optional<noop>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_lt<std::optional<noop>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_gt<std::optional<noop>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_lteq<std::optional<noop>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_gteq<std::optional<noop>, std::optional<noop>>);
+
+        static_assert(!has_usual_cmp_eq<std::optional<int>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_neq<std::optional<int>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_lt<std::optional<int>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_gt<std::optional<int>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_lteq<std::optional<int>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_gteq<std::optional<int>, std::optional<noop>>);
+        static_assert(!has_usual_cmp_eq<std::optional<noop>, std::optional<int>>);
+        static_assert(!has_usual_cmp_neq<std::optional<noop>, std::optional<int>>);
+        static_assert(!has_usual_cmp_lt<std::optional<noop>, std::optional<int>>);
+        static_assert(!has_usual_cmp_gt<std::optional<noop>, std::optional<int>>);
+        static_assert(!has_usual_cmp_lteq<std::optional<noop>, std::optional<int>>);
+        static_assert(!has_usual_cmp_gteq<std::optional<noop>, std::optional<int>>);
+
+        class rvalue_only_to_bool {
+        public:
+            constexpr explicit rvalue_only_to_bool(bool b) noexcept : val_{b} {}
+
+            template <class = void>
+            explicit operator bool() && = delete;
+            constexpr operator bool() && noexcept {
+                return val_;
+            }
+
+            rvalue_only_to_bool(const rvalue_only_to_bool&)            = delete;
+            rvalue_only_to_bool& operator=(const rvalue_only_to_bool&) = delete;
+            rvalue_only_to_bool(rvalue_only_to_bool&)                  = default;
+            rvalue_only_to_bool& operator=(rvalue_only_to_bool&)       = default;
+
+        private:
+            bool val_;
+        };
+
+        namespace nested1 {
+            enum class e1 {};
+
+            constexpr rvalue_only_to_bool operator==(e1 l, int r) noexcept {
+                return rvalue_only_to_bool{static_cast<int>(l) == r};
+            }
+            constexpr rvalue_only_to_bool operator==(int l, e1 r) noexcept {
+                return rvalue_only_to_bool{l == static_cast<int>(r)};
+            }
+
+            constexpr rvalue_only_to_bool operator!=(e1 l, int r) noexcept {
+                return rvalue_only_to_bool{static_cast<int>(l) != r};
+            }
+            constexpr rvalue_only_to_bool operator!=(int l, e1 r) noexcept {
+                return rvalue_only_to_bool{l != static_cast<int>(r)};
+            }
+
+            constexpr rvalue_only_to_bool operator<(e1 l, int r) noexcept {
+                return rvalue_only_to_bool{static_cast<int>(l) < r};
+            }
+            constexpr rvalue_only_to_bool operator<(int l, e1 r) noexcept {
+                return rvalue_only_to_bool{l < static_cast<int>(r)};
+            }
+
+            constexpr rvalue_only_to_bool operator<=(e1 l, int r) noexcept {
+                return rvalue_only_to_bool{static_cast<int>(l) <= r};
+            }
+            constexpr rvalue_only_to_bool operator<=(int l, e1 r) noexcept {
+                return rvalue_only_to_bool{l <= static_cast<int>(r)};
+            }
+
+            constexpr rvalue_only_to_bool operator>(e1 l, int r) noexcept {
+                return rvalue_only_to_bool{static_cast<int>(l) > r};
+            }
+            constexpr rvalue_only_to_bool operator>(int l, e1 r) noexcept {
+                return rvalue_only_to_bool{l > static_cast<int>(r)};
+            }
+
+            constexpr rvalue_only_to_bool operator>=(e1 l, int r) noexcept {
+                return rvalue_only_to_bool{static_cast<int>(l) >= r};
+            }
+            constexpr rvalue_only_to_bool operator>=(int l, e1 r) noexcept {
+                return rvalue_only_to_bool{l >= static_cast<int>(r)};
+            }
+        } // namespace nested1
+
+        using nested1::e1;
+
+        static_assert(has_usual_cmp_eq<std::optional<int>, std::optional<e1>>);
+        static_assert(has_usual_cmp_neq<std::optional<int>, std::optional<e1>>);
+        static_assert(has_usual_cmp_lt<std::optional<int>, std::optional<e1>>);
+        static_assert(has_usual_cmp_gt<std::optional<int>, std::optional<e1>>);
+        static_assert(has_usual_cmp_lteq<std::optional<int>, std::optional<e1>>);
+        static_assert(has_usual_cmp_gteq<std::optional<int>, std::optional<e1>>);
+        static_assert(has_usual_cmp_eq<std::optional<e1>, std::optional<int>>);
+        static_assert(has_usual_cmp_neq<std::optional<e1>, std::optional<int>>);
+        static_assert(has_usual_cmp_lt<std::optional<e1>, std::optional<int>>);
+        static_assert(has_usual_cmp_gt<std::optional<e1>, std::optional<int>>);
+        static_assert(has_usual_cmp_lteq<std::optional<e1>, std::optional<int>>);
+        static_assert(has_usual_cmp_gteq<std::optional<e1>, std::optional<int>>);
+
+#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-10817483 (CWG-2813)
+        class prvalue_only_to_bool {
+        public:
+            constexpr explicit prvalue_only_to_bool(bool b) noexcept : val_{b} {}
+
+            template <class = void>
+            explicit operator bool(this prvalue_only_to_bool) = delete;
+            constexpr operator bool(this prvalue_only_to_bool self) noexcept {
+                return self.val_;
+            }
+
+            prvalue_only_to_bool(const prvalue_only_to_bool&)            = delete;
+            prvalue_only_to_bool& operator=(const prvalue_only_to_bool&) = delete;
+
+        private:
+            bool val_;
+        };
+
+        namespace nested2 {
+            enum class e2 {};
+
+            constexpr prvalue_only_to_bool operator==(e2 l, int r) noexcept {
+                return prvalue_only_to_bool{static_cast<int>(l) == r};
+            }
+            constexpr prvalue_only_to_bool operator==(int l, e2 r) noexcept {
+                return prvalue_only_to_bool{l == static_cast<int>(r)};
+            }
+
+            constexpr prvalue_only_to_bool operator!=(e2 l, int r) noexcept {
+                return prvalue_only_to_bool{static_cast<int>(l) != r};
+            }
+            constexpr prvalue_only_to_bool operator!=(int l, e2 r) noexcept {
+                return prvalue_only_to_bool{l != static_cast<int>(r)};
+            }
+
+            constexpr prvalue_only_to_bool operator<(e2 l, int r) noexcept {
+                return prvalue_only_to_bool{static_cast<int>(l) < r};
+            }
+            constexpr prvalue_only_to_bool operator<(int l, e2 r) noexcept {
+                return prvalue_only_to_bool{l < static_cast<int>(r)};
+            }
+
+            constexpr prvalue_only_to_bool operator<=(e2 l, int r) noexcept {
+                return prvalue_only_to_bool{static_cast<int>(l) <= r};
+            }
+            constexpr prvalue_only_to_bool operator<=(int l, e2 r) noexcept {
+                return prvalue_only_to_bool{l <= static_cast<int>(r)};
+            }
+
+            constexpr prvalue_only_to_bool operator>(e2 l, int r) noexcept {
+                return prvalue_only_to_bool{static_cast<int>(l) > r};
+            }
+            constexpr prvalue_only_to_bool operator>(int l, e2 r) noexcept {
+                return prvalue_only_to_bool{l > static_cast<int>(r)};
+            }
+
+            constexpr prvalue_only_to_bool operator>=(e2 l, int r) noexcept {
+                return prvalue_only_to_bool{static_cast<int>(l) >= r};
+            }
+            constexpr prvalue_only_to_bool operator>=(int l, e2 r) noexcept {
+                return prvalue_only_to_bool{l >= static_cast<int>(r)};
+            }
+        } // namespace nested2
+
+        using nested2::e2;
+
+        static_assert(has_usual_cmp_eq<std::optional<int>, std::optional<e2>>);
+        static_assert(has_usual_cmp_neq<std::optional<int>, std::optional<e2>>);
+        static_assert(has_usual_cmp_lt<std::optional<int>, std::optional<e2>>);
+        static_assert(has_usual_cmp_gt<std::optional<int>, std::optional<e2>>);
+        static_assert(has_usual_cmp_lteq<std::optional<int>, std::optional<e2>>);
+        static_assert(has_usual_cmp_gteq<std::optional<int>, std::optional<e2>>);
+        static_assert(has_usual_cmp_eq<std::optional<e2>, std::optional<int>>);
+        static_assert(has_usual_cmp_neq<std::optional<e2>, std::optional<int>>);
+        static_assert(has_usual_cmp_lt<std::optional<e2>, std::optional<int>>);
+        static_assert(has_usual_cmp_gt<std::optional<e2>, std::optional<int>>);
+        static_assert(has_usual_cmp_lteq<std::optional<e2>, std::optional<int>>);
+        static_assert(has_usual_cmp_gteq<std::optional<e2>, std::optional<int>>);
+#endif // _HAS_CXX23 && (defined(__clang__) || defined(__EDG__))
+
+        template <class T, class U>
+        constexpr void assert_eq(const T& t, const U& u) {
+            assert(t == u);
+            assert(u == t);
+            assert(!(t != u));
+            assert(!(u != t));
+            assert(!(t < u));
+            assert(!(u < t));
+            assert(t <= u);
+            assert(u <= t);
+            assert(!(t > u));
+            assert(!(u > t));
+            assert(t >= u);
+            assert(u >= t);
+        }
+
+        template <class T, class U>
+        constexpr void assert_lt(const T& t, const U& u) {
+            assert(!(t == u));
+            assert(!(u == t));
+            assert(t != u);
+            assert(u != t);
+            assert(t < u);
+            assert(!(u < t));
+            assert(t <= u);
+            assert(!(u <= t));
+            assert(!(t > u));
+            assert(u > t);
+            assert(!(t >= u));
+            assert(u >= t);
+        }
+
+        template <class T, class U>
+        constexpr void assert_gt(const T& t, const U& u) {
+            assert(!(t == u));
+            assert(!(u == t));
+            assert(t != u);
+            assert(u != t);
+            assert(!(t < u));
+            assert(u < t);
+            assert(!(t <= u));
+            assert(u <= t);
+            assert(t > u);
+            assert(!(u > t));
+            assert(t >= u);
+            assert(!(u >= t));
+        }
+
+        constexpr bool run_test() {
+            assert_eq(std::optional<e1>{}, std::optional<int>{});
+            assert_lt(std::optional<e1>{}, std::optional<int>{-1});
+            assert_lt(std::optional<int>{}, std::optional<e1>{e1{-1}});
+            assert_gt(std::optional<e1>{e1{-1}}, std::optional<int>{});
+            assert_gt(std::optional<int>{-1}, std::optional<e1>{});
+
+            assert_eq(std::optional<e1>{e1{42}}, std::optional<int>{42});
+            assert_lt(std::optional<e1>{e1{42}}, std::optional<int>{1729});
+            assert_lt(std::optional<int>{42}, std::optional<e1>{e1{1729}});
+            assert_gt(std::optional<e1>{e1{1729}}, std::optional<int>{42});
+            assert_gt(std::optional<int>{1729}, std::optional<e1>{e1{42}});
+
+#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-10817483 (CWG-2813)
+            assert_eq(std::optional<e2>{}, std::optional<int>{});
+            assert_lt(std::optional<e2>{}, std::optional<int>{-1});
+            assert_lt(std::optional<int>{}, std::optional<e2>{e2{-1}});
+            assert_gt(std::optional<e2>{e2{-1}}, std::optional<int>{});
+            assert_gt(std::optional<int>{-1}, std::optional<e2>{});
+
+            assert_eq(std::optional<e2>{e2{42}}, std::optional<int>{42});
+            assert_lt(std::optional<e2>{e2{42}}, std::optional<int>{1729});
+            assert_lt(std::optional<int>{42}, std::optional<e2>{e2{1729}});
+            assert_gt(std::optional<e2>{e2{1729}}, std::optional<int>{42});
+            assert_gt(std::optional<int>{1729}, std::optional<e2>{e2{42}});
+#endif // _HAS_CXX23 && (defined(__clang__) || defined(__EDG__))
+
+            return true;
+        }
+
+        static_assert(run_test());
+    } // namespace comparison_constraints
 } // namespace msvc
 
 int main() {
@@ -8907,6 +9396,7 @@ int main() {
 
     msvc::lwg3836::run_test();
     msvc::lwg3886::run_test();
+    msvc::lwg4072::run_test();
     msvc::lwg4497::run_test();
 
     msvc::vso406124::run_test();
@@ -8916,4 +9406,5 @@ int main() {
     msvc::gh2458::run_test();
 
     msvc::assign_cv::run_test();
+    msvc::comparison_constraints::run_test();
 }
