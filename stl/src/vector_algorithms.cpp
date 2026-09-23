@@ -3137,27 +3137,25 @@ namespace {
                 _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
             }
 
-            using _STy = _Traits::_Signed_t;
             using _UTy = _Traits::_Unsigned_t;
 
             constexpr _UTy _Correction = _Traits::_Has_unsigned_cmp ? 0 : _UTy{1} << (sizeof(_UTy) * 8 - 1);
 
             if constexpr (_Mode == _Mode_min) {
                 if constexpr (_Is_signed) {
-                    return _Min_tail(_First, _Last, _Res._Min, static_cast<_STy>(_Cur_min_val));
+                    return _Min_tail(_First, _Last, _Res._Min, _Cur_min_val);
                 } else {
                     return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min_val + _Correction));
                 }
             } else if constexpr (_Mode == _Mode_max) {
                 if constexpr (_Is_signed) {
-                    return _Max_tail(_First, _Last, _Res._Max, static_cast<_STy>(_Cur_max_val));
+                    return _Max_tail(_First, _Last, _Res._Max, _Cur_max_val);
                 } else {
                     return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max_val + _Correction));
                 }
             } else {
                 if constexpr (_Is_signed) {
-                    return _Both_tail(
-                        _First, _Last, _Res, static_cast<_STy>(_Cur_min_val), static_cast<_STy>(_Cur_max_val));
+                    return _Both_tail(_First, _Last, _Res, _Cur_min_val, _Cur_max_val);
                 } else {
                     return _Both_tail(_First, _Last, _Res, static_cast<_UTy>(_Cur_min_val + _Correction),
                         static_cast<_UTy>(_Cur_max_val + _Correction));
