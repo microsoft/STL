@@ -22,7 +22,12 @@ class CustomTestFormat(STLTestFormat):
         classicCpp = os.path.join(sourceDir, 'classic.cpp')
 
         # Dependency order is important here:
-        inputPaths = [stdIxx, stdCompatIxx, testCpp, test2Cpp, test3Cpp, test4Cpp, classicCpp]
+        moduleUnits = [stdIxx, stdCompatIxx]
+        traditionalUnits = [testCpp, test2Cpp, test3Cpp, test4Cpp, classicCpp]
+        if 'clang' in test.config.available_features:
+            inputPaths = ['-x', 'c++-module', *moduleUnits, '-x', 'none', *traditionalUnits]
+        else:
+            inputPaths = [*moduleUnits, *traditionalUnits]
 
         cmd = [test.cxx, *inputPaths, *test.flags, *test.compileFlags]
 
