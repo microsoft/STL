@@ -2922,12 +2922,7 @@ namespace {
                     }
                 };
                 const auto _Less_wrap = [](const auto _Lhs, const auto _Rhs) noexcept {
-                    if constexpr (_Use_signed_type) {
-                        return _Lhs < _Rhs;
-                    } else {
-                        using _UTy = _Traits::_Unsigned_t;
-                        return static_cast<_UTy>(_Lhs) < static_cast<_UTy>(_Rhs);
-                    }
+                    return static_cast<_Ty>(_Lhs) < static_cast<_Ty>(_Rhs);
                 };
 
                 const auto _Update_min_max = [&](const auto _Cur_vals, [[maybe_unused]] const auto _Blend_idx_0,
