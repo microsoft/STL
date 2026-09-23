@@ -324,7 +324,7 @@ public:
     constexpr iterator emplace(const const_iterator it, Args&&... args)
         requires (K == restriction_kind::insert_and_emplace)
     {
-        assert(false && "ranges::to must ignore emplace"); // lwg4121
+        assert(false); // see LWG-4121, ranges::to must ignore emplace
         return base_type::emplace(it, std::forward<Args>(args)...);
     }
 
@@ -389,7 +389,7 @@ constexpr void test_lwg4016_per_kind() {
 constexpr bool test_lwg4016() {
     test_lwg4016_per_kind<restriction_kind::emplace_back>();
     test_lwg4016_per_kind<restriction_kind::push_back>();
-    test_lwg4016_per_kind<restriction_kind::emplace_hint>(); // lwg4121
+    test_lwg4016_per_kind<restriction_kind::emplace_hint>(); // see LWG-4121
     test_lwg4016_per_kind<restriction_kind::insert>();
     return true;
 }
