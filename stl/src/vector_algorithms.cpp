@@ -10305,6 +10305,70 @@ namespace {
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         template <_Alg _Kind, class _Traits, class _Ty>
+        __declspec(noinline) void* _Unique_impl_sve(
+            const void* _First, const void* const _Last, void* _Out, const size_t _Size_bytes) noexcept {
+            const size_t _Step_elems = _Traits::_Step();
+            const size_t _Step_bytes = _Step_elems * sizeof(_Ty);
+
+            const auto _True = svptrue_b8();
+
+            const size_t _Unroll_bytes = 2 * _Step_bytes;
+            if (const size_t _Chunk_size = _Size_bytes & ~size_t{_Unroll_bytes - 1}; _Chunk_size != 0) {
+                const void* _Stop_at = _First;
+                _Advance_bytes(_Stop_at, _Chunk_size);
+
+                do {
+                    const auto _Src_lo = _Traits::_Load(_True, _First);
+                    const auto _Src_hi = _Traits::_Load(_True, static_cast<const _Ty*>(_First) + _Step_elems);
+
+                    const void* _First_d = _First;
+                    _Rewind_bytes(_First_d, sizeof(_Ty));
+                    const auto _Match_lo = _Traits::_Load(_True, _First_d);
+                    const auto _Match_hi = _Traits::_Load(_True, static_cast<const _Ty*>(_First_d) + _Step_elems);
+
+                    const auto _Mask_lo = _Traits::_Cmpne(_True, _Src_lo, _Match_lo);
+                    const auto _Mask_hi = _Traits::_Cmpne(_True, _Src_hi, _Match_hi);
+
+                    const auto _Result_lo = _Traits::_Compact(_Mask_lo, _Src_lo);
+                    const auto _Result_hi = _Traits::_Compact(_Mask_hi, _Src_hi);
+
+                    _Out = _Traits::template _Store_masked<_Kind>(_True, _Out, _Result_lo, _Mask_lo);
+                    _Out = _Traits::template _Store_masked<_Kind>(_True, _Out, _Result_hi, _Mask_hi);
+
+                    _Advance_bytes(_First, _Unroll_bytes);
+                } while (_First != _Stop_at);
+            }
+
+            if ((_Size_bytes & _Step_bytes) != 0) { // use original _Size_bytes; we've read only 2 * _Step_bytes chunks
+                const auto _Src      = _Traits::_Load(_True, _First);
+                const void* _First_d = _First;
+                _Rewind_bytes(_First_d, sizeof(_Ty));
+                const auto _Match  = _Traits::_Load(_True, _First_d);
+                const auto _Mask   = _Traits::_Cmpne(_True, _Src, _Match);
+                const auto _Result = _Traits::_Compact(_Mask, _Src);
+                // An unmasked store could overwrite the predecessor needed by the partial tail.
+                _Out = _Traits::template _Store_masked<_Alg::_Remove_copy>(_True, _Out, _Result, _Mask);
+                _Advance_bytes(_First, _Step_bytes);
+            }
+
+            if (_First != _Last) {
+                const size_t _Tail_length_elems = _Byte_length(_First, _Last) / sizeof(_Ty);
+                const auto _Tail_mask           = _Traits::_Whilelt(size_t{0}, _Tail_length_elems);
+                const auto _Src                 = _Traits::_Load(_Tail_mask, _First);
+                const void* _First_d            = _First;
+                _Rewind_bytes(_First_d, sizeof(_Ty));
+                const auto _Match  = _Traits::_Load(_Tail_mask, _First_d);
+                const auto _Mask   = _Traits::_Cmpne(_Tail_mask, _Src, _Match);
+                const auto _Result = _Traits::_Compact(_Mask, _Src);
+                _Out               = _Traits::template _Store_masked<_Kind>(_Tail_mask, _Out, _Result, _Mask);
+            }
+
+            return _Out;
+        }
+
+        // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+        // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
+        template <_Alg _Kind, class _Traits, class _Ty>
         __declspec(noinline) void* _Remove_impl_sve(
             const void* _First, const void* const _Last, void* _Out, const _Ty _Val) noexcept {
             const auto _Match = _Traits::_Set(_Val);
@@ -10330,8 +10394,8 @@ namespace {
                     const auto _Result_lo = _Traits::_Compact(_Mask_lo, _Src_lo);
                     const auto _Result_hi = _Traits::_Compact(_Mask_hi, _Src_hi);
 
-                    _Out = _Traits::_Store_masked<_Kind>(_True, _Out, _Result_lo, _Mask_lo);
-                    _Out = _Traits::_Store_masked<_Kind>(_True, _Out, _Result_hi, _Mask_hi);
+                    _Out = _Traits::template _Store_masked<_Kind>(_True, _Out, _Result_lo, _Mask_lo);
+                    _Out = _Traits::template _Store_masked<_Kind>(_True, _Out, _Result_hi, _Mask_hi);
 
                     _Advance_bytes(_First, _Unroll_bytes);
                 } while (_First != _Stop_at);
@@ -10341,7 +10405,7 @@ namespace {
                 const auto _Src    = _Traits::_Load(_True, _First);
                 const auto _Mask   = _Traits::_Cmpne(_True, _Src, _Match);
                 const auto _Result = _Traits::_Compact(_Mask, _Src);
-                _Out               = _Traits::_Store_masked<_Kind>(_True, _Out, _Result, _Mask);
+                _Out               = _Traits::template _Store_masked<_Kind>(_True, _Out, _Result, _Mask);
                 _Advance_bytes(_First, _Step_bytes);
             }
 
@@ -10351,7 +10415,7 @@ namespace {
                 const auto _Src                 = _Traits::_Load(_Tail_mask, _First);
                 const auto _Mask                = _Traits::_Cmpne(_Tail_mask, _Src, _Match);
                 const auto _Result              = _Traits::_Compact(_Mask, _Src);
-                _Out                            = _Traits::_Store_masked<_Kind>(_Tail_mask, _Out, _Result, _Mask);
+                _Out = _Traits::template _Store_masked<_Kind>(_Tail_mask, _Out, _Result, _Mask);
             }
 
             return _Out;
@@ -10872,16 +10936,25 @@ void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
 
     void* _Dest = _First;
     _Advance_bytes(_First, 1);
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 64 || _Sve_vl() > 16);
+    if (_Use_sve) {
+        return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_1, uint8_t>(
+            _First, _Last, _First, _Size_bytes);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 8) {
+    if (_Size_bytes >= 8) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Dest  = _Removing::_Unique_impl<_Removing::_Neon_1>(_First, _Stop);
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
+    if (_Use_sse42() && _Size_bytes >= 8) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_1>(_First, _Stop);
@@ -10901,16 +10974,25 @@ void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
 
     void* _Dest = _First;
     _Advance_bytes(_First, 2);
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 512 || _Sve_vl() > 16);
+    if (_Use_sve) {
+        return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_2, uint16_t>(
+            _First, _Last, _First, _Size_bytes);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+    if (_Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Removing::_Unique_impl<_Removing::_Neon_2>(_First, _Stop);
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
+    if (_Use_sse42() && _Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_2>(_First, _Stop);
@@ -10930,16 +11012,25 @@ void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
 
     void* _Dest = _First;
     _Advance_bytes(_First, 4);
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes >= 32 || _Sve_vl() > 16);
+    if (_Use_sve) {
+        return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_4, uint32_t>(
+            _First, _Last, _First, _Size_bytes);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+    if (_Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Removing::_Unique_impl<_Removing::_Neon_4>(_First, _Stop);
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+    if (_Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
         _Dest  = _Removing::_Unique_impl<_Removing::_Avx_4>(_First, _Stop);
@@ -10966,9 +11057,18 @@ void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
 
     void* _Dest = _First;
     _Advance_bytes(_First, 8);
+    [[maybe_unused]] const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes >= 256 || _Sve_vl() > 16);
+    if (_Use_sve) {
+        return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_8, uint64_t>(
+            _First, _Last, _First, _Size_bytes);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+    if (_Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
         _Dest  = _Removing::_Unique_impl<_Removing::_Avx_8>(_First, _Stop);
@@ -10993,16 +11093,25 @@ void* __stdcall __std_unique_copy_1(const void* _First, const void* const _Last,
 
     memcpy(_Dest, _First, 1);
     _Advance_bytes(_First, 1);
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+        _Advance_bytes(_Dest, 1);
+        return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_1, uint8_t>(
+            _First, _Last, _Dest, _Size_bytes);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 8) {
+    if (_Size_bytes >= 8) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Neon_1>(_First, _Stop, _Dest);
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
+    if (_Use_sse42() && _Size_bytes >= 8) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_1>(_First, _Stop, _Dest);
@@ -11020,16 +11129,25 @@ void* __stdcall __std_unique_copy_2(const void* _First, const void* const _Last,
 
     memcpy(_Dest, _First, 2);
     _Advance_bytes(_First, 2);
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+        _Advance_bytes(_Dest, 2);
+        return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_2, uint16_t>(
+            _First, _Last, _Dest, _Size_bytes);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+    if (_Size_bytes >= 16) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Neon_2>(_First, _Stop, _Dest);
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
+    if (_Use_sse42() && _Size_bytes >= 16) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_2>(_First, _Stop, _Dest);
@@ -11047,16 +11165,25 @@ void* __stdcall __std_unique_copy_4(const void* _First, const void* const _Last,
 
     memcpy(_Dest, _First, 4);
     _Advance_bytes(_First, 4);
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+        _Advance_bytes(_Dest, 4);
+        return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_4, uint32_t>(
+            _First, _Last, _Dest, _Size_bytes);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+    if (_Size_bytes >= 16) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Neon_4>(_First, _Stop, _Dest);
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+    if (_Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Avx_4>(_First, _Stop, _Dest);
@@ -11081,9 +11208,18 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
 
     memcpy(_Dest, _First, 8);
     _Advance_bytes(_First, 8);
+    [[maybe_unused]] const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE()) {
+        _Advance_bytes(_Dest, 8);
+        return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_8, uint64_t>(
+            _First, _Last, _Dest, _Size_bytes);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+    if (_Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Avx_8>(_First, _Stop, _Dest);
