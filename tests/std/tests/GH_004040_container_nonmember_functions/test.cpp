@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cassert>
+#include <climits>
 #include <cstddef>
 #include <cstdlib>
 #include <iterator>
@@ -304,11 +305,86 @@ CONSTEXPR20 bool test_array_comparison() {
     return true;
 }
 
+#if _HAS_CXX20
+template <class Ty, size_t Size>
+constexpr bool test_array_byte_comparison(const Ty low, const Ty high) {
+    array<Ty, Size> left{};
+    array<Ty, Size> right{};
+
+    assert(left <=> right == strong_ordering::equal);
+
+    right.front() = high;
+    assert(left <=> right == strong_ordering::less);
+    assert(right <=> left == strong_ordering::greater);
+
+    right.front() = low;
+    left.back()   = high;
+    right.back()  = low;
+    assert(left <=> right == strong_ordering::greater);
+    assert(right <=> left == strong_ordering::less);
+
+    return true;
+}
+
+void test_array_byte_comparison_exhaustive() {
+    for (int left_value = 0; left_value <= UCHAR_MAX; ++left_value) {
+        for (int right_value = 0; right_value <= UCHAR_MAX; ++right_value) {
+            const array left{static_cast<unsigned char>(left_value)};
+            const array right{static_cast<unsigned char>(right_value)};
+            const auto expected = left_value < right_value ? strong_ordering::less
+                                : left_value > right_value ? strong_ordering::greater
+                                                           : strong_ordering::equal;
+            assert((left <=> right) == expected);
+        }
+    }
+}
+
+template <size_t Size>
+void test_array_byte_mismatch_positions() {
+    array<unsigned char, Size> left{};
+    array<unsigned char, Size> right{};
+
+    for (size_t position = 0; position < Size; ++position) {
+        right[position] = 1;
+        assert((left <=> right) == strong_ordering::less);
+        assert((right <=> left) == strong_ordering::greater);
+        right[position] = 0;
+    }
+}
+#endif // _HAS_CXX20
+
 int main() {
     test_array_get();
     STATIC_ASSERT(test_array_get());
     test_array_comparison();
 #if _HAS_CXX20
     static_assert(test_array_comparison());
+    assert((array<unsigned char, 0>{} <=> array<unsigned char, 0>{}) == strong_ordering::equal);
+    test_array_byte_comparison<unsigned char, 1>(0, 1);
+    test_array_byte_comparison<unsigned char, 64>(0, 1);
+    test_array_byte_comparison<unsigned char, 65>(0, 1);
+    test_array_byte_comparison<bool, 1>(false, true);
+    test_array_byte_comparison<byte, 1>(byte{0}, byte{1});
+#if CHAR_MIN == 0
+    test_array_byte_comparison<char, 1>(char{0}, char{1});
+#endif // CHAR_MIN == 0
+    test_array_byte_comparison_exhaustive();
+    test_array_byte_mismatch_positions<64>();
+    test_array_byte_mismatch_positions<65>();
+#ifdef __cpp_char8_t
+    test_array_byte_comparison<char8_t, 1>(char8_t{0}, char8_t{1});
+#endif // defined(__cpp_char8_t)
+    static_assert((array<unsigned char, 0>{} <=> array<unsigned char, 0>{}) == strong_ordering::equal);
+    static_assert(test_array_byte_comparison<unsigned char, 1>(0, 1));
+    static_assert(test_array_byte_comparison<unsigned char, 64>(0, 1));
+    static_assert(test_array_byte_comparison<unsigned char, 65>(0, 1));
+    static_assert(test_array_byte_comparison<bool, 1>(false, true));
+    static_assert(test_array_byte_comparison<byte, 1>(byte{0}, byte{1}));
+#if CHAR_MIN == 0
+    static_assert(test_array_byte_comparison<char, 1>(char{0}, char{1}));
+#endif // CHAR_MIN == 0
+#ifdef __cpp_char8_t
+    static_assert(test_array_byte_comparison<char8_t, 1>(char8_t{0}, char8_t{1}));
+#endif // defined(__cpp_char8_t)
 #endif // _HAS_CXX20
 }
