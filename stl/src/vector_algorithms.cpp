@@ -10119,8 +10119,7 @@ namespace {
         enum class _Alg { _Remove, _Remove_copy };
 
         struct _Sve_8 {
-            using _Vec_t                       = svuint64_t;
-            static constexpr size_t _Elem_size = 8;
+            using _Vec_t = svuint64_t;
 
             static size_t _Step() noexcept {
                 return svcntd();
@@ -10166,8 +10165,7 @@ namespace {
         };
 
         struct _Sve_4 {
-            using _Vec_t                       = svuint32_t;
-            static constexpr size_t _Elem_size = 4;
+            using _Vec_t = svuint32_t;
 
             static size_t _Step() noexcept {
                 return svcntw();
@@ -10213,8 +10211,7 @@ namespace {
         };
 
         struct _Sve_2 {
-            using _Vec_t                       = _Sve_4::_Vec_t;
-            static constexpr size_t _Elem_size = 2;
+            using _Vec_t = _Sve_4::_Vec_t;
 
             static size_t _Step() noexcept {
                 return _Sve_4::_Step();
@@ -10260,8 +10257,7 @@ namespace {
         };
 
         struct _Sve_1 {
-            using _Vec_t                       = _Sve_4::_Vec_t;
-            static constexpr size_t _Elem_size = 1;
+            using _Vec_t = _Sve_4::_Vec_t;
 
             static size_t _Step() noexcept {
                 return _Sve_4::_Step();
@@ -10326,7 +10322,7 @@ namespace {
                     const auto _Src_hi = _Traits::_Load(_True, static_cast<const _Ty*>(_First) + _Step_elems);
 
                     const void* _First_d = _First;
-                    _Rewind_bytes(_First_d, _Traits::_Elem_size);
+                    _Rewind_bytes(_First_d, sizeof(_Ty));
                     const auto _Match_lo = _Traits::_Load(_True, _First_d);
                     const auto _Match_hi = _Traits::_Load(_True, static_cast<const _Ty*>(_First_d) + _Step_elems);
 
@@ -10346,7 +10342,7 @@ namespace {
             if ((_Size_bytes & _Step_bytes) != 0) { // use original _Size_bytes; we've read only 2 * _Step_bytes chunks
                 const auto _Src      = _Traits::_Load(_True, _First);
                 const void* _First_d = _First;
-                _Rewind_bytes(_First_d, _Traits::_Elem_size);
+                _Rewind_bytes(_First_d, sizeof(_Ty));
                 const auto _Match  = _Traits::_Load(_True, _First_d);
                 const auto _Mask   = _Traits::_Cmpne(_True, _Src, _Match);
                 const auto _Result = _Traits::_Compact(_Mask, _Src);
@@ -10360,7 +10356,7 @@ namespace {
                 const auto _Tail_mask           = _Traits::_Whilelt(size_t{0}, _Tail_length_elems);
                 const auto _Src                 = _Traits::_Load(_Tail_mask, _First);
                 const void* _First_d            = _First;
-                _Rewind_bytes(_First_d, _Traits::_Elem_size);
+                _Rewind_bytes(_First_d, sizeof(_Ty));
                 const auto _Match  = _Traits::_Load(_Tail_mask, _First_d);
                 const auto _Mask   = _Traits::_Cmpne(_Tail_mask, _Src, _Match);
                 const auto _Result = _Traits::_Compact(_Mask, _Src);
