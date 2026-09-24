@@ -789,8 +789,8 @@
 //                copy/move constructors and copy/move assignment operators are not trivial (/Wall)
 // warning C5246: 'member': the initialization of a subobject should be wrapped in braces (/Wall)
 // warning C5278: adding a specialization for 'type trait' has undefined behavior
-// warning C5280: a static operator '()' requires at least '/std:c++23preview'
-// warning C5281: a static lambda requires at least '/std:c++23preview'
+// warning C5280: a static operator '()' requires at least '/std:c++23'
+// warning C5281: a static lambda requires at least '/std:c++23'
 // warning C5285: cannot declare a specialization for 'meow'
 // warning C5291: 'DERIVED': deriving from the base class 'BASE' can cause potential runtime issues
 //                due to an ABI bug. Recommend adding a 4-byte data member to the base class
@@ -909,12 +909,12 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202608L
+#define _MSVC_STL_UPDATE  202609L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 3)
-_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.3 or newer.");
+#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 4)
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.4 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -923,8 +923,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.3 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 22 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1951 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.51 or newer.");
+#if _MSC_VER < 1952 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.52 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers

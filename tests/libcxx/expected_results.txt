@@ -61,14 +61,19 @@ std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 # LLVM-182397: [libc++][test] rand.dist.bern.negbin/eval.pass.cpp constructs with p == 1, which has undefined behavior
 std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
 
+# LLVM-222431: [libcxx][test] `signaling_NaN()` should not be used in `constexpr <cmath>` tests
+std/numerics/c.math/isgreater.pass.cpp:0 FAIL
+std/numerics/c.math/isgreater.pass.cpp:1 FAIL
+std/numerics/c.math/isgreaterequal.pass.cpp:0 FAIL
+std/numerics/c.math/isgreaterequal.pass.cpp:1 FAIL
+std/numerics/c.math/islessequal.pass.cpp:0 FAIL
+std/numerics/c.math/islessequal.pass.cpp:1 FAIL
+std/numerics/c.math/isunordered.pass.cpp:0 FAIL
+std/numerics/c.math/isunordered.pass.cpp:1 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
-
-# These tests are extremely slow, taking over 23 minutes to execute (in debug mode, non-optimized).
-# They contain 10K^2 / 2 == 50M loops.
-std/input.output/iostreams.base/ios.base/ios.base.storage/iword.pass.cpp SKIPPED
-std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
 
 # This test is passing non-BidirectionalIterators to std::prev.
 # LWG-3197 "std::prev should not require BidirectionalIterator" (New)
@@ -188,6 +193,20 @@ std/containers/views/mdspan/layout_right/ctor.layout_stride.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
 
+# *** SLOW TESTS ***
+# These tests are extremely slow, taking over 23 minutes to execute (in debug mode, non-optimized).
+# They contain 10K^2 / 2 == 50M loops.
+std/input.output/iostreams.base/ios.base/ios.base.storage/iword.pass.cpp SKIPPED
+std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
+
+# These tests take over 150 seconds on a 5950X when fully loaded by a test pass, but only 11 seconds when run alone.
+std/atomics/atomics.ref/compare_exchange_weak.pass.cpp SKIPPED
+std/atomics/atomics.ref/compare_exchange_strong.pass.cpp SKIPPED
+
+# This test takes 116 seconds on a 5950X when fully loaded by a test pass, and 46 seconds when run alone.
+std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.discrete/eval.pass.cpp SKIPPED
+
+
 # *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***
 # These tests set an allocator with a max_size() too small to default construct an unordered container
 # (due to our minimum bucket size).
@@ -244,21 +263,10 @@ std/atomics/atomics.types.operations/atomics.types.operations.req/atomic_fetch_m
 std/atomics/atomics.types.operations/atomics.types.operations.req/atomic_fetch_min.pass.cpp FAIL
 
 # P0533R9 constexpr For <cmath> And <cstdlib>
-std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
-std/numerics/c.math/fpclassify.pass.cpp FAIL
-std/numerics/c.math/isgreater.pass.cpp:0 FAIL
-std/numerics/c.math/isgreater.pass.cpp:1 FAIL
-std/numerics/c.math/isgreaterequal.pass.cpp:0 FAIL
-std/numerics/c.math/isgreaterequal.pass.cpp:1 FAIL
-std/numerics/c.math/isless.pass.cpp:0 FAIL
-std/numerics/c.math/isless.pass.cpp:1 FAIL
-std/numerics/c.math/islessequal.pass.cpp:0 FAIL
-std/numerics/c.math/islessequal.pass.cpp:1 FAIL
-std/numerics/c.math/islessgreater.pass.cpp:0 FAIL
-std/numerics/c.math/islessgreater.pass.cpp:1 FAIL
-std/numerics/c.math/isunordered.pass.cpp:0 FAIL
-std/numerics/c.math/isunordered.pass.cpp:1 FAIL
+# GH-6412 Implement P0533R9 (C++23 constexpr <cmath>) for Clang and EDG
+std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp:2 FAIL
+std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp:2 FAIL
+std/numerics/c.math/fpclassify.pass.cpp:2 FAIL
 
 # P0543R3 Saturation Arithmetic
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -644,6 +652,11 @@ std/localization/locale.categories/category.time/locale.time.put/locale.time.put
 
 # GH-6135 <xloctime>: time_put_byname doesn't encode the output in UTF-8 even if the locale name contains ".UTF-8"
 std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp FAIL
+
+# GH-6445 <cmath>: constexpr fpclassify() rejects signaling NaNs on x86
+# SKIPPED because this is x86-specific.
+std/numerics/c.math/fpclassify.pass.cpp:0 SKIPPED
+std/numerics/c.math/fpclassify.pass.cpp:1 SKIPPED
 
 
 # *** VCRUNTIME BUGS ***
