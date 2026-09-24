@@ -1022,7 +1022,7 @@ constexpr bool test() {
         assert(last_2.data() == begin(sequence) + 5);
         assert(last_1.size() == 4);
         assert(last_2.size() == 4);
-        assert(last_1[0] == false);
+        assert(last_1[3] == true);
         assert(last_2[3] == true);
 
         same_as<span<const bool>> decltype(auto) subspan_1    = sp_dyn.subspan(3, 4);
