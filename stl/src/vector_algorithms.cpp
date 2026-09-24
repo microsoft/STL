@@ -11058,7 +11058,7 @@ void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
 
     void* _Dest = _First;
     _Advance_bytes(_First, 8);
-    const size_t _Size_bytes = _Byte_length(_First, _Last);
+    [[maybe_unused]] const size_t _Size_bytes = _Byte_length(_First, _Last);
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes >= 256 || _Sve_vl() > 16);
@@ -11209,7 +11209,7 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
 
     memcpy(_Dest, _First, 8);
     _Advance_bytes(_First, 8);
-    const size_t _Size_bytes = _Byte_length(_First, _Last);
+    [[maybe_unused]] const size_t _Size_bytes = _Byte_length(_First, _Last);
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE()) {
