@@ -10942,7 +10942,6 @@ void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
     _Advance_bytes(_First, 1);
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 64 || _Sve_vl() > 16);
     if (_Use_sve) {
@@ -10950,6 +10949,8 @@ void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
             _First, _Last, _First, _Size_bytes);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
     if (_Size_bytes >= 8) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
@@ -10979,7 +10980,6 @@ void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
     _Advance_bytes(_First, 2);
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 512 || _Sve_vl() > 16);
     if (_Use_sve) {
@@ -10987,6 +10987,8 @@ void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
             _First, _Last, _First, _Size_bytes);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
     if (_Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
@@ -11016,7 +11018,6 @@ void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
     _Advance_bytes(_First, 4);
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes >= 32 || _Sve_vl() > 16);
     if (_Use_sve) {
@@ -11024,6 +11025,8 @@ void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
             _First, _Last, _First, _Size_bytes);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
     if (_Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
@@ -11066,8 +11069,9 @@ void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
         return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_8, uint64_t>(
             _First, _Last, _First, _Size_bytes);
     }
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#if !defined(_M_ARM64EC)
+#endif // ^^^ defined(_M_ARM64) ^^^
+
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     if (_Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -11082,7 +11086,6 @@ void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
         _First = _Stop;
     }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
-#endif // ^^^ defined(_M_ARM64) ^^^
 
     return _Removing::_Unique_fallback<uint64_t>(_First, _Last, _Dest);
 }
