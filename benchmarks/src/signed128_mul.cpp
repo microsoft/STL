@@ -4,8 +4,6 @@
 #include <benchmark/benchmark.h>
 
 #include <__msvc_int128.hpp>
-#include <array>
-#include <cstdint>
 #include <random>
 #include <utility>
 #include <vector>
