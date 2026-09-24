@@ -11220,7 +11220,7 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
         return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_8, uint64_t>(
             _First, _Last, _Dest, _Size_bytes);
     }
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     if (_Use_avx2() && _Size_bytes >= 32) {
