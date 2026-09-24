@@ -145,13 +145,14 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
   + **You must install the Insiders IDE and the Preview build tools for STL development.** *See Note 1 below.*
   + Select the "Desktop development with C++" workload.
   + Select the following components at a minimum:
+    - "MSVC Build Tools for x64/x86 (Latest)" <!-- TRANSITION, DevCom-11142709 -->
     - "MSVC Build Tools for x64/x86 (Preview)"
     - "C++ CMake tools for Windows"
     - "MSVC AddressSanitizer"
     - "Windows 11 SDK (10.0.28000)" or later
     - "C++ Clang tools for Windows (22.1.3 - x64/x86)"
     - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Preview)"
-* Install [Python][] 3.14.6 or later.
+* Install [Python][] 3.14.7 or later.
   + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
 
@@ -552,37 +553,33 @@ vehicles.
 ```mermaid
 flowchart TB
 %%{ init: {"flowchart": {"htmlLabels": true}} }%%
-    classDef default text-align:left
-    subgraph VisualStudioSubgraph[Visual Studio]
-        direction TB
-        STLNode("<b>STL</b>
-        This repo; provides C++ Standard Library headers, separately
-        compiled implementations of most of the iostreams functionality,
-        and a few runtime support components like std::exception_ptr.")
-        subgraph VCRuntimeSubgraph[VCRuntime]
-            direction TB
-            VCStartupNode("<b>VCStartup</b>
-            Provides compiler support mechanisms that
-            live in each binary; such as machinery to
-            call constructors and destructors for global
-            variables, the entry point, and the /GS cookie.<br>
-            Merged into static and import libraries of VCRuntime.")
-            VCRuntimeNode("<b>VCRuntime</b>
-            Provides compiler support mechanisms that can be
-            shared between binaries; code that the compiler calls
-            on your behalf, such as the C++ exception handling
-            runtime, string.h intrinsics, math intrinsics, and
-            declarations for CPU-vendor-specific intrinsics.")
-        end
-    end
-    subgraph WindowsSDKSubgraph[Windows SDK]
-        UniversalCRTNode("<b>Universal CRT</b>
-        Windows component that provides C library support, such as printf,
-        C locales, and some POSIX-like shims for the Windows API, like _stat.")
-    end
-    STLNode ==> VCRuntimeSubgraph & UniversalCRTNode
-    VCStartupNode ==> VCRuntimeNode ==> UniversalCRTNode
+classDef default text-align:left
+subgraph VisualStudioSubgraph[Visual Studio]
+  direction TB
+  STLNode("<b>STL</b>")
+  subgraph VCRuntimeSubgraph[VCRuntime]
+    direction TB
+    VCRuntimeNode("<b>VCRuntime</b>")
+    VCStartupNode("<b>VCStartup</b>")
+  end
+end
+subgraph WindowsSDKSubgraph[Windows SDK]
+  UniversalCRTNode("<b>Universal CRT</b>")
+end
+STLNode ==> VCRuntimeSubgraph & UniversalCRTNode
+VCRuntimeNode ==> VCStartupNode ==> UniversalCRTNode
 ```
+
+* **STL**: This repo; provides C++ Standard Library headers, separately compiled implementations
+  of most of the iostreams functionality, and a few runtime support components like `std::exception_ptr`.
+* **VCRuntime**: Provides compiler support mechanisms that can be shared between binaries;
+  code that the compiler calls on your behalf, such as the C++ exception handling runtime,
+  `string.h` intrinsics, math intrinsics, and declarations for CPU-vendor-specific intrinsics.
+* **VCStartup**: Provides compiler support mechanisms that live in each binary; such as machinery
+  to call constructors and destructors for global variables, the entry point, and the `/GS` cookie.
+  Merged into static and import libraries of VCRuntime.
+* **Universal CRT**: Windows component that provides C library support, such as `printf`,
+  C locales, and some POSIX-like shims for the Windows API, like `_stat`.
 
 # Contributing
 
