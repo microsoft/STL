@@ -961,7 +961,7 @@ namespace {
         struct _Traits_scalar : _Base {
             static constexpr bool _Vectorized       = false;
             static constexpr size_t _Tail_mask      = 0;
-            static constexpr bool _Has_unsigned_cmp = false;
+            static constexpr bool _Has_unsigned_cmp = true;
             using _Vec_t                            = void;
         };
 
