@@ -1283,7 +1283,7 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_rep_branchless    = 0x01000,
     _Fl_rep_str           = 0x02000,
     _Fl_rep_char          = 0x04000,
-    _Fl_rep_subtypemask   = 0x1E000,
+    _Fl_rep_subtype_mask  = 0x1E000,
     _Fl_rep_subtype_max   = 0x04000,
 };
 
@@ -4496,7 +4496,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     auto& _Sav   = _Loop_vals[_Node->_Loop_number];
 
                     // optimize some common types of repetitions
-                    const auto _Rep_subtype = _Node->_Flags & _Fl_rep_subtypemask;
+                    const auto _Rep_subtype = _Node->_Flags & _Fl_rep_subtype_mask;
                     if (_Greedy && _Rep_subtype != 0 && _Rep_subtype <= _Fl_rep_subtype_max) {
                         _It _Min_pos = _Tgt_state._Cur;
 
