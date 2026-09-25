@@ -7140,13 +7140,14 @@ namespace ranges {
         return _Get_smallest_distance_closure(index_sequence_for<_LHSTupleTypes...>{});
     }
 
-    // Work around C2382 when mixing #include <ranges> with import std;: a noexcept fold expression prevents
-    // the compiler from matching the textual and module declarations, while a variable template is trivially matched.
+    // TRANSITION, DevCom-11148844: a noexcept-specifier containing a fold expression prevents the compiler from
+    // matching the textual and module declarations, causing C2382 when a translation unit mixes #include <ranges>
+    // with import std;. A variable template is trivially matched.
     template <class _LHSTupleType, class _RHSTupleType>
-    inline constexpr bool _Zip_iterator_sentinel_equal_is_nothrow = false;
+    constexpr bool _Zip_iterator_sentinel_equal_is_nothrow = false;
 
     template <class... _LHSTupleTypes, class... _RHSTupleTypes>
-    inline constexpr bool _Zip_iterator_sentinel_equal_is_nothrow<tuple<_LHSTupleTypes...>, tuple<_RHSTupleTypes...>> =
+    constexpr bool _Zip_iterator_sentinel_equal_is_nothrow<tuple<_LHSTupleTypes...>, tuple<_RHSTupleTypes...>> =
         (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...);
 
     template <class... _LHSTupleTypes, class... _RHSTupleTypes>
