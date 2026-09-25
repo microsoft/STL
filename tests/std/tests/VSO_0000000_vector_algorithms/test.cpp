@@ -5,14 +5,18 @@
 #include <array>
 #include <bitset>
 #include <cassert>
+#include <chrono>
 #include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <deque>
 #include <functional>
+#include <iostream>
+#include <iterator>
 #include <limits>
 #include <list>
+#include <map>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -31,6 +35,41 @@
 #include <test_vector_algorithms_support.hpp>
 
 using namespace std;
+using chrono::steady_clock;
+
+map<pair<int, string>, steady_clock::duration> elapsed_time;
+
+#if defined(TEST_PART) && (TEST_PART < 1 || TEST_PART > 6)
+static_assert(false, "If TEST_PART is defined, it must be within [1, 6].");
+#endif
+
+// Binpack the tests into roughly equal parts, according to how much time they take:
+#define PART_ADJACENT_DIFFERENCE     1
+#define PART_ADJACENT_FIND           1
+#define PART_COUNT                   1
+#define PART_FIND                    1
+#define PART_FIND_LAST               1
+#define PART_FIND_FIRST_OF           1
+#define PART_SEARCH                  1
+#define PART_MINMAX_ELEMENT          2
+#define PART_IS_SORTED_UNTIL         1
+#define PART_INCLUDES                2
+#define PART_REPLACE                 2
+#define PART_REVERSE                 4
+#define PART_REVERSE_COPY            4
+#define PART_ROTATE                  3
+#define PART_REMOVE                  4
+#define PART_UNIQUE                  6
+#define PART_SWAP_RANGES             5
+#define PART_TEST_SWAP_ARRAYS        5
+#define PART_SEARCH_N                3
+#define PART_TEST_MISMATCH_ONE       5
+#define PART_TEST_MISMATCH_TWO       4
+#define PART_TEST_MISMATCH_THREE     4
+#define PART_TEST_MISMATCH_FOUR      4
+#define PART_TEST_VARIOUS_CONTAINERS 6
+#define PART_TEST_BITSET             6
+#define PART_TEST_STRING             6
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 #ifdef __clang__
@@ -620,6 +659,37 @@ void test_min_max_element_special_cases() {
            == v.begin() + 2 * block_size_in_elements + last_vector_first_elem + 9);
 }
 
+// GH-6373 ARM64/ARM64EC vectorized minmax_element() family mishandles unsigned elements
+void test_gh_6373() {
+    // These test cases are 16 bytes, to reach the vectorization threshold.
+
+    // In these cases, the minimum is 2^(N-1) - 1 and is located after index 0.
+    test_case_min_max_element(
+        vector<uint8_t>{155, 153, 248, 150, 189, 140, 247, 178, 244, 164, 226, 214, 239, 215, 176, 127});
+    test_case_min_max_element(vector<uint16_t>{0x8011, 0x8022, 0x8033, 0x8044, 0x8055, 0x8066, 0x8077, 0x7FFF});
+    test_case_min_max_element(vector<uint32_t>{0x8000'0011UL, 0x8000'0022UL, 0x8000'0033UL, 0x7FFF'FFFFUL});
+    test_case_min_max_element(vector<uint64_t>{0x8000'0000'0000'0011ULL, 0x7FFF'FFFF'FFFF'FFFFULL});
+
+    // In these cases, the maximum is 2^(N-1) and is located after index 0.
+    test_case_min_max_element(vector<uint8_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 128});
+    test_case_min_max_element(vector<uint16_t>{1, 2, 3, 4, 5, 6, 7, 0x8000});
+    test_case_min_max_element(vector<uint32_t>{1, 2, 3, 0x8000'0000UL});
+    test_case_min_max_element(vector<uint64_t>{1, 0x8000'0000'0000'0000ULL});
+
+    {
+        // This is an extra test case to exercise an additional failure mode that was resolved by the same fix.
+        // For uint8_t, _Max_portion_byte_size = _Portion_max * _Vec_size = 256 * 16 = 4096.
+        // This test case has 4112 = 4096 + 16 bytes, which is a max portion followed by a single vector.
+        // The scenario is when all of the first 4096 bytes are >= 128, then any of the last 16 bytes are < 128.
+        vector<uint8_t> v(4112, 200);
+        v[1729] = 222;
+        v[3000] = 222;
+        v[4100] = 11;
+        v[4105] = 11;
+        test_case_min_max_element(v);
+    }
+}
+
 template <class T>
 void test_is_sorted_until(mt19937_64& gen) {
     using Limits = numeric_limits<T>;
@@ -767,8 +837,13 @@ void test_case_replace_copy(const vector<T>& input, vector<T>& out_expected, vec
 
 template <class T>
 void test_replace(mt19937_64& gen) {
-    // replace() is vectorized for 4 and 8 bytes only.
+#if defined(_M_ARM64)
+    // For ARM64, replace() is always vectorized.
+    constexpr bool replace_is_vectorized = true;
+#else
+    // For x64/x86, replace() is vectorized for 4 and 8 bytes only.
     constexpr bool replace_is_vectorized = sizeof(T) >= 4;
+#endif
 
     using TD = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis(0, 9);
@@ -1212,233 +1287,861 @@ void test_swap_arrays(mt19937_64& gen) {
 #endif // _HAS_CXX20
 }
 
-void test_vector_algorithms(mt19937_64& gen) {
-    test_adjacent_difference<char>(gen);
-    test_adjacent_difference<signed char>(gen);
-    test_adjacent_difference<unsigned char>(gen);
-    test_adjacent_difference<short>(gen);
-    test_adjacent_difference<unsigned short>(gen);
-    test_adjacent_difference<int>(gen);
-    test_adjacent_difference<unsigned int>(gen);
-    test_adjacent_difference<long long>(gen);
-    test_adjacent_difference<unsigned long long>(gen);
+template <class UnderlyingIt>
+struct forward_iter_adaptor {
+    using iterator_category = forward_iterator_tag;
+    using reference         = typename UnderlyingIt::reference;
+    using value_type        = typename UnderlyingIt::value_type;
+    using pointer           = typename UnderlyingIt::pointer;
+    using difference_type   = ptrdiff_t;
 
-    test_adjacent_difference_with_heterogeneous_types();
+    constexpr forward_iter_adaptor() : ptr{} {}
+    constexpr explicit forward_iter_adaptor(const UnderlyingIt ptr_) : ptr(ptr_) {}
 
-    test_adjacent_find<char>(gen);
-    test_adjacent_find<signed char>(gen);
-    test_adjacent_find<unsigned char>(gen);
-    test_adjacent_find<short>(gen);
-    test_adjacent_find<unsigned short>(gen);
-    test_adjacent_find<int>(gen);
-    test_adjacent_find<unsigned int>(gen);
-    test_adjacent_find<long long>(gen);
-    test_adjacent_find<unsigned long long>(gen);
+    constexpr reference operator*() const {
+        return *ptr;
+    }
+    constexpr pointer operator->() const {
+        return ptr;
+    }
+    constexpr forward_iter_adaptor& operator++() {
+        ++ptr;
+        return *this;
+    }
+    constexpr forward_iter_adaptor operator++(int) {
+        forward_iter_adaptor old = *this;
+        ++ptr;
+        return old;
+    }
+    constexpr bool operator==(const forward_iter_adaptor& o) const {
+        return ptr == o.ptr;
+    }
+    constexpr bool operator!=(const forward_iter_adaptor& o) const {
+        return ptr != o.ptr;
+    }
 
-    test_count<char>(gen);
-    test_count<signed char>(gen);
-    test_count<unsigned char>(gen);
-    test_count<short>(gen);
-    test_count<unsigned short>(gen);
-    test_count<int>(gen);
-    test_count<unsigned int>(gen);
-    test_count<long long>(gen);
-    test_count<unsigned long long>(gen);
+    UnderlyingIt ptr;
+};
 
-    test_find<char>(gen);
-    test_find<signed char>(gen);
-    test_find<unsigned char>(gen);
-    test_find<short>(gen);
-    test_find<unsigned short>(gen);
-    test_find<int>(gen);
-    test_find<unsigned int>(gen);
-    test_find<long long>(gen);
-    test_find<unsigned long long>(gen);
+template <class FwdIt, class T>
+auto last_known_good_search_n(FwdIt first, const FwdIt last, const size_t count, const T val) {
+    // Deliberately using simple approach, not smart bidi/random iterators "check from the other end" stuff
+    if (count == 0) {
+        return first;
+    }
+
+    size_t found = 0;
+    FwdIt match{};
+    for (; first != last; ++first) {
+        if (*first == val) {
+            ++found;
+            if (found == 1) {
+                match = first;
+            }
+
+            if (found == count) {
+                return match;
+            }
+        } else {
+            found = 0;
+        }
+    }
+    return last;
+}
+
+template <bool forward_only_iterators, class It, class T>
+void test_case_search_n(const It first, const It last, const size_t count, const T val) {
+    if constexpr (forward_only_iterators) {
+        using iter_type = forward_iter_adaptor<It>;
+        test_case_search_n<false>(iter_type(first), iter_type(last), count, val);
+    } else {
+        const auto expected = last_known_good_search_n(first, last, count, val);
+        const auto actual   = search_n(first, last, count, val);
+        assert(expected == actual);
 
 #if _HAS_CXX20
-    test_gh_4449<uint8_t>();
-    test_gh_4449<uint16_t>();
-    test_gh_4449<uint32_t>();
-    test_gh_4449<uint64_t>();
+        const auto ranges_actual = ranges::search_n(first, last, static_cast<ptrdiff_t>(count), val);
+        assert(expected == begin(ranges_actual));
+        if (expected == last) {
+            assert(end(ranges_actual) == last);
+        } else {
+            assert(distance(expected, end(ranges_actual)) == static_cast<ptrdiff_t>(count));
+        }
+#endif // _HAS_CXX20
+    }
+}
+
+template <class T, bool forward_only_iterators = false>
+void test_search_n(mt19937_64& gen) {
+    constexpr size_t countBound    = 70;
+    constexpr size_t countTrials   = 10;
+    constexpr size_t patternTrials = 2;
+    using TD                       = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis((numeric_limits<T>::min)(), (numeric_limits<T>::max)());
+    vector<T> input_src;
+    vector<T> input;
+    input_src.reserve(dataCount);
+    input.reserve(dataCount);
+
+    vector<size_t> count_vec(countBound);
+    iota(count_vec.begin(), count_vec.end(), size_t{0});
+
+    for (;;) {
+        shuffle(count_vec.begin(), count_vec.end(), gen); // shuffle before each round of trials
+
+        for (size_t trial = 0; trial != countTrials; ++trial) {
+            assert(trial < count_vec.size());
+            const size_t count = count_vec[trial]; // sample a value in [0, countBound) without reuse
+
+            input = input_src;
+
+            const T val = static_cast<T>(dis(gen));
+
+            test_case_search_n<forward_only_iterators>(input.begin(), input.end(), count, val);
+
+            if (input.empty()) {
+                continue;
+            }
+
+            binomial_distribution<size_t> pattern_length_dis(count * 2, 0.5);
+            uniform_int_distribution<size_t> pos_dis(0, input.size() - 1);
+
+            for (size_t pattern = 0; pattern != patternTrials; ++pattern) {
+                const size_t pattern_length = pattern_length_dis(gen);
+                const size_t pattern_pos    = pos_dis(gen);
+
+                if (pattern_length + pattern_pos <= input.size()) {
+                    fill_n(input.begin() + static_cast<ptrdiff_t>(pattern_pos), pattern_length, val);
+
+                    test_case_search_n<forward_only_iterators>(input.begin(), input.end(), count, val);
+                }
+            }
+        }
+
+        if (input.size() == dataCount) {
+            break;
+        }
+
+        input_src.push_back(static_cast<T>(dis(gen)));
+    }
+}
+
+template <class FwdIt>
+auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
+    for (; first1 != last1 && first2 != last2; ++first1, ++first2) {
+        if (*first1 != *first2) {
+            break;
+        }
+    }
+
+    return make_pair(first1, first2);
+}
+
+template <class FwdIt>
+bool last_known_good_lex_compare(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
+    if (expected_mismatch.second == last2) {
+        return false;
+    } else if (expected_mismatch.first == last1) {
+        return true;
+    } else if (*expected_mismatch.first < *expected_mismatch.second) {
+        return true;
+    } else {
+        assert(*expected_mismatch.second < *expected_mismatch.first);
+        return false;
+    }
+}
+
+#if _HAS_CXX20
+template <class FwdIt>
+auto last_known_good_lex_compare_3way(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
+    if (expected_mismatch.second == last2) {
+        if (expected_mismatch.first == last1) {
+            return strong_ordering::equal;
+        } else {
+            return strong_ordering::greater;
+        }
+    } else if (expected_mismatch.first == last1) {
+        return strong_ordering::less;
+    } else {
+        auto order = *expected_mismatch.first <=> *expected_mismatch.second;
+        assert(order != 0);
+        return order;
+    }
+}
 #endif // _HAS_CXX20
 
+template <class T>
+auto test_case_mismatch_only(const vector<T>& a, const vector<T>& b) {
+    auto expected_mismatch = last_known_good_mismatch(a.begin(), a.end(), b.begin(), b.end());
+    auto actual_mismatch   = mismatch(a.begin(), a.end(), b.begin(), b.end());
+    assert(expected_mismatch == actual_mismatch);
+
+#if _HAS_CXX20
+    auto ranges_actual_mismatch = ranges::mismatch(a, b);
+    assert(get<0>(expected_mismatch) == ranges_actual_mismatch.in1);
+    assert(get<1>(expected_mismatch) == ranges_actual_mismatch.in2);
+#endif // _HAS_CXX20
+    return expected_mismatch;
+}
+
+template <class T>
+void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<T>& b) {
+    auto expected_mismatch = test_case_mismatch_only(a, b);
+
+    auto expected_lex = last_known_good_lex_compare(expected_mismatch, a.end(), b.end());
+    auto actual_lex   = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
+    assert(expected_lex == actual_lex);
+
+#if _HAS_CXX20
+    auto ranges_actual_lex = ranges::lexicographical_compare(a, b);
+    assert(expected_lex == ranges_actual_lex);
+
+    auto expected_lex_3way = last_known_good_lex_compare_3way(expected_mismatch, a.end(), b.end());
+    auto actual_lex_3way   = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+    assert(expected_lex_3way == actual_lex_3way);
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_mismatch_and_lex_compare_family(mt19937_64& gen) {
+    constexpr size_t shrinkCount   = 4;
+    constexpr size_t mismatchCount = 10;
+    using TD                       = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis('a', 'z');
+    vector<T> input_a;
+    vector<T> input_b;
+    input_a.reserve(dataCount);
+    input_b.reserve(dataCount);
+
+    for (;;) {
+        // equal
+        test_case_mismatch_and_lex_compare_family(input_a, input_b);
+
+        // different sizes
+        for (size_t i = 0; i != shrinkCount && !input_b.empty(); ++i) {
+            input_b.pop_back();
+            test_case_mismatch_and_lex_compare_family(input_a, input_b);
+            test_case_mismatch_and_lex_compare_family(input_b, input_a);
+        }
+
+        // actual mismatch (or maybe not, depending on random)
+        if (!input_b.empty()) {
+            uniform_int_distribution<size_t> mismatch_dis(0, input_a.size() - 1);
+
+            for (size_t attempts = 0; attempts < mismatchCount; ++attempts) {
+                const size_t possible_mismatch_pos = mismatch_dis(gen);
+                input_a[possible_mismatch_pos]     = static_cast<T>(dis(gen));
+                test_case_mismatch_and_lex_compare_family(input_a, input_b);
+                test_case_mismatch_and_lex_compare_family(input_b, input_a);
+            }
+        }
+
+        if (input_a.size() == dataCount) {
+            break;
+        }
+
+        input_a.push_back(static_cast<T>(dis(gen)));
+        input_b = input_a;
+    }
+}
+
+#if _HAS_CXX20
+template <class T>
+struct triplet {
+    T x;
+    T y;
+    T z;
+
+    bool operator==(const triplet&) const = default;
+};
+
+template <class T>
+void test_mismatch_only_triplets(mt19937_64& gen) {
+    constexpr size_t shrinkCount   = 4;
+    constexpr size_t mismatchCount = 10;
+    using TD                       = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis('a', 'z');
+    vector<triplet<T>> input_a;
+    vector<triplet<T>> input_b;
+    input_a.reserve(dataCount);
+    input_b.reserve(dataCount);
+
+    for (;;) {
+        // equal
+        test_case_mismatch_only(input_a, input_b);
+
+        // different sizes
+        for (size_t i = 0; i != shrinkCount && !input_b.empty(); ++i) {
+            input_b.pop_back();
+            test_case_mismatch_only(input_a, input_b);
+            test_case_mismatch_only(input_b, input_a);
+        }
+
+        // actual mismatch (or maybe not, depending on random)
+        if (!input_b.empty()) {
+            uniform_int_distribution<size_t> mismatch_dis(0, input_a.size() - 1);
+
+            for (size_t attempts = 0; attempts < mismatchCount; ++attempts) {
+                const size_t possible_mismatch_pos = mismatch_dis(gen);
+                input_a[possible_mismatch_pos].x   = static_cast<T>(dis(gen));
+                input_a[possible_mismatch_pos].y   = static_cast<T>(dis(gen));
+                input_a[possible_mismatch_pos].z   = static_cast<T>(dis(gen));
+                test_case_mismatch_only(input_a, input_b);
+                test_case_mismatch_only(input_b, input_a);
+            }
+        }
+
+        if (input_a.size() == dataCount) {
+            break;
+        }
+
+        input_a.emplace_back();
+        input_a.back().x = static_cast<T>(dis(gen));
+        input_a.back().y = static_cast<T>(dis(gen));
+        input_a.back().z = static_cast<T>(dis(gen));
+        input_b          = input_a;
+    }
+}
+#endif // _HAS_CXX20
+
+template <class C1, class C2>
+void test_mismatch_and_lex_compare_family_containers() {
+    C1 a{'m', 'e', 'o', 'w', ' ', 'C', 'A', 'T', 'S'};
+    C2 b{'m', 'e', 'o', 'w', ' ', 'K', 'I', 'T', 'T', 'E', 'N', 'S'};
+
+    const auto result_mismatch_4 = mismatch(a.begin(), a.end(), b.begin(), b.end());
+    const auto result_mismatch_3 = mismatch(a.begin(), a.end(), b.begin());
+    assert(get<0>(result_mismatch_4) == a.begin() + 5);
+    assert(get<1>(result_mismatch_4) == b.begin() + 5);
+    assert(get<0>(result_mismatch_3) == a.begin() + 5);
+    assert(get<1>(result_mismatch_3) == b.begin() + 5);
+
+    const auto result_lex = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
+    assert(result_lex == true);
+
+#if _HAS_CXX20
+    const auto result_mismatch_r = ranges::mismatch(a, b);
+    assert(result_mismatch_r.in1 == a.begin() + 5);
+    assert(result_mismatch_r.in2 == b.begin() + 5);
+
+    const auto result_lex_r = ranges::lexicographical_compare(a, b);
+    assert(result_lex_r == true);
+
+    const auto result_lex_3way = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+    assert(result_lex_3way == strong_ordering::less);
+#endif // _HAS_CXX20
+}
+
+namespace test_mismatch_sizes_and_alignments {
+    constexpr size_t range     = 33;
+    constexpr size_t alignment = 32;
+
+#pragma pack(push, 1)
+    template <class T, size_t Size, size_t PadSize>
+    struct with_pad {
+        char p[PadSize];
+        T v[Size];
+    };
+#pragma pack(pop)
+
+    template <class T, size_t Size, size_t PadSize>
+    char stack_array_various_alignments_impl() {
+#ifdef __clang__
+#if __has_feature(undefined_behavior_sanitizer)
+#define TESTING_UBSAN
+#endif
+#endif
+
+#ifdef TESTING_UBSAN
+        // Avoid testing misaligned inputs, which UBSan would reject.
+#else // ^^^ UBSan / no UBSan vvv
+        with_pad<T, Size + 1, PadSize + 1> a = {};
+        with_pad<T, Size + 1, PadSize + 1> b = {};
+        assert(mismatch(begin(a.v), end(a.v), begin(b.v), end(b.v)) == make_pair(end(a.v), end(b.v)));
+#endif // ^^^ no UBSan ^^^
+        return 0;
+    }
+
+    template <class T, size_t Size, size_t... PadSizes>
+    void stack_array_various_alignments(index_sequence<PadSizes...>) {
+        char ignored[] = {stack_array_various_alignments_impl<T, Size, PadSizes>()...};
+        (void) ignored;
+    }
+
+    template <class T, size_t Size>
+    char stack_array_impl() {
+        T a[Size + 1] = {};
+        T b[Size + 1] = {};
+        assert(mismatch(begin(a), end(a), begin(b), end(b)) == make_pair(end(a), end(b)));
+        stack_array_various_alignments<T, Size>(make_index_sequence<alignment>{});
+        return 0;
+    }
+
+    template <class T, size_t... Sizes>
+    void stack_array(index_sequence<Sizes...>) {
+        char ignored[] = {stack_array_impl<T, Sizes>()...};
+        (void) ignored;
+    }
+
+    template <class T>
+    void test() {
+        // stack with different sizes and alignments. ASan would catch out-of-range reads
+        stack_array<T>(make_index_sequence<range>{});
+
+        // vector with different sizes. ASan vector annotations would catch out-of-range reads
+        for (size_t i = 0; i != range; ++i) {
+            vector<T> a(i, 0);
+            vector<T> b(i, 0);
+            assert(mismatch(begin(a), end(a), begin(b), end(b)) == make_pair(end(a), end(b)));
+        }
+
+        // heap with different sizes. ASan would catch out-of-range reads
+        for (size_t i = 0; i != range; ++i) {
+            T* a = static_cast<T*>(calloc(i, sizeof(T)));
+            T* b = static_cast<T*>(calloc(i, sizeof(T)));
+            assert(mismatch(a, a + i, b, b + i) == make_pair(a + i, b + i));
+            free(a);
+            free(b);
+        }
+
+        // subarray from stack array. We would have wrong results if we run out of the range.
+        T a[range + 1] = {};
+        T b[range + 1] = {};
+        for (size_t i = 0; i != range; ++i) {
+            a[i + 1] = 1;
+            // whole range mismatch finds mismatch after past-the-end of the subarray
+            assert(mismatch(a, a + range + 1, b, b + range + 1) == make_pair(a + i + 1, b + i + 1));
+            // limited range mismatch gets to past-the-end of the subarray
+            assert(mismatch(a, a + i, b, b + i) == make_pair(a + i, b + i));
+            a[i + 1] = 0;
+        }
+    }
+} // namespace test_mismatch_sizes_and_alignments
+
+void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
+    (void) gen;
+    (void) level;
+
+#if !defined(TEST_PART) || TEST_PART == PART_ADJACENT_DIFFERENCE
+    {
+        const auto start_time = steady_clock::now();
+        test_adjacent_difference<int8_t>(gen);
+        test_adjacent_difference<uint8_t>(gen);
+        test_adjacent_difference<int16_t>(gen);
+        test_adjacent_difference<uint16_t>(gen);
+        test_adjacent_difference<int32_t>(gen);
+        test_adjacent_difference<uint32_t>(gen);
+        test_adjacent_difference<int64_t>(gen);
+        test_adjacent_difference<uint64_t>(gen);
+
+        test_adjacent_difference_with_heterogeneous_types();
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(0, "adjacent_difference")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_ADJACENT_DIFFERENCE ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_ADJACENT_FIND
+    {
+        const auto start_time = steady_clock::now();
+        test_adjacent_find<int8_t>(gen);
+        test_adjacent_find<uint8_t>(gen);
+        test_adjacent_find<int16_t>(gen);
+        test_adjacent_find<uint16_t>(gen);
+        test_adjacent_find<int32_t>(gen);
+        test_adjacent_find<uint32_t>(gen);
+        test_adjacent_find<int64_t>(gen);
+        test_adjacent_find<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(10, "adjacent_find")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_ADJACENT_FIND ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_COUNT
+    {
+        const auto start_time = steady_clock::now();
+        test_count<int8_t>(gen);
+        test_count<uint8_t>(gen);
+        test_count<int16_t>(gen);
+        test_count<uint16_t>(gen);
+        test_count<int32_t>(gen);
+        test_count<uint32_t>(gen);
+        test_count<int64_t>(gen);
+        test_count<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(20, "count")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_COUNT ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_FIND
+    {
+        const auto start_time = steady_clock::now();
+        test_find<int8_t>(gen);
+        test_find<uint8_t>(gen);
+        test_find<int16_t>(gen);
+        test_find<uint16_t>(gen);
+        test_find<int32_t>(gen);
+        test_find<uint32_t>(gen);
+        test_find<int64_t>(gen);
+        test_find<uint64_t>(gen);
+
+#if _HAS_CXX20
+        test_gh_4449<uint8_t>();
+        test_gh_4449<uint16_t>();
+        test_gh_4449<uint32_t>();
+        test_gh_4449<uint64_t>();
+#endif // _HAS_CXX20
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(30, "find")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_FIND ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_FIND_LAST
 #if _HAS_CXX23
-    test_find_last<char>(gen);
-    test_find_last<signed char>(gen);
-    test_find_last<unsigned char>(gen);
-    test_find_last<short>(gen);
-    test_find_last<unsigned short>(gen);
-    test_find_last<int>(gen);
-    test_find_last<unsigned int>(gen);
-    test_find_last<long long>(gen);
-    test_find_last<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_find_last<int8_t>(gen);
+        test_find_last<uint8_t>(gen);
+        test_find_last<int16_t>(gen);
+        test_find_last<uint16_t>(gen);
+        test_find_last<int32_t>(gen);
+        test_find_last<uint32_t>(gen);
+        test_find_last<int64_t>(gen);
+        test_find_last<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(40, "find_last")] += finish_time - start_time;
+    }
 #endif // _HAS_CXX23
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_FIND_LAST ^^^
 
-    test_find_first_of<char>(gen);
-    test_find_first_of<signed char>(gen);
-    test_find_first_of<unsigned char>(gen);
-    test_find_first_of<short>(gen);
-    test_find_first_of<unsigned short>(gen);
-    test_find_first_of<int>(gen);
-    test_find_first_of<unsigned int>(gen);
-    test_find_first_of<long long>(gen);
-    test_find_first_of<unsigned long long>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_FIND_FIRST_OF
+    {
+        const auto start_time = steady_clock::now();
+        test_find_first_of<int8_t>(gen);
+        test_find_first_of<uint8_t>(gen);
+        test_find_first_of<int16_t>(gen);
+        test_find_first_of<uint16_t>(gen);
+        test_find_first_of<int32_t>(gen);
+        test_find_first_of<uint32_t>(gen);
+        test_find_first_of<int64_t>(gen);
+        test_find_first_of<uint64_t>(gen);
 
-    test_find_first_of_containers<vector<char>, vector<signed char>>();
-    test_find_first_of_containers<vector<char>, vector<unsigned char>>();
-    test_find_first_of_containers<vector<wchar_t>, vector<char>>();
-    test_find_first_of_containers<const vector<char>, const vector<char>>();
-    test_find_first_of_containers<vector<char>, const vector<char>>();
-    test_find_first_of_containers<const vector<wchar_t>, vector<wchar_t>>();
-    test_find_first_of_containers<vector<char>, vector<int>>();
+        test_find_first_of_containers<vector<char>, vector<signed char>>();
+        test_find_first_of_containers<vector<char>, vector<unsigned char>>();
+        test_find_first_of_containers<vector<wchar_t>, vector<char>>();
+        test_find_first_of_containers<const vector<char>, const vector<char>>();
+        test_find_first_of_containers<vector<char>, const vector<char>>();
+        test_find_first_of_containers<const vector<wchar_t>, vector<wchar_t>>();
+        test_find_first_of_containers<vector<char>, vector<int>>();
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(50, "find_first_of")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_FIND_FIRST_OF ^^^
 
-    test_search<char>(gen);
-    test_search<signed char>(gen);
-    test_search<unsigned char>(gen);
-    test_search<short>(gen);
-    test_search<unsigned short>(gen);
-    test_search<int>(gen);
-    test_search<unsigned int>(gen);
-    test_search<long long>(gen);
-    test_search<unsigned long long>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_SEARCH
+    {
+        const auto start_time = steady_clock::now();
+        test_search<int8_t>(gen);
+        test_search<uint8_t>(gen);
+        test_search<int16_t>(gen);
+        test_search<uint16_t>(gen);
+        test_search<int32_t>(gen);
+        test_search<uint32_t>(gen);
+        test_search<int64_t>(gen);
+        test_search<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(60, "search")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_SEARCH ^^^
 
-    test_min_max_element<char>(gen);
-    test_min_max_element<signed char>(gen);
-    test_min_max_element<unsigned char>(gen);
-    test_min_max_element<short>(gen);
-    test_min_max_element<unsigned short>(gen);
-    test_min_max_element<int>(gen);
-    test_min_max_element<unsigned int>(gen);
-    test_min_max_element<long long>(gen);
-    test_min_max_element<unsigned long long>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_MINMAX_ELEMENT
+    {
+        const auto start_time = steady_clock::now();
+        test_min_max_element<int8_t>(gen);
+        test_min_max_element<uint8_t>(gen);
+        test_min_max_element<int16_t>(gen);
+        test_min_max_element<uint16_t>(gen);
+        test_min_max_element<int32_t>(gen);
+        test_min_max_element<uint32_t>(gen);
+        test_min_max_element<int64_t>(gen);
+        test_min_max_element<uint64_t>(gen);
 
-    test_min_max_element_pointers(gen);
+        test_min_max_element_pointers(gen);
 
-    test_min_max_element_special_cases<int8_t, 16>(); // SSE2 vectors
-    test_min_max_element_special_cases<int8_t, 32>(); // AVX2 vectors
-    test_min_max_element_special_cases<int8_t, 64>(); // AVX512 vectors
+        test_min_max_element_special_cases<int8_t, 16>(); // SSE2 vectors
+        test_min_max_element_special_cases<int8_t, 32>(); // AVX2 vectors
+        test_min_max_element_special_cases<int8_t, 64>(); // AVX512 vectors
 
-    // Test VSO-1558536, a regression caused by GH-2447 that was specific to 64-bit types on x86.
-    test_case_min_max_element(vector<uint64_t>{10, 0x8000'0000ULL, 20, 30});
-    test_case_min_max_element(vector<uint64_t>{10, 20, 0xD000'0000'B000'0000ULL, 30, 0xC000'0000'A000'0000ULL});
-    test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
-    test_case_min_max_element(
-        vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
+        // Test VSO-1558536, a regression caused by GH-2447 that was specific to 64-bit types on x86.
+        test_case_min_max_element(vector<uint64_t>{10, 0x8000'0000ULL, 20, 30});
+        test_case_min_max_element(vector<uint64_t>{10, 20, 0xD000'0000'B000'0000ULL, 30, 0xC000'0000'A000'0000ULL});
+        test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
+        test_case_min_max_element(
+            vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
 
-    test_is_sorted_until<char>(gen);
-    test_is_sorted_until<signed char>(gen);
-    test_is_sorted_until<unsigned char>(gen);
-    test_is_sorted_until<short>(gen);
-    test_is_sorted_until<unsigned short>(gen);
-    test_is_sorted_until<int>(gen);
-    test_is_sorted_until<unsigned int>(gen);
-    test_is_sorted_until<long long>(gen);
-    test_is_sorted_until<unsigned long long>(gen);
+        test_gh_6373();
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(70, "minmax_element")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_MINMAX_ELEMENT ^^^
 
+#if !defined(TEST_PART) || TEST_PART == PART_IS_SORTED_UNTIL
+    {
+        const auto start_time = steady_clock::now();
+        test_is_sorted_until<int8_t>(gen);
+        test_is_sorted_until<uint8_t>(gen);
+        test_is_sorted_until<int16_t>(gen);
+        test_is_sorted_until<uint16_t>(gen);
+        test_is_sorted_until<int32_t>(gen);
+        test_is_sorted_until<uint32_t>(gen);
+        test_is_sorted_until<int64_t>(gen);
+        test_is_sorted_until<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(80, "is_sorted_until")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_IS_SORTED_UNTIL ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_INCLUDES
     // std::includes has been there forever, but we use std::sample in the test, and that one is C++17
 #if _HAS_CXX17
-    test_includes<char>(gen);
-    test_includes<signed char>(gen);
-    test_includes<unsigned char>(gen);
-    test_includes<short>(gen);
-    test_includes<unsigned short>(gen);
-    test_includes<int>(gen);
-    test_includes<unsigned int>(gen);
-    test_includes<long long>(gen);
-    test_includes<unsigned long long>(gen);
+    {
+        const auto start_time = steady_clock::now();
+        test_includes<int8_t>(gen);
+        test_includes<uint8_t>(gen);
+        test_includes<int16_t>(gen);
+        test_includes<uint16_t>(gen);
+        test_includes<int32_t>(gen);
+        test_includes<uint32_t>(gen);
+        test_includes<int64_t>(gen);
+        test_includes<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(90, "includes")] += finish_time - start_time;
+    }
 #endif // _HAS_CXX17
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_INCLUDES ^^^
 
-    test_replace<char>(gen);
-    test_replace<signed char>(gen);
-    test_replace<unsigned char>(gen);
-    test_replace<short>(gen);
-    test_replace<unsigned short>(gen);
-    test_replace<int>(gen);
-    test_replace<unsigned int>(gen);
-    test_replace<long long>(gen);
-    test_replace<unsigned long long>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_REPLACE
+    {
+        const auto start_time = steady_clock::now();
+        test_replace<int8_t>(gen);
+        test_replace<uint8_t>(gen);
+        test_replace<int16_t>(gen);
+        test_replace<uint16_t>(gen);
+        test_replace<int32_t>(gen);
+        test_replace<uint32_t>(gen);
+        test_replace<int64_t>(gen);
+        test_replace<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(100, "replace")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_REPLACE ^^^
 
-    test_reverse<char>(gen);
-    test_reverse<signed char>(gen);
-    test_reverse<unsigned char>(gen);
-    test_reverse<short>(gen);
-    test_reverse<unsigned short>(gen);
-    test_reverse<int>(gen);
-    test_reverse<unsigned int>(gen);
-    test_reverse<long long>(gen);
-    test_reverse<unsigned long long>(gen);
-    test_reverse<float>(gen);
-    test_reverse<double>(gen);
-    test_reverse<long double>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_REVERSE
+    {
+        const auto start_time = steady_clock::now();
+        test_reverse<int8_t>(gen);
+        test_reverse<uint8_t>(gen);
+        test_reverse<int16_t>(gen);
+        test_reverse<uint16_t>(gen);
+        test_reverse<int32_t>(gen);
+        test_reverse<uint32_t>(gen);
+        test_reverse<int64_t>(gen);
+        test_reverse<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(110, "reverse")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_REVERSE ^^^
 
-    test_reverse_copy<char>(gen);
-    test_reverse_copy<signed char>(gen);
-    test_reverse_copy<unsigned char>(gen);
-    test_reverse_copy<short>(gen);
-    test_reverse_copy<unsigned short>(gen);
-    test_reverse_copy<int>(gen);
-    test_reverse_copy<unsigned int>(gen);
-    test_reverse_copy<long long>(gen);
-    test_reverse_copy<unsigned long long>(gen);
-    test_reverse_copy<float>(gen);
-    test_reverse_copy<double>(gen);
-    test_reverse_copy<long double>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_REVERSE_COPY
+    {
+        const auto start_time = steady_clock::now();
+        test_reverse_copy<int8_t>(gen);
+        test_reverse_copy<uint8_t>(gen);
+        test_reverse_copy<int16_t>(gen);
+        test_reverse_copy<uint16_t>(gen);
+        test_reverse_copy<int32_t>(gen);
+        test_reverse_copy<uint32_t>(gen);
+        test_reverse_copy<int64_t>(gen);
+        test_reverse_copy<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(120, "reverse_copy")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_REVERSE_COPY ^^^
 
-    test_rotate<char>(gen, 20000); // one real long rotate run, as for smaller arrays some strategies aren't executed
-    test_rotate<signed char>(gen);
-    test_rotate<unsigned char>(gen);
-    test_rotate<short>(gen);
-    test_rotate<unsigned short>(gen);
-    test_rotate<int>(gen);
-    test_rotate<unsigned int>(gen);
-    test_rotate<long long>(gen);
-    test_rotate<unsigned long long>(gen);
-    test_rotate<float>(gen);
-    test_rotate<double>(gen);
-    test_rotate<long double>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_ROTATE
+    {
+        const auto start_time = steady_clock::now();
+#if _VECTORIZED_ROTATE
+        test_rotate<int8_t>(gen, 20000); // one very long rotate run to exercise some strategies
+#else // ^^^ _VECTORIZED_ROTATE / !_VECTORIZED_ROTATE vvv
+        test_rotate<int8_t>(gen);
+#endif // ^^^ !_VECTORIZED_ROTATE ^^^
+        test_rotate<uint8_t>(gen);
+        test_rotate<int16_t>(gen);
+        test_rotate<uint16_t>(gen);
+        test_rotate<int32_t>(gen);
+        test_rotate<uint32_t>(gen);
+        test_rotate<int64_t>(gen);
+        test_rotate<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(130, "rotate")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_ROTATE ^^^
 
-    test_remove<char>(gen);
-    test_remove<signed char>(gen);
-    test_remove<unsigned char>(gen);
-    test_remove<short>(gen);
-    test_remove<unsigned short>(gen);
-    test_remove<int>(gen);
-    test_remove<unsigned int>(gen);
-    test_remove<long long>(gen);
-    test_remove<unsigned long long>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_REMOVE
+    {
+        const auto start_time = steady_clock::now();
+        test_remove<int8_t>(gen);
+        test_remove<uint8_t>(gen);
+        test_remove<int16_t>(gen);
+        test_remove<uint16_t>(gen);
+        test_remove<int32_t>(gen);
+        test_remove<uint32_t>(gen);
+        test_remove<int64_t>(gen);
+        test_remove<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(140, "remove")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_REMOVE ^^^
 
-    test_unique<char>(gen);
-    test_unique<signed char>(gen);
-    test_unique<unsigned char>(gen);
-    test_unique<short>(gen);
-    test_unique<unsigned short>(gen);
-    test_unique<int>(gen);
-    test_unique<unsigned int>(gen);
-    test_unique<long long>(gen);
-    test_unique<unsigned long long>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_UNIQUE
+    {
+        const auto start_time = steady_clock::now();
+        test_unique<int8_t>(gen);
+        test_unique<uint8_t>(gen);
+        test_unique<int16_t>(gen);
+        test_unique<uint16_t>(gen);
+        test_unique<int32_t>(gen);
+        test_unique<uint32_t>(gen);
+        test_unique<int64_t>(gen);
+        test_unique<uint64_t>(gen);
 
-    test_unique<long*>(gen);
+        test_unique<long*>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(150, "unique")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_UNIQUE ^^^
 
-    test_swap_ranges<char>(gen);
-    test_swap_ranges<short>(gen);
-    test_swap_ranges<int>(gen);
-    test_swap_ranges<unsigned int>(gen);
-    test_swap_ranges<unsigned long long>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_SWAP_RANGES
+    {
+        const auto start_time = steady_clock::now();
+        test_swap_ranges<int8_t>(gen);
+        test_swap_ranges<uint8_t>(gen);
+        test_swap_ranges<int16_t>(gen);
+        test_swap_ranges<uint16_t>(gen);
+        test_swap_ranges<int32_t>(gen);
+        test_swap_ranges<uint32_t>(gen);
+        test_swap_ranges<int64_t>(gen);
+        test_swap_ranges<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(160, "swap_ranges")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_SWAP_RANGES ^^^
 
-    test_swap_arrays<uint8_t, 1>(gen);
-    test_swap_arrays<uint16_t, 1>(gen);
-    test_swap_arrays<uint32_t, 1>(gen);
-    test_swap_arrays<uint64_t, 1>(gen);
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_SWAP_ARRAYS
+    {
+        const auto start_time = steady_clock::now();
+        test_swap_arrays<uint8_t, 1>(gen);
+        test_swap_arrays<uint16_t, 1>(gen);
+        test_swap_arrays<uint32_t, 1>(gen);
+        test_swap_arrays<uint64_t, 1>(gen);
 
-    test_swap_arrays<uint8_t, 47>(gen);
-    test_swap_arrays<uint16_t, 47>(gen);
-    test_swap_arrays<uint32_t, 47>(gen);
-    test_swap_arrays<uint64_t, 47>(gen);
+        test_swap_arrays<uint8_t, 47>(gen);
+        test_swap_arrays<uint16_t, 47>(gen);
+        test_swap_arrays<uint32_t, 47>(gen);
+        test_swap_arrays<uint64_t, 47>(gen);
 
-    test_swap_arrays<uint8_t, 512>(gen);
-    test_swap_arrays<uint16_t, 512>(gen);
-    test_swap_arrays<uint32_t, 512>(gen);
-    test_swap_arrays<uint64_t, 512>(gen);
+        test_swap_arrays<uint8_t, 512>(gen);
+        test_swap_arrays<uint16_t, 512>(gen);
+        test_swap_arrays<uint32_t, 512>(gen);
+        test_swap_arrays<uint64_t, 512>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(170, "test_swap_arrays")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_SWAP_ARRAYS ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_SEARCH_N
+    {
+        const auto start_time = steady_clock::now();
+        test_search_n<int8_t>(gen);
+        test_search_n<uint8_t>(gen);
+        test_search_n<int16_t>(gen);
+        test_search_n<uint16_t>(gen);
+        test_search_n<int32_t>(gen);
+        test_search_n<uint32_t>(gen);
+        test_search_n<int64_t>(gen);
+        test_search_n<uint64_t>(gen);
+
+        if (level == IsaLevel::Original) {
+            // Test only one case with forward iterators. It is a different and complex code path,
+            // hence it's worth testing, but it is not vectorized, so there's no point in trying different types.
+            test_search_n<short, true>(gen);
+        }
+
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(180, "search_n")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_SEARCH_N ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_ONE
+    {
+        const auto start_time = steady_clock::now();
+        test_mismatch_and_lex_compare_family<int8_t>(gen);
+        test_mismatch_and_lex_compare_family<uint8_t>(gen);
+        test_mismatch_and_lex_compare_family<int16_t>(gen);
+        test_mismatch_and_lex_compare_family<uint16_t>(gen);
+        test_mismatch_and_lex_compare_family<int32_t>(gen);
+        test_mismatch_and_lex_compare_family<uint32_t>(gen);
+        test_mismatch_and_lex_compare_family<int64_t>(gen);
+        test_mismatch_and_lex_compare_family<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(190, "test_mismatch_one")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_ONE ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_TWO
+#if _HAS_CXX20
+    {
+        const auto start_time = steady_clock::now();
+        test_mismatch_only_triplets<int8_t>(gen);
+        test_mismatch_only_triplets<uint8_t>(gen);
+        test_mismatch_only_triplets<int16_t>(gen);
+        test_mismatch_only_triplets<uint16_t>(gen);
+        test_mismatch_only_triplets<int32_t>(gen);
+        test_mismatch_only_triplets<uint32_t>(gen);
+        test_mismatch_only_triplets<int64_t>(gen);
+        test_mismatch_only_triplets<uint64_t>(gen);
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(200, "test_mismatch_two")] += finish_time - start_time;
+    }
+#endif // _HAS_CXX20
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_TWO ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_THREE
+    {
+        const auto start_time = steady_clock::now();
+        test_mismatch_and_lex_compare_family_containers<vector<char>, vector<signed char>>();
+        test_mismatch_and_lex_compare_family_containers<vector<char>, vector<unsigned char>>();
+        test_mismatch_and_lex_compare_family_containers<vector<wchar_t>, vector<char>>();
+        test_mismatch_and_lex_compare_family_containers<const vector<char>, const vector<char>>();
+        test_mismatch_and_lex_compare_family_containers<vector<char>, const vector<char>>();
+        test_mismatch_and_lex_compare_family_containers<const vector<wchar_t>, vector<wchar_t>>();
+        test_mismatch_and_lex_compare_family_containers<vector<char>, vector<int>>();
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(210, "test_mismatch_three")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_THREE ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_FOUR
+    {
+        const auto start_time = steady_clock::now();
+        test_mismatch_sizes_and_alignments::test<int8_t>();
+        test_mismatch_sizes_and_alignments::test<int16_t>();
+        test_mismatch_sizes_and_alignments::test<int32_t>();
+        test_mismatch_sizes_and_alignments::test<int64_t>();
+        const auto finish_time = steady_clock::now();
+        elapsed_time[make_pair(220, "test_mismatch_four")] += finish_time - start_time;
+    }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_MISMATCH_FOUR ^^^
 }
 
 template <typename Container1, typename Container2>
@@ -1873,6 +2576,44 @@ void test_gh_5757_find_first_of() {
     assert(pos == 0);
 }
 
+// GH-6342 <string>: wstring::find_first_of infinite-loops on ARM64
+void test_gh_6342_find_first_of() {
+    const wstring needle{L"abcd"}; // Important size: 4-element needle
+    wstring haystack(150, L'x'); // Important size: 150-element haystack
+
+    // See _Find_meow_of::_Bitmap_impl::_Use_bitmap_neon() in vector_algorithms.cpp.
+    // For 2-byte wchar_t, when the haystack is >= 96 elements and the needle is >= 4 elements, the bitmap is used.
+    // The vectorized code consumes 16-element chunks. 150 % 16 is 6, so the scalar tail is [144, 150).
+    // No matching elements are present in [0, 144), so we'll look at the scalar tail.
+
+    constexpr wchar_t non_ascii_character{L'\u044F'}; // U+044F CYRILLIC SMALL LETTER YA, any value >= 256 works
+
+    {
+        const auto pos1{haystack.find_first_of(needle)};
+        assert(pos1 == wstring::npos);
+    }
+    {
+        haystack[146] = non_ascii_character;
+        const auto pos2{haystack.find_first_of(needle)};
+        assert(pos2 == wstring::npos);
+        haystack[146] = L'x';
+    }
+    {
+        haystack[148] = L'b';
+        const auto pos3{haystack.find_first_of(needle)};
+        assert(pos3 == 148);
+        haystack[148] = L'x';
+    }
+    {
+        haystack[146] = non_ascii_character;
+        haystack[148] = L'b';
+        const auto pos4{haystack.find_first_of(needle)};
+        assert(pos4 == 148);
+        haystack[146] = L'x';
+        haystack[148] = L'x';
+    }
+}
+
 void test_string(mt19937_64& gen) {
     test_basic_string<char>(gen);
     test_basic_string<wchar_t>(gen);
@@ -1884,6 +2625,7 @@ void test_string(mt19937_64& gen) {
     test_basic_string<unsigned long long>(gen);
 
     test_gh_5757_find_first_of();
+    test_gh_6342_find_first_of();
 }
 
 void test_various_containers() {
@@ -1954,23 +2696,60 @@ int main() {
 #if _HAS_CXX20
     assert(test_constexpr());
 #endif // _HAS_CXX20
-    run_randomized_tests_with_different_isa_levels([](mt19937_64& gen) {
+    run_randomized_tests_with_different_isa_levels([](mt19937_64& gen, const IsaLevel level) {
+        (void) level;
 #ifdef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
         // Test the algorithms that *aren't* vectorized for ARM64EC:
-        test_min_max_element<long long>(gen);
-        test_min_max_element<unsigned long long>(gen);
+        test_min_max_element<int64_t>(gen);
+        test_min_max_element<uint64_t>(gen);
 
         test_min_max_element_pointers(gen);
 
-        test_replace<int>(gen);
-        test_replace<unsigned int>(gen);
-        test_replace<long long>(gen);
-        test_replace<unsigned long long>(gen);
+        test_replace<int32_t>(gen);
+        test_replace<uint32_t>(gen);
+        test_replace<int64_t>(gen);
+        test_replace<uint64_t>(gen);
 #else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
-        test_vector_algorithms(gen);
-        test_various_containers();
-        test_bitset(gen);
-        test_string(gen);
+        test_vector_algorithms(gen, level);
+
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_VARIOUS_CONTAINERS
+        {
+            const auto start_time = steady_clock::now();
+            test_various_containers();
+            const auto finish_time = steady_clock::now();
+            elapsed_time[make_pair(1000, "test_various_containers")] += finish_time - start_time;
+        }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_VARIOUS_CONTAINERS ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_BITSET
+        {
+            const auto start_time = steady_clock::now();
+            test_bitset(gen);
+            const auto finish_time = steady_clock::now();
+            elapsed_time[make_pair(1010, "test_bitset")] += finish_time - start_time;
+        }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_BITSET ^^^
+
+#if !defined(TEST_PART) || TEST_PART == PART_TEST_STRING
+        {
+            const auto start_time = steady_clock::now();
+            test_string(gen);
+            const auto finish_time = steady_clock::now();
+            elapsed_time[make_pair(1020, "test_string")] += finish_time - start_time;
+        }
+#endif // ^^^ !defined(TEST_PART) || TEST_PART == PART_TEST_STRING ^^^
 #endif // ^^^ normal test coverage ^^^
     });
+
+    {
+        cout << endl;
+        steady_clock::duration total_time{};
+        for (const auto& pair_dur : elapsed_time) {
+            total_time += pair_dur.second;
+            const auto ms = chrono::duration_cast<chrono::milliseconds>(pair_dur.second);
+            cout << pair_dur.first.second << ": " << ms.count() << " ms" << endl;
+        }
+        cout << endl;
+        cout << "Total: " << chrono::duration_cast<chrono::milliseconds>(total_time).count() << " ms" << endl;
+    }
 }

@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N5032][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N5054][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -145,13 +145,14 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
   + **You must install the Insiders IDE and the Preview build tools for STL development.** *See Note 1 below.*
   + Select the "Desktop development with C++" workload.
   + Select the following components at a minimum:
+    - "MSVC Build Tools for x64/x86 (Latest)" <!-- TRANSITION, DevCom-11142709 -->
     - "MSVC Build Tools for x64/x86 (Preview)"
     - "C++ CMake tools for Windows"
     - "MSVC AddressSanitizer"
     - "Windows 11 SDK (10.0.28000)" or later
-    - "C++ Clang tools for Windows (20.1.8 - x64/x86)"
+    - "C++ Clang tools for Windows (22.1.3 - x64/x86)"
     - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Preview)"
-* Install [Python][] 3.14.4 or later.
+* Install [Python][] 3.14.7 or later.
   + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
 
@@ -215,6 +216,19 @@ To build the ARM64EC target:
 1. `popd`
 1. `cmake --preset ARM64EC`
 1. `cmake --build --preset ARM64EC`
+
+## Building ARM64 Natively
+
+By default, the x64 and x86 presets are configured to both build and run the tests.
+The ARM64 and ARM64EC presets assume that you're cross-compiling, so they enable an option `TESTS_BUILD_ONLY`
+to build test executables without running them. If you have an ARM64 machine, you'll want to use
+the native compiler, and you'll want to disable `TESTS_BUILD_ONLY`:
+
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat arm64 -vcvars_ver=preview`
+1. `popd`
+1. `cmake --preset ARM64 -DTESTS_BUILD_ONLY=OFF`
+1. `cmake --build --preset ARM64`
 
 # How To Consume
 
@@ -539,37 +553,33 @@ vehicles.
 ```mermaid
 flowchart TB
 %%{ init: {"flowchart": {"htmlLabels": true}} }%%
-    classDef default text-align:left
-    subgraph VisualStudioSubgraph[Visual Studio]
-        direction TB
-        STLNode("<b>STL</b>
-        This repo; provides C++ Standard Library headers, separately
-        compiled implementations of most of the iostreams functionality,
-        and a few runtime support components like std::exception_ptr.")
-        subgraph VCRuntimeSubgraph[VCRuntime]
-            direction TB
-            VCStartupNode("<b>VCStartup</b>
-            Provides compiler support mechanisms that
-            live in each binary; such as machinery to
-            call constructors and destructors for global
-            variables, the entry point, and the /GS cookie.<br>
-            Merged into static and import libraries of VCRuntime.")
-            VCRuntimeNode("<b>VCRuntime</b>
-            Provides compiler support mechanisms that can be
-            shared between binaries; code that the compiler calls
-            on your behalf, such as the C++ exception handling
-            runtime, string.h intrinsics, math intrinsics, and
-            declarations for CPU-vendor-specific intrinsics.")
-        end
-    end
-    subgraph WindowsSDKSubgraph[Windows SDK]
-        UniversalCRTNode("<b>Universal CRT</b>
-        Windows component that provides C library support, such as printf,
-        C locales, and some POSIX-like shims for the Windows API, like _stat.")
-    end
-    STLNode ==> VCRuntimeSubgraph & UniversalCRTNode
-    VCStartupNode ==> VCRuntimeNode ==> UniversalCRTNode
+classDef default text-align:left
+subgraph VisualStudioSubgraph[Visual Studio]
+  direction TB
+  STLNode("<b>STL</b>")
+  subgraph VCRuntimeSubgraph[VCRuntime]
+    direction TB
+    VCRuntimeNode("<b>VCRuntime</b>")
+    VCStartupNode("<b>VCStartup</b>")
+  end
+end
+subgraph WindowsSDKSubgraph[Windows SDK]
+  UniversalCRTNode("<b>Universal CRT</b>")
+end
+STLNode ==> VCRuntimeSubgraph & UniversalCRTNode
+VCRuntimeNode ==> VCStartupNode ==> UniversalCRTNode
 ```
+
+* **STL**: This repo; provides C++ Standard Library headers, separately compiled implementations
+  of most of the iostreams functionality, and a few runtime support components like `std::exception_ptr`.
+* **VCRuntime**: Provides compiler support mechanisms that can be shared between binaries;
+  code that the compiler calls on your behalf, such as the C++ exception handling runtime,
+  `string.h` intrinsics, math intrinsics, and declarations for CPU-vendor-specific intrinsics.
+* **VCStartup**: Provides compiler support mechanisms that live in each binary; such as machinery
+  to call constructors and destructors for global variables, the entry point, and the `/GS` cookie.
+  Merged into static and import libraries of VCRuntime.
+* **Universal CRT**: Windows component that provides C library support, such as `printf`,
+  C locales, and some POSIX-like shims for the Windows API, like `_stat`.
 
 # Contributing
 
@@ -606,7 +616,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N5032]: https://wg21.link/N5032
+[N5054]: https://wg21.link/N5054
 [NOTICE.txt]: NOTICE.txt
 [STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"
 [STL-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main

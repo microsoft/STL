@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <array>
 #include <benchmark/benchmark.h>
+
+#include <array>
 #include <bit>
 #include <bitset>
 #include <climits>

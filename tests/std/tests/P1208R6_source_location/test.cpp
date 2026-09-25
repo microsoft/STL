@@ -190,7 +190,7 @@ constexpr void lambda_test() {
     assert(fun2 == "operator()"sv);
 #endif // ^^^ Other ^^^
 #elif defined(__clang__) // ^^^ basic / detailed Clang vvv
-    assert(fun2 == "auto " THISCALL_OR_CDECL " lambda_test()::(anonymous class)::operator()(void) const"sv);
+    assert(fun2 == "auto " THISCALL_OR_CDECL " lambda_test()::(lambda)::operator()(void) const"sv);
 #elif defined(__EDG__) // ^^^ detailed Clang / detailed EDG vvv
     assert(fun2 == "__cdecl lambda [](void)->auto::operator()(void)->auto"sv);
 #else // ^^^ detailed EDG / detailed C1XX vvv

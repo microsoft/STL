@@ -331,6 +331,7 @@
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0429R9 <flat_map>
 // P0448R4 <spanstream>
+// P0533R9 constexpr For <cmath> And <cstdlib>
 // P0627R6 unreachable()
 // P0798R8 Monadic Operations For optional
 // P0881R7 <stacktrace>
@@ -407,8 +408,11 @@
 // P3107R5 Permit An Efficient Implementation Of <print>
 // P3142R0 Printing Blank Lines With println()
 // P3235R3 std::print More Types Faster With Less Memory
-//     (partial implementation; see GH-4924)
 // P3567R2 flat_meow Fixes
+
+// _HAS_CXX26 controls:
+// P1383R2 More constexpr For <cmath> And <complex>
+//     (partial implementation)
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -785,12 +789,12 @@
 //                copy/move constructors and copy/move assignment operators are not trivial (/Wall)
 // warning C5246: 'member': the initialization of a subobject should be wrapped in braces (/Wall)
 // warning C5278: adding a specialization for 'type trait' has undefined behavior
-// warning C5280: a static operator '()' requires at least '/std:c++23preview'
-// warning C5281: a static lambda requires at least '/std:c++23preview'
+// warning C5280: a static operator '()' requires at least '/std:c++23'
+// warning C5281: a static lambda requires at least '/std:c++23'
 // warning C5285: cannot declare a specialization for 'meow'
 // warning C5291: 'DERIVED': deriving from the base class 'BASE' can cause potential runtime issues
 //                due to an ABI bug. Recommend adding a 4-byte data member to the base class
-//                for the padding at the end of it to work around this bug. (TRANSITION, ABI)
+//                for the padding at the end of it to work around this bug. (/Wall, TRANSITION, ABI)
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
@@ -886,9 +890,11 @@
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+// warning C4877: overriding non-pure virtual function 'Base::meow': was declared deprecated (/Wall)
+// warning C4996: 'meow': was declared deprecated
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("warning(push)")            \
-    _Pragma("warning(disable : 4996)") // was declared deprecated
+    _Pragma("warning(disable : 4877 4996)")
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
@@ -903,22 +909,22 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202604L
+#define _MSVC_STL_UPDATE  202609L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 2)
-_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.2 or newer.");
+#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 4)
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.4 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 20
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 20 or newer.");
+#if __clang_major__ < 22
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 22 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1950 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.50 or newer.");
+#if _MSC_VER < 1952 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.52 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -956,6 +962,22 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19
 #else // ^^^ constexpr in C++23 and later / inline (not constexpr) in C++20 and earlier vvv
 #define _CONSTEXPR23 inline
 #endif // ^^^ inline (not constexpr) in C++20 and earlier ^^^
+
+// Math functions that became constexpr in C++23
+#if _HAS_CXX23 && defined(_MSVC_LIBC_MATH)
+#define _CONSTEXPR_CMATH23 constexpr
+#else // ^^^ constexpr in C++23 and later / inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier vvv
+#define _CONSTEXPR_CMATH23 inline
+#endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier ^^^
+
+// Math functions that became constexpr in C++26
+#if _HAS_CXX26 && defined(_MSVC_LIBC_MATH)
+#define _CONSTEXPR_CMATH26 constexpr
+#else // ^^^ constexpr in C++26 and later / inline when /Zc:cmath- opts out of constexpr, and in C++23 and earlier vvv
+#define _CONSTEXPR_CMATH26 inline
+#endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++23 and earlier ^^^
+
+#define _CONSTEXPR_CMATH26_NYI inline // TRANSITION, GH-3789
 
 // P2465R3 Standard Library Modules std And std.compat
 #ifdef _BUILD_STD_MODULE
@@ -1678,7 +1700,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_common_reference_wrapper        202302L
 #define __cpp_lib_concepts                        202207L
 #define __cpp_lib_constexpr_algorithms            201806L
-#define __cpp_lib_constexpr_complex               201711L
 #define __cpp_lib_constexpr_dynamic_alloc         201907L
 #define __cpp_lib_constexpr_functional            201907L
 #define __cpp_lib_constexpr_iterator              201811L
@@ -1758,42 +1779,34 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_generator                         202207L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
+#define __cpp_lib_is_implicit_lifetime              202302L
+#define __cpp_lib_is_scoped_enum                    202011L
+#define __cpp_lib_mdspan                            202207L
+#define __cpp_lib_move_only_function                202110L
+#define __cpp_lib_out_ptr                           202311L
+#define __cpp_lib_print                             202406L
+#define __cpp_lib_ranges_as_const                   202311L
+#define __cpp_lib_ranges_as_rvalue                  202207L
+#define __cpp_lib_ranges_cartesian_product          202207L
+#define __cpp_lib_ranges_chunk                      202202L
+#define __cpp_lib_ranges_chunk_by                   202202L
+#define __cpp_lib_ranges_contains                   202207L
+#define __cpp_lib_ranges_enumerate                  202302L
+#define __cpp_lib_ranges_find_last                  202207L
+#define __cpp_lib_ranges_fold                       202207L
+#define __cpp_lib_ranges_iota                       202202L
+#define __cpp_lib_ranges_join_with                  202202L
+#define __cpp_lib_ranges_repeat                     202207L
+#define __cpp_lib_ranges_slide                      202202L
+#define __cpp_lib_ranges_starts_ends_with           202106L
+#define __cpp_lib_ranges_stride                     202207L
+#define __cpp_lib_ranges_to_container               202202L
+#define __cpp_lib_ranges_zip                        202110L
+#define __cpp_lib_reference_from_temporary          202202L
+#define __cpp_lib_spanstream                        202106L
+#define __cpp_lib_stacktrace                        202011L
 
-#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1951 // TRANSITION, toolset update
-#define __cpp_lib_is_implicit_lifetime 202302L
-#endif // ^^^ no workaround ^^^
-
-#define __cpp_lib_is_scoped_enum           202011L
-#define __cpp_lib_mdspan                   202207L
-#define __cpp_lib_move_only_function       202110L
-#define __cpp_lib_out_ptr                  202311L
-#define __cpp_lib_print                    202406L
-#define __cpp_lib_ranges_as_const          202311L
-#define __cpp_lib_ranges_as_rvalue         202207L
-#define __cpp_lib_ranges_cartesian_product 202207L
-#define __cpp_lib_ranges_chunk             202202L
-#define __cpp_lib_ranges_chunk_by          202202L
-#define __cpp_lib_ranges_contains          202207L
-#define __cpp_lib_ranges_enumerate         202302L
-#define __cpp_lib_ranges_find_last         202207L
-#define __cpp_lib_ranges_fold              202207L
-#define __cpp_lib_ranges_iota              202202L
-#define __cpp_lib_ranges_join_with         202202L
-#define __cpp_lib_ranges_repeat            202207L
-#define __cpp_lib_ranges_slide             202202L
-#define __cpp_lib_ranges_starts_ends_with  202106L
-#define __cpp_lib_ranges_stride            202207L
-#define __cpp_lib_ranges_to_container      202202L
-#define __cpp_lib_ranges_zip               202110L
-
-#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1951 // TRANSITION, GH-5755, toolset update
-#define __cpp_lib_reference_from_temporary 202202L
-#endif // ^^^ no workaround ^^^
-
-#define __cpp_lib_spanstream 202106L
-#define __cpp_lib_stacktrace 202011L
-
-#if !defined(__clang__) && !defined(__EDG__) && _MSC_VER >= 1951 // TRANSITION, GH-6169, toolset update
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and VSO-2846756
 #define __cpp_lib_start_lifetime_as 202207L
 #endif // ^^^ no workaround ^^^
 
@@ -1818,6 +1831,20 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
 #else
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
+#endif
+
+// The option /Zc:cmath- disables support for constexpr <cmath>.
+// TRANSITION, GH-6412, Clang and EDG lack support for constexpr <cmath>.
+#if 0 && _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789
+#define __cpp_lib_constexpr_cmath 202306L // P1383R2 More constexpr For <cmath> And <complex>
+#elif _HAS_CXX23 && defined(_MSVC_LIBC_MATH)
+#define __cpp_lib_constexpr_cmath 202202L // P0533R9 constexpr For <cmath> And <cstdlib>
+#endif
+
+#if 0 && _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789
+#define __cpp_lib_constexpr_complex 202306L // P1383R2 More constexpr For <cmath> And <complex>
+#elif _HAS_CXX20
+#define __cpp_lib_constexpr_complex 201711L // P0415R1 constexpr For <complex> (Again)
 #endif
 
 #if _HAS_CXX23

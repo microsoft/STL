@@ -236,6 +236,7 @@ class STLTest(Test):
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('clang')
             self._addCustomFeature('gcc-style-warnings')
+            self._addCustomFeature('character-conversion-warnings')
 
             if (targetArch == 'x64'.casefold()):
                 self.compileFlags.append('-m64')

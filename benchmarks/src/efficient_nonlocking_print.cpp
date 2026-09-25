@@ -5,6 +5,7 @@
 // --benchmark_out=efficient_nonlocking_print.log --benchmark_out_format=console
 
 #include <benchmark/benchmark.h>
+
 #include <cstdio>
 #include <format>
 #include <print>

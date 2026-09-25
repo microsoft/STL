@@ -20,11 +20,16 @@ stages:
     displayName: 'Test x64 ASan'
     dependsOn: []
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(x64PoolWorkRoot)'
+      readonly: true
     jobs:
       - template: build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 20
           hostArch: x64
           targetArch: x64
           targetPlatform: x64
@@ -35,11 +40,16 @@ stages:
     displayName: 'Test x86 ASan'
     dependsOn: []
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(x64PoolWorkRoot)'
+      readonly: true
     jobs:
       - template: build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 20
           hostArch: x86
           targetArch: x86
           targetPlatform: x86
@@ -52,9 +62,14 @@ stages:
     pool:
       name: ${{ variables.arm64PoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(arm64PoolWorkRoot)'
+      readonly: true
     jobs:
       - template: build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 25
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64

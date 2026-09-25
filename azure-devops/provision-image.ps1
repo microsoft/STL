@@ -13,10 +13,14 @@ creates a 1ES Hosted Pool that will spin up copies of the image as worker VMs, a
 
 .PARAMETER Arch
 The architecture can be either x64 or arm64.
+
+.PARAMETER DiskType
+The disk type can be either NVMe or SCSI.
 #>
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [Parameter(Mandatory)][ValidateSet('x64', 'arm64')][String]$Arch
+  [Parameter(Mandatory)][ValidateSet('x64', 'arm64')][String]$Arch,
+  [Parameter(Mandatory)][ValidateSet('NVMe', 'SCSI')][String]$DiskType
 )
 
 $ErrorActionPreference = 'Stop'
@@ -42,6 +46,7 @@ $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.Preview.ARM64',
   'Microsoft.VisualStudio.Component.VC.Preview.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64',
+  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', # TRANSITION, DevCom-11142709
   'Microsoft.VisualStudio.Component.Windows11SDK.28000'
 )
 
@@ -58,44 +63,64 @@ foreach ($workload in $VisualStudioWorkloads) {
 
 # https://github.com/PowerShell/PowerShell/releases/latest
 if ($Provisioning_x64) {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.0/PowerShell-7.6.0-win-x64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.6/PowerShell-7.6.6-win-x64.msi'
 } else {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.0/PowerShell-7.6.0-win-arm64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.6/PowerShell-7.6.6-win-arm64.msi'
 }
 $PowerShellArgs = @('/quiet', '/norestart')
 
 # https://www.python.org
 if ($Provisioning_x64) {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.4/python-3.14.4-amd64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-amd64.zip'
 } else {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.4/python-3.14.4-arm64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-arm64.zip'
 }
-$PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
+$PythonPath = [uri]::new($PythonUrl).Segments[-1] -ireplace '(python-\d+\.\d+\.\d+)-embed-\w+\.zip', 'C:\$1'
 
 # https://developer.nvidia.com/cuda-toolkit
 if ($Provisioning_x64) {
-  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.2.1/local_installers/cuda_13.2.1_windows.exe'
+  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.4.2/local_installers/cuda_13.4.2_windows_x86_64.exe'
 } else {
-  $CudaUrl = 'CUDA is not installed for ARM64'
+  $CudaUrl = 'CUDA supports ARM64, but is not yet installed here'
 }
 $CudaArgs = @('-s', '-n')
 
-<#
-.SYNOPSIS
-Download and install a component.
+Function DownloadFile {
+  [CmdletBinding(PositionalBinding=$false)]
+  Param(
+    [Parameter(Mandatory)][String]$Url
+  )
 
-.DESCRIPTION
-DownloadAndInstall downloads an executable from the given URL, and runs it with the given command-line arguments.
+  try {
+    $tempDir = 'C:\downloadTemp'
+    mkdir $tempDir -Force | Out-Null
+    $fileName = [uri]::new($Url).Segments[-1]
+    $downloadPath = Join-Path $tempDir $fileName
+    curl.exe --fail --silent --show-error --location --output $downloadPath $Url
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "curl.exe failed with non-zero exit code $LASTEXITCODE."
+    }
+    return $downloadPath
+  } catch {
+    Write-Error "Download failed! Exception: $($_.Exception.Message)"
+  }
+}
 
-.PARAMETER Name
-The name of the component, to be displayed in logging messages.
+Function SleepyDeleteFile {
+  [CmdletBinding(PositionalBinding=$false)]
+  Param(
+    [Parameter(Mandatory)][String]$Path
+  )
 
-.PARAMETER Url
-The URL of the installer.
+  try {
+    # Briefly sleep before removing the file, attempting to avoid "Access to the path '$Path' is denied."
+    Start-Sleep -Seconds 5
+    Remove-Item -Path $Path
+  } catch {
+    Write-Error "Remove-Item failed! Exception: $($_.Exception.Message)"
+  }
+}
 
-.PARAMETER Args
-The command-line arguments to pass to the installer.
-#>
 Function DownloadAndInstall {
   [CmdletBinding(PositionalBinding=$false)]
   Param(
@@ -104,14 +129,10 @@ Function DownloadAndInstall {
     [Parameter(Mandatory)][String[]]$Args
   )
 
-  try {
-    Write-Host "Downloading $Name..."
-    $tempPath = 'C:\installerTemp'
-    mkdir $tempPath -Force | Out-Null
-    $fileName = [uri]::new($Url).Segments[-1]
-    $installerPath = Join-Path $tempPath $fileName
-    curl.exe -L -o $installerPath -s -S $Url
+  Write-Host "Downloading $Name..."
+  $installerPath = DownloadFile -Url $Url
 
+  try {
     Write-Host "Installing $Name..."
     $proc = Start-Process -FilePath $installerPath -ArgumentList $Args -Wait -PassThru
     $exitCode = $proc.ExitCode
@@ -127,23 +148,33 @@ Function DownloadAndInstall {
     Write-Error "Installation failed! Exception: $($_.Exception.Message)"
   }
 
-  try {
-    # Briefly sleep before removing the installer, attempting to avoid "Access to the path '$installerPath' is denied."
-    Start-Sleep -Seconds 5
-    Remove-Item -Path $installerPath
-  } catch {
-    Write-Error "Remove-Item failed! Exception: $($_.Exception.Message)"
-  }
+  SleepyDeleteFile -Path $installerPath
 }
 
-<#
-.SYNOPSIS
-Enables native NVMe support.
+Function DownloadAndExtract {
+  [CmdletBinding(PositionalBinding=$false)]
+  Param(
+    [Parameter(Mandatory)][String]$Name,
+    [Parameter(Mandatory)][String]$Url,
+    [Parameter(Mandatory)][String]$Dest
+  )
 
-.DESCRIPTION
-Native NVMe support is opt-in for Windows Server 2025.
-TRANSITION, this will be enabled by default for the next version of Windows Server.
-#>
+  Write-Host "Downloading $Name..."
+  $zipPath = DownloadFile -Url $Url
+
+  try {
+    Write-Host "Extracting $Name..."
+    Expand-Archive -Path $zipPath -DestinationPath $Dest -Force
+    Write-Host 'Extraction successful!'
+  } catch {
+    Write-Error "Extraction failed! Exception: $($_.Exception.Message)"
+  }
+
+  SleepyDeleteFile -Path $zipPath
+}
+
+# Native NVMe support is opt-in for Windows Server 2025.
+# TRANSITION, this will be enabled by default for the next version of Windows Server.
 Function EnableNativeNVMe {
   $registryKey = 'HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides'
   $valueName = '1176759950'
@@ -163,13 +194,19 @@ Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 (cmd /c ver)[1]
 
 DownloadAndInstall   -Name 'PowerShell'    -Url $PowerShellUrl   -Args $PowerShellArgs
-DownloadAndInstall   -Name 'Python'        -Url $PythonUrl       -Args $PythonArgs
+DownloadAndExtract   -Name 'Python'        -Url $PythonUrl       -Dest $PythonPath
 DownloadAndInstall   -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
 if ($Provisioning_x64) {
   DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
 }
 
 Write-Host 'Setting environment variables...'
+
+# Manually add Python to the PATH.
+# Don't use $Env:PATH here - that's the local path for this running script, captured before we installed anything.
+# The machine path was just updated by the installers above.
+$machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+[Environment]::SetEnvironmentVariable('Path', "$PythonPath;$machinePath", 'Machine')
 
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
 [Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
@@ -180,7 +217,7 @@ Write-Host 'Enabling long paths...'
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' `
   -Value 1 -PropertyType DWORD -Force | Out-Null
 
-if ($Provisioning_x64) {
+if ($DiskType -ieq 'NVMe') {
   Write-Host 'Enabling native NVMe...'
   EnableNativeNVMe
 }

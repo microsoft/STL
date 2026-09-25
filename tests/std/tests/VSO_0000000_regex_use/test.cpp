@@ -2600,6 +2600,300 @@ void test_gh_6249() {
     }
 }
 
+void test_gh_6262() {
+    // GH-6262: Remove match mode _Skip_zero_length
+    // Check that replacement with internal match mode _Match_not_null in regex_iterator behaves equivalently
+
+    const char* const input = "aab";
+
+    {
+        const regex re{"^|b"};
+        {
+            cregex_iterator it1{input + 2, input + 3, re};
+            cregex_iterator it2{input + 2, input + 3, re, match_prev_avail};
+            ++it1;
+            assert(it1 != it2);
+        }
+
+        {
+            cregex_iterator it1{input + 1, input + 3, re};
+            cregex_iterator it2{input + 1, input + 3, re, match_prev_avail};
+            ++it1;
+            assert(it1 == it2);
+        }
+    }
+
+    {
+        const regex re2{"^a|b"};
+        {
+            cregex_iterator it1{input + 1, input + 3, re2};
+            cregex_iterator it2{input + 1, input + 3, re2, match_prev_avail};
+            ++it1;
+            assert(it1 == it2);
+        }
+    }
+}
+
+void test_gh_6267() {
+    // GH-6267: Avoid generating empty groups when parsing `?` quantifiers
+    for (const string re : {"a?", "a??"}) {
+        g_regexTester.should_match("a", re);
+        g_regexTester.should_match("", re);
+    }
+
+    {
+        test_regex re(&g_regexTester, "a?");
+        re.should_search_match("a", "a");
+    }
+
+    {
+        test_regex re(&g_regexTester, "a??");
+        re.should_search_match("a", "");
+    }
+}
+
+void test_gh_6289() {
+    // GH-6289 <regex>: Emit only complete _N_str nodes during NFA construction
+    g_regexTester.should_match("ab", "ab");
+    g_regexTester.should_not_match("", "ab");
+    g_regexTester.should_match("\na", "\n^a", multiline);
+    g_regexTester.should_match("a\nb", "a$\nb", multiline);
+    g_regexTester.should_match("a ", R"(a\b )");
+    g_regexTester.should_match("ab", R"(a\Bb)");
+    g_regexTester.should_match("ab", "a.");
+    g_regexTester.should_match("ab", "a[b]");
+    g_regexTester.should_match("a", "a(?:b)*");
+    g_regexTester.should_match("ab", "a(?:b)*");
+    g_regexTester.should_match("abb", "a(?:b)*");
+    g_regexTester.should_match("abc", "a(?=b)..");
+    g_regexTester.should_not_match("aab", "a(?=b)..");
+    g_regexTester.should_capture("a", "a(b)*", "");
+    g_regexTester.should_capture("ab", "a(b)*", "b");
+    g_regexTester.should_capture("abb", "a(b)*", "b");
+    g_regexTester.should_match("aba", R"((a)b\1)");
+    g_regexTester.should_match("a", "a|b|c");
+    g_regexTester.should_match("b", "a|b|c");
+    g_regexTester.should_match("c", "a|b|c");
+    g_regexTester.should_not_match("ab", "a|b|c");
+    g_regexTester.should_not_match("bc", "a|b|c");
+    g_regexTester.should_not_match("abc", "a|b|c");
+}
+
+void test_gh_6359() {
+    // GH-6359: Avoid generating group nodes for non-capturing groups
+    g_regexTester.should_match("abc", "ab*c");
+    g_regexTester.should_match("abbbbc", "ab*c");
+    g_regexTester.should_match("ac", "ab*c");
+    g_regexTester.should_not_match("", "ab*c");
+    g_regexTester.should_not_match("a", "ab*c");
+    g_regexTester.should_not_match("c", "ab*c");
+
+    g_regexTester.should_match("abcd", "a(?:bc)*d");
+    g_regexTester.should_match("abcbcd", "a(?:bc)*d");
+    g_regexTester.should_match("ad", "a(?:bc)*d");
+    g_regexTester.should_not_match("", "a(?:bc)*d");
+    g_regexTester.should_not_match("a", "a(?:bc)*d");
+    g_regexTester.should_not_match("d", "a(?:bc)*d");
+    g_regexTester.should_not_match("abccd", "a(?:bc)*d");
+
+    g_regexTester.should_capture("ad", "a(bc)*d", "");
+    g_regexTester.should_not_match("", "a(bc)*d");
+    g_regexTester.should_not_match("a", "a(bc)*d");
+    g_regexTester.should_not_match("d", "a(bc)*d");
+    g_regexTester.should_not_match("abccd", "a(bc)*d");
+
+    {
+        test_regex re_with_capture_group{&g_regexTester, "^a(bc)*d$"};
+        re_with_capture_group.should_search_match_capture_groups("abcd", "abcd", match_default, {{1, 3}});
+        re_with_capture_group.should_search_match_capture_groups("abcbcd", "abcbcd", match_default, {{3, 5}});
+    }
+
+    g_regexTester.should_match("abcbcd", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_match("abcbcbcbcd", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("ad", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("a", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("d", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("abcd", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("abcbc", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("bcbcd", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_match("abcd", "a(?:(?:bc)*){2}d");
+
+    g_regexTester.should_match("bca", "(?:bc)+a+");
+    g_regexTester.should_match("bcbcaa", "(?:bc)+a+");
+    g_regexTester.should_not_match("bcabca", "(?:bc)+a+");
+
+    g_regexTester.should_capture("a", "(?:(?=(a)))?a", "");
+}
+
+void test_gh_6423() {
+    // GH-6423: Unwrap iterators in `match_results` overloads
+    // Test that all regex_match and regex_search overloads still compile and work in principle
+    const regex re("a((bc)*d)e");
+    {
+        cmatch cm;
+        const char* const input = "abcbcde";
+        const char* const last  = input + char_traits<char>::length(input);
+        assert(regex_match(input, re));
+        assert(regex_match(input, cm, re));
+        assert(cm.ready());
+        assert(cm.size() == 3);
+        assert(cm[0].matched);
+        assert(cm[0].first == input);
+        assert(cm[0].second == last);
+        assert(cm.position(0) == 0);
+        assert(cm[1].matched);
+        assert(cm[1].first == input + 1);
+        assert(cm[1].second == input + 6);
+        assert(cm.position(1) == 1);
+        assert(cm[2].matched);
+        assert(cm[2].first == input + 3);
+        assert(cm[2].second == input + 5);
+        assert(cm.position(2) == 3);
+        assert(!cm.prefix().matched);
+        assert(cm.prefix().first == input);
+        assert(cm.prefix().second == input);
+        assert(!cm.suffix().matched);
+        assert(cm.suffix().first == last);
+        assert(cm.suffix().second == last);
+    }
+
+    {
+        smatch sm;
+        const string input = "abcbcde";
+        assert(regex_match(input, re));
+        assert(regex_match(input, sm, re));
+        assert(sm.ready());
+        assert(sm.size() == 3);
+        assert(sm[0].matched);
+        assert(sm[0].first == input.begin());
+        assert(sm[0].second == input.end());
+        assert(sm.position(0) == 0);
+        assert(sm[1].matched);
+        assert(sm[1].first == input.begin() + 1);
+        assert(sm[1].second == input.begin() + 6);
+        assert(sm.position(1) == 1);
+        assert(sm[2].matched);
+        assert(sm[2].first == input.begin() + 3);
+        assert(sm[2].second == input.begin() + 5);
+        assert(sm.position(2) == 3);
+        assert(!sm.prefix().matched);
+        assert(sm.prefix().first == input.begin());
+        assert(sm.prefix().second == input.begin());
+        assert(!sm.suffix().matched);
+        assert(sm.suffix().first == input.end());
+        assert(sm.suffix().second == input.end());
+    }
+
+    {
+        match_results<vector<char>::const_iterator> vm;
+        const vector<char> input = {'a', 'b', 'c', 'b', 'c', 'd', 'e'};
+        assert(regex_match(input.begin(), input.end(), re));
+        assert(regex_match(input.begin(), input.end(), vm, re));
+        assert(vm.ready());
+        assert(vm.size() == 3);
+        assert(vm[0].matched);
+        assert(vm[0].first == input.begin());
+        assert(vm[0].second == input.end());
+        assert(vm.position(0) == 0);
+        assert(vm[1].matched);
+        assert(vm[1].first == input.begin() + 1);
+        assert(vm[1].second == input.begin() + 6);
+        assert(vm.position(1) == 1);
+        assert(vm[2].matched);
+        assert(vm[2].first == input.begin() + 3);
+        assert(vm[2].second == input.begin() + 5);
+        assert(vm.position(2) == 3);
+        assert(!vm.prefix().matched);
+        assert(vm.prefix().first == input.begin());
+        assert(vm.prefix().second == input.begin());
+        assert(!vm.suffix().matched);
+        assert(vm.suffix().first == input.end());
+        assert(vm.suffix().second == input.end());
+    }
+
+    {
+        cmatch cm;
+        const char* const input = "xyzabcbcdezyx";
+        const char* const last  = input + char_traits<char>::length(input);
+        assert(regex_search(input, re));
+        assert(regex_search(input, cm, re));
+        assert(cm.ready());
+        assert(cm.size() == 3);
+        assert(cm[0].matched);
+        assert(cm[0].first == input + 3);
+        assert(cm[0].second == last - 3);
+        assert(cm.position(0) == 3);
+        assert(cm[1].matched);
+        assert(cm[1].first == input + 4);
+        assert(cm[1].second == input + 9);
+        assert(cm.position(1) == 4);
+        assert(cm[2].matched);
+        assert(cm[2].first == input + 6);
+        assert(cm[2].second == input + 8);
+        assert(cm.prefix().matched);
+        assert(cm.prefix().first == input);
+        assert(cm.prefix().second == input + 3);
+        assert(cm.suffix().matched);
+        assert(cm.suffix().first == last - 3);
+        assert(cm.suffix().second == last);
+    }
+
+    {
+        smatch sm;
+        const string input = "xyzabcbcdezyx";
+        assert(regex_search(input, re));
+        assert(regex_search(input, sm, re));
+        assert(sm.ready());
+        assert(sm.size() == 3);
+        assert(sm[0].matched);
+        assert(sm[0].first == input.begin() + 3);
+        assert(sm[0].second == input.end() - 3);
+        assert(sm.position(0) == 3);
+        assert(sm[1].matched);
+        assert(sm[1].first == input.begin() + 4);
+        assert(sm[1].second == input.begin() + 9);
+        assert(sm.position(1) == 4);
+        assert(sm[2].matched);
+        assert(sm[2].first == input.begin() + 6);
+        assert(sm[2].second == input.begin() + 8);
+        assert(sm.position(2) == 6);
+        assert(sm.prefix().matched);
+        assert(sm.prefix().first == input.begin());
+        assert(sm.prefix().second == input.begin() + 3);
+        assert(sm.suffix().matched);
+        assert(sm.suffix().first == input.end() - 3);
+        assert(sm.suffix().second == input.end());
+    }
+
+    {
+        match_results<vector<char>::const_iterator> vm;
+        const vector<char> input = {'x', 'y', 'z', 'a', 'b', 'c', 'b', 'c', 'd', 'e', 'z', 'y', 'x'};
+        assert(regex_search(input.begin(), input.end(), re));
+        assert(regex_search(input.begin(), input.end(), vm, re));
+        assert(vm.ready());
+        assert(vm.size() == 3);
+        assert(vm[0].matched);
+        assert(vm[0].first == input.begin() + 3);
+        assert(vm[0].second == input.end() - 3);
+        assert(vm.position(0) == 3);
+        assert(vm[1].matched);
+        assert(vm[1].first == input.begin() + 4);
+        assert(vm[1].second == input.begin() + 9);
+        assert(vm.position(1) == 4);
+        assert(vm[2].matched);
+        assert(vm[2].first == input.begin() + 6);
+        assert(vm[2].second == input.begin() + 8);
+        assert(vm.position(2) == 6);
+        assert(vm.prefix().matched);
+        assert(vm.prefix().first == input.begin());
+        assert(vm.prefix().second == input.begin() + 3);
+        assert(vm.suffix().matched);
+        assert(vm.suffix().first == input.end() - 3);
+        assert(vm.suffix().second == input.end());
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2668,6 +2962,11 @@ int main() {
     test_gh_6189();
     test_gh_6191();
     test_gh_6249();
+    test_gh_6262();
+    test_gh_6267();
+    test_gh_6289();
+    test_gh_6359();
+    test_gh_6423();
 
     return g_regexTester.result();
 }

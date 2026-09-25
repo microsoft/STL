@@ -78,7 +78,7 @@ constexpr array<test_info, 5> expected_moves_table{{
 }};
 
 constexpr array<test_info, 2> expected_copies_table{{
-    {"*", "*", 0}, //
+    {"*", "*", 0},
     {"deque", "*", 1}, // deque always causes an additional copy due to creating the proxy allocator
 }};
 #else // _ITERATOR_DEBUG_LEVEL == 0

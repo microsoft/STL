@@ -4,14 +4,11 @@
 # Common configuration used by both pipelines
 
 variables:
-- name: x64SlowPoolName
-  value: 'Stl-2026-04-17T0531-x64-Fasv6-Pool'
-  readonly: true
-- name: x64FastPoolName
-  value: 'Stl-2026-04-17T0531-x64-Fasv7-Pool'
+- name: x64PoolName
+  value: 'Stl-2026-09-21T1536-x64-Fadsv7-Pool'
   readonly: true
 - name: arm64PoolName
-  value: 'Stl-2026-04-17T0531-arm64-Dpsv6-Pool'
+  value: 'Stl-2026-09-21T1536-arm64-Dpdsv6-Pool'
   readonly: true
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
@@ -19,17 +16,25 @@ variables:
 - name: launchVsDevShell
   value: 'C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\Tools\Launch-VsDevShell.ps1'
   readonly: true
+# The x64 SKU Fadsv7 has local temporary storage, available as 'N:' (for NVMe).
+- name: x64PoolWorkRoot
+  value: 'N:'
+  readonly: true
+# The arm64 SKU Dpdsv6 has local temporary storage, available as 'E:'.
+- name: arm64PoolWorkRoot
+  value: 'E:'
+  readonly: true
 - name: tmpDir
-  value: 'C:\stlTemp'
+  value: '$(workRoot)\stlTemp'
   readonly: true
 - name: buildOutputLocation
-  value: 'C:\stlBuild'
+  value: '$(workRoot)\stlBuild'
   readonly: true
 - name: benchmarkBuildOutputLocation
-  value: 'C:\stlBenchmark'
+  value: '$(workRoot)\stlBenchmark'
   readonly: true
 - name: validationBuildOutputLocation
-  value: 'C:\stlValidation'
+  value: '$(workRoot)\stlValidation'
   readonly: true
 - name: Codeql.SkipTaskAutoInjection
   value: true

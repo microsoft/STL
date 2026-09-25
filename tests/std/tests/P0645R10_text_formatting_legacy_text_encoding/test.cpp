@@ -40,7 +40,7 @@ void test_multibyte_format_strings() {
 void test_parse_align() {
     const auto parse_align_fn = _Parse_align<char, testing_callbacks<char>>;
 
-    test_parse_helper(parse_align_fn, "\x93\xfa<X"sv, false, 3, //
+    test_parse_helper(parse_align_fn, "\x93\xfa<X"sv, false, 3,
         {.expected_alignment = _Fmt_align::_Left, .expected_fill = "\x93\xfa"sv});
     test_parse_helper(parse_align_fn, "\x96\x7b>X"sv, false, 3,
         {.expected_alignment = _Fmt_align::_Right, .expected_fill = "\x96\x7b"sv});

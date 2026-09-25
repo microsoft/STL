@@ -267,8 +267,8 @@ struct instantiator {
         "This"sv, "is"sv, "a"sv, "test,"sv, "this"sv, "is"sv, "only"sv, "a"sv, "test."sv};
     static constexpr string_view expected_range[]    = {"Th"sv, " "sv, " a test, th"sv, " "sv, " only a test."sv};
     static constexpr string_view expected_empty[]    = {"T"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "a"sv,
-           " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, //
-           "o"sv, "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
+        " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, //
+        "o"sv, "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
     static constexpr string_view expected_trailing[] = {"test"sv, ""sv};
     static constexpr string_view expected_lwg3505[]  = {"x"sv, "x"sv, "x"sv};
 
@@ -351,6 +351,22 @@ constexpr bool instantiation_test() {
     return true;
 }
 
+constexpr bool test_lwg_3599() {
+    auto p = views::iota(0) | views::take(1) | views::reverse;
+    auto r = views::single(42) | views::lazy_split(p);
+    auto f = r.front();
+
+    static_assert(ranges::forward_range<remove_cvref_t<decltype(r)>>);
+    static_assert(!ranges::forward_range<const remove_cvref_t<decltype(r)>>);
+    static_assert(ranges::forward_range<remove_cvref_t<decltype(f)>>);
+
+    assert(ranges::distance(r) == 1);
+    assert(f.front() == 42);
+    assert(ranges::distance(f) == 1);
+
+    return true;
+}
+
 constexpr bool test_lwg_3904() {
     auto r = views::single(0) | views::lazy_split(0);
     auto i = r.begin();
@@ -370,6 +386,9 @@ void test_lwg_4027() { // COMPILE-ONLY
 int main() {
     static_assert(instantiation_test());
     instantiation_test();
+
+    static_assert(test_lwg_3599());
+    assert(test_lwg_3599());
 
     static_assert(test_lwg_3904());
     assert(test_lwg_3904());

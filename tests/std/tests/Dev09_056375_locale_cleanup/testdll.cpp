@@ -15,8 +15,7 @@ extern "C" {
 __declspec(dllexport)
 #endif
 
-        void
-        DllTest() {
+        void DllTest() {
         assert(isspace(' ', locale()));
         assert(isspace(L' ', locale()));
         assert(!isspace('Z', locale()));
