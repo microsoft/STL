@@ -2894,6 +2894,56 @@ void test_gh_6423() {
     }
 }
 
+void test_gh_6464() {
+    // GH-6464: Accelerate loops over fixed strings
+
+    // There is already test coverage for the new optimization in test_gh_5790().
+    // But as a result, we lose test coverage for greedy simple loops not subject to this optimization.
+    // This restores the test coverage for unoptimized greedy simple loops.
+    g_regexTester.should_not_match("", "(?:a[bc])+");
+    g_regexTester.should_match("d", "(?:a[bc]){0}d");
+    g_regexTester.should_not_match("abd", "(?:a[bc]){0}d");
+    g_regexTester.should_match("abd", "(?:a[bc]){0,1}d");
+    g_regexTester.should_not_match("abacd", "(?:a[bc]){0,1}d");
+    g_regexTester.should_match("abacd", "(?:a[bc]){0,2}d");
+    g_regexTester.should_match("abacd", "(?:a[bc]){1,2}d");
+    g_regexTester.should_not_match("abacd", "(?:a[bc]){1}d");
+    g_regexTester.should_not_match("abacabd", "(?:a[bc]){1,2}d");
+    g_regexTester.should_match("abacabd", "(?:a[bc]){1,3}d");
+
+    for (syntax_option_type options : {ECMAScript | nosubs, extended | nosubs}) {
+        {
+            test_regex greedy_abc_star(&g_regexTester, "(a[bc])*", options | regex_constants::nosubs);
+            greedy_abc_star.should_search_match("abacababacacababacab", "abacababacacababacab");
+        }
+
+        {
+            test_regex bounded_greedy_abc_rep(&g_regexTester, "(a[bc]){5}", options);
+            bounded_greedy_abc_rep.should_search_match("abacababacacababacab", "abacababac");
+        }
+
+        {
+            test_regex upper_bounded_greedy_abc_rep(&g_regexTester, "(a[bc]){0,5}", options);
+            upper_bounded_greedy_abc_rep.should_search_match("abacababacacababacab", "abacababac");
+        }
+
+        {
+            test_regex lower_bounded_greedy_abc_rep(&g_regexTester, "(a[bc]){4,1000}", options);
+            lower_bounded_greedy_abc_rep.should_search_match("abacababacacababacab", "abacababacacababacab");
+        }
+
+        {
+            test_regex lower_and_upper_bounded_greedy_abc_rep(&g_regexTester, "(a[bc]){2,5}", options);
+            lower_and_upper_bounded_greedy_abc_rep.should_search_match("abacababacacababacab", "abacababac");
+        }
+
+        {
+            test_regex too_large_min_greedy_abc_rep(&g_regexTester, "(a[bc]){11,1000}", options);
+            too_large_min_greedy_abc_rep.should_search_fail("abacababacacababacab");
+        }
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2967,6 +3017,7 @@ int main() {
     test_gh_6289();
     test_gh_6359();
     test_gh_6423();
+    test_gh_6464();
 
     return g_regexTester.result();
 }
