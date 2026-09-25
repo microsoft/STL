@@ -282,7 +282,19 @@ void _Print_impl(const _Add_newline _Add_nl, ostream& _Ostr, const format_string
             _STD _Vprint_nonunicode_impl(_Add_nl, _Ostr, _Fmt.get(), _STD make_format_args(_Args...));
         }
     } else {
-        const string _Unescaped_str{_Unescape_braces(_Add_nl, _Fmt.get())};
+        const string_view _Format_str = _Fmt.get();
+        size_t _Escape_brace_offset   = _Find_escape_braces(_Format_str);
+        if (_Escape_brace_offset == string_view::npos) {
+            _Escape_brace_offset = _Format_str.size();
+        }
+
+        string _Unescaped_str_buffer;
+        string_view _Unescaped_str = _Format_str;
+        if (_Add_nl == _Add_newline::_Yes || _Escape_brace_offset != _Format_str.size()) {
+            _Unescaped_str_buffer = _Unescape_braces(_Add_nl, _Format_str, _Escape_brace_offset);
+            _Unescaped_str        = _Unescaped_str_buffer;
+        }
+
         _STD _Print_noformat(_Ostr, _Unescaped_str);
     }
 }
