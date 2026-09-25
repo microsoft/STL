@@ -384,6 +384,7 @@ void test_lwg_4027() { // COMPILE-ONLY
     static_assert(is_const_v<remove_reference_t<R1>>);
 }
 
+#ifdef __cpp_lib_ranges_stride
 void test_lwg_4249() {
     // Iterating an inner range exhausts the shared base range, so the outer iterator can only be incremented
     // once more before it reaches the end; it must not compare equal to default_sentinel in between.
@@ -408,6 +409,7 @@ void test_lwg_4249() {
     ++j;
     assert(j == plain.end());
 }
+#endif // __cpp_lib_ranges_stride
 
 int main() {
     static_assert(instantiation_test());
@@ -419,5 +421,7 @@ int main() {
     static_assert(test_lwg_3904());
     assert(test_lwg_3904());
 
+#ifdef __cpp_lib_ranges_stride
     test_lwg_4249();
+#endif // __cpp_lib_ranges_stride
 }
