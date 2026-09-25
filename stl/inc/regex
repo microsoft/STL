@@ -1283,8 +1283,8 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_rep_branchless    = 0x01000,
     _Fl_rep_str           = 0x02000,
     _Fl_rep_char          = 0x04000,
-    _Fl_rep_subtype_mask  = 0x1E000,
     _Fl_rep_known_subtype = 0x04000,
+    _Fl_rep_subtype_mask  = 0x1E000,
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
