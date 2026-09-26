@@ -199,6 +199,21 @@ namespace test {
     private:
         HANDLE m_handle;
     };
+
+    class xsputn_accepting_streambuf : public streambuf {
+    public:
+        string written;
+
+    protected:
+        streamsize xsputn(const char* const _Str, const streamsize _Count) override {
+            written.append(_Str, static_cast<size_t>(_Count));
+            return _Count;
+        }
+
+        int_type overflow(int_type = traits_type::eof()) override {
+            return traits_type::eof();
+        }
+    };
 } // namespace test
 
 const locale& get_utf8_locale() {
@@ -350,6 +365,15 @@ void test_noformat_console_ostream() {
                && test_console.get_console_line(0).empty() && test_console.get_console_line(1) == L"ostream println"
                && test_console.get_console_line(2) == L"ostream marker");
     }
+}
+
+void test_ostream_println_single_write() {
+    test::xsputn_accepting_streambuf test_buffer{};
+    ostream test_stream{&test_buffer};
+
+    println(test_stream, "Hello world");
+
+    assert(test_stream.good() && test_buffer.written == "Hello world\n");
 }
 
 void test_invalid_code_points_console() {
@@ -687,6 +711,7 @@ void test_empty_strings_and_newlines() {
 }
 
 void all_tests() {
+    test_ostream_println_single_write();
     test_print_optimizations();
     test_noformat_console_ostream();
 
