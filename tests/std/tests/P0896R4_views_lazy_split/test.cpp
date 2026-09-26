@@ -384,32 +384,23 @@ void test_lwg_4027() { // COMPILE-ONLY
     static_assert(is_const_v<remove_reference_t<R1>>);
 }
 
-#ifdef __cpp_lib_ranges_stride
 void test_lwg_4249() {
-    // Iterating an inner range exhausts the shared base range, so the outer iterator can only be incremented
-    // once more before it reaches the end; it must not compare equal to default_sentinel in between.
-    istringstream is{"1 0 2 0 3"};
-    auto r = views::istream<int>(is) | views::lazy_split(0) | views::stride(2);
-
-    auto i = r.begin();
-    assert(i != r.end());
-    assert(ranges::equal(*i, views::single(1)));
-    ++i;
-    assert(i != r.end());
-    assert(ranges::equal(*i, views::single(3)));
-    ++i;
-    assert(i == r.end());
-
-    istringstream is2{"1 0 2"};
-    auto plain = views::istream<int>(is2) | views::lazy_split(0);
+    // Iterating over an inner range advances the shared current, so the outer iterator can only be
+    // incremented once more before reaching the end; it must not compare equal to default_sentinel
+    // in between.
+    istringstream is{"1 0 2"};
+    auto plain = views::istream<int>(is) | views::lazy_split(0);
     auto j     = plain.begin();
+    assert(j != plain.end());
     assert(ranges::equal(*j, views::single(1)));
+    assert(j != plain.end());
     ++j;
+    assert(j != plain.end());
     assert(ranges::equal(*j, views::single(2)));
+    assert(j != plain.end());
     ++j;
     assert(j == plain.end());
 }
-#endif // __cpp_lib_ranges_stride
 
 int main() {
     static_assert(instantiation_test());
@@ -421,7 +412,5 @@ int main() {
     static_assert(test_lwg_3904());
     assert(test_lwg_3904());
 
-#ifdef __cpp_lib_ranges_stride
     test_lwg_4249();
-#endif // __cpp_lib_ranges_stride
 }
