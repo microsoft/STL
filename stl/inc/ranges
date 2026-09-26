@@ -3767,6 +3767,10 @@ namespace ranges {
                         ++_Cur;
                         if (_Cur == _End) {
                             _Trailing_empty = true;
+                        } else if constexpr (!forward_range<_Vw>) {
+                            // LWG-4249: inner iteration can exhaust the base range before the sentinel comparison,
+                            // so mark as trailing empty instead of appearing to be at the sentinel.
+                            _Trailing_empty = true;
                         }
                     }
                 } else {
