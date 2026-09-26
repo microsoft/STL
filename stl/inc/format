@@ -3649,11 +3649,9 @@ enum class _Add_newline : bool { _Nope, _Yes };
 
 _NODISCARD inline size_t _Find_escape_braces(const string_view _Format_str) noexcept {
     const auto _Escape_brace = _RANGES adjacent_find(_Format_str,
-        [](char _Lhs, char _Rhs) static {
-            return (_Lhs == '{' && _Rhs == '{') || (_Lhs == '}' && _Rhs == '}');
-        });
+        [](char _Lhs, char _Rhs) static { return (_Lhs == '{' && _Rhs == '{') || (_Lhs == '}' && _Rhs == '}'); });
     if (_Escape_brace == _Format_str.end()) {
-        return string_view::npos;
+        return _Format_str.size();
     }
 
     return static_cast<size_t>(_Escape_brace - _Format_str.begin());
@@ -3677,10 +3675,9 @@ _NODISCARD inline string _Unescape_braces(
         ++_Unescaped_str_expected_size;
     }
 
-    _Unescaped_str.resize_and_overwrite(_Unescaped_str_expected_size,
-        [_Add_nl, _Old_str, _Escape_brace_offset](char* _Dest_ptr, size_t) {
-            const size_t _Unescaped_prefix_size =
-                _Escape_brace_offset == string_view::npos ? _Old_str.size() : _Escape_brace_offset;
+    _Unescaped_str.resize_and_overwrite(
+        _Unescaped_str_expected_size, [_Add_nl, _Old_str, _Escape_brace_offset](char* _Dest_ptr, size_t) {
+            const size_t _Unescaped_prefix_size = _Escape_brace_offset;
             if (_Unescaped_prefix_size > 0) {
                 _STD char_traits<char>::copy(_Dest_ptr, _Old_str.data(), _Unescaped_prefix_size);
                 _Dest_ptr += _Unescaped_prefix_size;
