@@ -1281,10 +1281,11 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_begin_needs_s     = 0x00200,
     _Fl_begin_needs_d     = 0x00400,
     _Fl_rep_branchless    = 0x01000,
-    _Fl_rep_str           = 0x02000,
-    _Fl_rep_char          = 0x04000,
-    _Fl_rep_known_subtype = 0x04000,
-    _Fl_rep_subtype_mask  = 0x1E000,
+    _Fl_rep_str           = 0x02000, // 1 << 13
+    _Fl_rep_char          = 0x04000, // 2 << 13
+    // values 3 << 13 through 15 << 13 inclusive are reserved for new special cases to optimize
+    _Fl_rep_known_subtype = 0x04000, // 2 << 13, increase to be equal to the newest special case
+    _Fl_rep_subtype_mask  = 0x1E000, // 15 << 13, don't change
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
