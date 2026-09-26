@@ -113,9 +113,19 @@ struct _Fmt_iterator_flush<_Print_to_unicode_console_it> {
     }
 };
 
-inline void _Print_noformat_nonunicode(FILE* const _Stream, const string_view _Str) {
+inline void _Print_noformat_nonunicode(const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Str) {
     const _Stream_lock_guard _Guard{_Stream};
     _STD _Print_noformat_nonunicode_nonlocking(_Stream, _Str);
+    if (_Add_nl == _Add_newline::_Yes) {
+        _STD _Print_noformat_nonunicode_nonlocking(_Stream, "\n");
+    }
+}
+
+inline void _Print_newline_only_unicode_to_console_nonlocking(const __std_unicode_console_handle _Console_handle) {
+    const __std_win_error _Console_print_result = __std_print_newline_only_to_unicode_console(_Console_handle);
+    if (_Console_print_result != __std_win_error::_Success) {
+        _STD _Throw_system_error_from_std_win_error(_Console_print_result);
+    }
 }
 
 // Format non unicode into a temporary string, then print to stream
@@ -126,7 +136,7 @@ inline void _Vprint_nonunicode_buffered_impl(
         _Output_str.push_back('\n');
     }
 
-    _STD _Print_noformat_nonunicode(_Stream, _Output_str);
+    _STD _Print_noformat_nonunicode(_Add_newline::_Nope, _Stream, _Output_str);
 }
 
 // Format non unicode directly into _Stream
@@ -175,7 +185,8 @@ void _Do_on_maybe_unicode_console(
 }
 
 // If a unicode console, write using native API, else write to stream
-inline void _Vprint_unicode_noformat_impl(FILE* const _Stream, const string_view _Output_str) {
+inline void _Vprint_unicode_noformat_impl(
+    const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Output_str) {
     const auto _Unicode_console = [&](const __std_unicode_console_handle _Console_handle) {
         const _Stream_lock_guard _Guard{_Stream};
 
@@ -185,9 +196,12 @@ inline void _Vprint_unicode_noformat_impl(FILE* const _Stream, const string_view
         }
 
         _STD _Print_noformat_unicode_to_console_nonlocking(_Console_handle, _Output_str);
+        if (_Add_nl == _Add_newline::_Yes) {
+            _STD _Print_newline_only_unicode_to_console_nonlocking(_Console_handle);
+        }
     };
 
-    const auto _Fallback = [&] { _STD _Print_noformat_nonunicode(_Stream, _Output_str); };
+    const auto _Fallback = [&] { _STD _Print_noformat_nonunicode(_Add_nl, _Stream, _Output_str); };
 
     _STD _Do_on_maybe_unicode_console(_Stream, _Unicode_console, _Fallback);
 }
@@ -207,10 +221,7 @@ inline void _Print_newline_only_unicode(FILE* const _Stream) {
             _Throw_system_error(static_cast<errc>(errno));
         }
 
-        const __std_win_error _Console_print_result = __std_print_newline_only_to_unicode_console(_Console_handle);
-        if (_Console_print_result != __std_win_error::_Success) {
-            _STD _Throw_system_error_from_std_win_error(_Console_print_result);
-        }
+        _STD _Print_newline_only_unicode_to_console_nonlocking(_Console_handle);
     };
 
     const auto _Fallback = [&] { _STD _Fputc_newline(_Stream); };
@@ -225,7 +236,7 @@ inline void _Vprint_unicode_buffered_impl(
     if (_Add_nl == _Add_newline::_Yes) {
         _Output_str.push_back('\n');
     }
-    _STD _Vprint_unicode_noformat_impl(_Stream, _Output_str);
+    _STD _Vprint_unicode_noformat_impl(_Add_newline::_Nope, _Stream, _Output_str);
 }
 
 inline void _Vprint_unicode_impl(
@@ -270,12 +281,20 @@ void _Print_impl(
             }
         }
     } else {
-        const string _Unescaped_str{_Unescape_braces(_Add_nl, _Fmt.get())};
+        const string_view _Format_str     = _Fmt.get();
+        const size_t _Escape_brace_offset = _Find_escape_braces(_Format_str);
+
+        string _Unescaped_str_buffer;
+        string_view _Unescaped_str = _Format_str.empty() ? string_view{""} : _Format_str;
+        if (_Escape_brace_offset != _Format_str.size()) {
+            _Unescaped_str_buffer = _Unescape_braces(_Add_newline::_Nope, _Format_str, _Escape_brace_offset);
+            _Unescaped_str        = string_view{_Unescaped_str_buffer};
+        }
 
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
-            _STD _Vprint_unicode_noformat_impl(_Stream, _Unescaped_str);
+            _STD _Vprint_unicode_noformat_impl(_Add_nl, _Stream, _Unescaped_str);
         } else {
-            _STD _Print_noformat_nonunicode(_Stream, _Unescaped_str);
+            _STD _Print_noformat_nonunicode(_Add_nl, _Stream, _Unescaped_str);
         }
     }
 }

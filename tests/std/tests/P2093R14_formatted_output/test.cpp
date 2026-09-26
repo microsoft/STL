@@ -323,6 +323,29 @@ void test_print_optimizations() {
     **********/
 }
 
+void test_empty_string_view_console_ostream() {
+    if constexpr (_Is_ordinary_literal_encoding_utf8()) {
+        constexpr string_view empty_view{};
+        test::win_console test_console{};
+        FILE* const console_file_stream = test_console.get_file_stream();
+        filebuf console_file_buffer{console_file_stream};
+        ostream console_output{&console_file_buffer};
+
+        print(console_output, empty_view);
+        const bool print_set_badbit = console_output.bad();
+        console_output.clear();
+
+        println(console_output, empty_view);
+        const bool println_set_badbit = console_output.bad();
+        console_output.clear();
+
+        print(console_output, "ostream marker");
+
+        assert(!print_set_badbit && !println_set_badbit && test_console.get_console_line(0).empty()
+               && test_console.get_console_line(1) == L"ostream marker");
+    }
+}
+
 void test_invalid_code_points_console() {
     if constexpr (!_Is_ordinary_literal_encoding_utf8()) {
         if (GetConsoleOutputCP() != CP_UTF8) {
@@ -659,6 +682,7 @@ void test_empty_strings_and_newlines() {
 
 void all_tests() {
     test_print_optimizations();
+    test_empty_string_view_console_ostream();
 
     test_invalid_code_points_console();
     test_invalid_code_points_file();
