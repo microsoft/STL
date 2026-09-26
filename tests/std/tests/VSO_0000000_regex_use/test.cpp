@@ -2895,7 +2895,7 @@ void test_gh_6423() {
 }
 
 void test_gh_6464() {
-    // GH-6464: Accelerate loops over fixed strings
+    // GH-6464: Accelerate greedy loops over fixed strings
 
     // There is already test coverage for the new optimization in test_gh_5790().
     // But as a result, we lose test coverage for greedy simple loops not subject to this optimization.
