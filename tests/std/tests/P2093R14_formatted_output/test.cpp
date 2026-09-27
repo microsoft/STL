@@ -200,18 +200,16 @@ namespace test {
         HANDLE m_handle;
     };
 
-    class xsputn_accepting_streambuf : public streambuf {
+    class counting_stringbuf : public stringbuf {
     public:
-        string written;
+        size_t xsputn_calls = 0;
+        string xsputn_input;
 
     protected:
         streamsize xsputn(const char* const _Str, const streamsize _Count) override {
-            written.append(_Str, static_cast<size_t>(_Count));
-            return _Count;
-        }
-
-        int_type overflow(int_type = traits_type::eof()) override {
-            return traits_type::eof();
+            ++xsputn_calls;
+            xsputn_input.append(_Str, static_cast<size_t>(_Count));
+            return stringbuf::xsputn(_Str, _Count);
         }
     };
 } // namespace test
@@ -368,12 +366,13 @@ void test_noformat_console_ostream() {
 }
 
 void test_ostream_println_single_write() {
-    test::xsputn_accepting_streambuf test_buffer{};
+    test::counting_stringbuf test_buffer{};
     ostream test_stream{&test_buffer};
 
     println(test_stream, "Hello world");
 
-    assert(test_stream.good() && test_buffer.written == "Hello world\n");
+    assert(test_stream.good() && test_buffer.str() == "Hello world\n" && test_buffer.xsputn_calls == 1
+           && test_buffer.xsputn_input == "Hello world\n");
 }
 
 void test_invalid_code_points_console() {
