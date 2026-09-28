@@ -7080,20 +7080,20 @@ namespace {
                 const auto _Needle_tail_bytes = static_cast<uint8_t>(_Needle_length & size_t{_Fixed_vl_bytes - 1});
                 const bool _Have_needle_tail  = _Needle_tail_bytes != 0;
 
+                const auto _True = svptrue_b8();
                 svbool_t _Pred_needle_tail;
                 // Specialize for SVE VL128, where we don't need to duplicate the predicate.
                 if (_Sve_vl_bytes == _Fixed_vl_bytes) {
                     _Pred_needle_tail = svwhilelt_b8(0, _Needle_tail_bytes);
                 } else {
-                    const auto _Indices = svand_z(svptrue_b8(), svindex_u8(0, 1), svdup_n_u8(0xF));
-                    _Pred_needle_tail   = svcmplt(svptrue_b8(), _Indices, svdup_n_u8(_Needle_tail_bytes));
+                    const auto _Indices = svand_z(_True, svindex_u8(0, 1), svdup_n_u8(0xF));
+                    _Pred_needle_tail   = svcmplt(_True, _Indices, svdup_n_u8(_Needle_tail_bytes));
                 }
 
                 const auto _Data2_tail_in = _Traits::_Loadrq(_Pred_needle_tail, _Stop2);
                 const auto _Data2_tail    = _Traits::_Make_valid_needle(_Pred_needle_tail, _Data2_tail_in);
 
                 // VLA, all-true predicated main haystack loop.
-                const auto _True = svptrue_b8();
                 for (; _First1 != _Stop1; _Advance_bytes(_First1, _Sve_vl_bytes)) {
                     const auto _Data1 = _Traits::_Load(_True, _First1);
 
