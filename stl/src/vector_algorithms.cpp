@@ -6809,42 +6809,6 @@ namespace {
                 }
             };
 
-#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-            template <class _Ty>
-            struct _Find_first_of_traits_sve2;
-
-            template <>
-            struct _Find_first_of_traits_sve2<uint8_t> {
-                static svuint8_t _Load_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
-                    return svld1_u8(_Pred, static_cast<const uint8_t*>(_Ptr));
-                }
-
-                static svuint8_t _Loadrq_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
-                    return svld1rq_u8(_Pred, static_cast<const uint8_t*>(_Ptr));
-                }
-
-                static bool _Test_any(const svbool_t _Pred) noexcept {
-                    return svptest_any(svptrue_b8(), _Pred);
-                }
-
-                static svuint8_t _Make_valid_needle(const svbool_t _Pred, const svuint8_t _Data) noexcept {
-                    // Fill any inactive lanes of the needle with valid needle elements.
-                    const auto _Broadcast = svdup_lane_u8(_Data, 0);
-                    return svsel_u8(_Pred, _Data, _Broadcast);
-                }
-
-                // Assumes that needle (_Data2) contains valid needle elements across all lanes.
-                static svbool_t _Match_sve(
-                    const svbool_t _Pred, const svuint8_t _Data1, const svuint8_t _Data2) noexcept {
-                    return svmatch_u8(_Pred, _Data1, _Data2);
-                }
-
-                static uint64_t _Get_first_h_pos(const svbool_t _Pred) noexcept {
-                    return svcntp_b8(svptrue_b8(), svbrkb_z(svptrue_b8(), _Pred));
-                }
-            };
-#endif // ^^^ defined(_M_ARM64) ^^^
-
             template <>
             struct _Find_first_of_traits<uint16_t> : _Finding::_Find_traits_2 {
                 using _Vec_t = uint16x8_t;
@@ -6862,39 +6826,6 @@ namespace {
                     return vextq_u16(_Val, _Val, _Nx);
                 }
             };
-
-#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-            template <>
-            struct _Find_first_of_traits_sve2<uint16_t> {
-                static svuint16_t _Load_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
-                    return svld1_u16(_Pred, static_cast<const uint16_t*>(_Ptr));
-                }
-
-                static svuint16_t _Loadrq_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
-                    return svld1rq_u16(_Pred, static_cast<const uint16_t*>(_Ptr));
-                }
-
-                static bool _Test_any(const svbool_t _Pred) noexcept {
-                    return svptest_any(svptrue_b16(), _Pred);
-                }
-
-                static svuint16_t _Make_valid_needle(const svbool_t _Pred, const svuint16_t _Data) noexcept {
-                    // Fill any inactive lanes of the needle with valid needle elements.
-                    const auto _Broadcast = svdup_lane_u16(_Data, 0);
-                    return svsel_u16(_Pred, _Data, _Broadcast);
-                }
-
-                // Assumes that needle (_Data2) contains valid needle elements across all lanes.
-                static svbool_t _Match_sve(
-                    const svbool_t _Pred, const svuint16_t _Data1, const svuint16_t _Data2) noexcept {
-                    return svmatch_u16(_Pred, _Data1, _Data2);
-                }
-
-                static uint64_t _Get_first_h_pos(const svbool_t _Pred) noexcept {
-                    return svcntp_b16(svptrue_b16(), svbrkb_z(svptrue_b16(), _Pred)) * 2;
-                }
-            };
-#endif // ^^^ defined(_M_ARM64) ^^^
 
             template <>
             struct _Find_first_of_traits<uint32_t> : _Finding::_Find_traits_4 {
@@ -7061,6 +6992,71 @@ namespace {
             }
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+            template <class _Ty>
+            struct _Find_first_of_traits_sve2;
+
+            template <>
+            struct _Find_first_of_traits_sve2<uint8_t> {
+                static svuint8_t _Load_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                    return svld1_u8(_Pred, static_cast<const uint8_t*>(_Ptr));
+                }
+
+                static svuint8_t _Loadrq_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                    return svld1rq_u8(_Pred, static_cast<const uint8_t*>(_Ptr));
+                }
+
+                static bool _Test_any(const svbool_t _Pred) noexcept {
+                    return svptest_any(svptrue_b8(), _Pred);
+                }
+
+                static svuint8_t _Make_valid_needle(const svbool_t _Pred, const svuint8_t _Data) noexcept {
+                    // Fill any inactive lanes of the needle with valid needle elements.
+                    const auto _Broadcast = svdup_lane_u8(_Data, 0);
+                    return svsel_u8(_Pred, _Data, _Broadcast);
+                }
+
+                // Assumes that needle (_Data2) contains valid needle elements across all lanes.
+                static svbool_t _Match_sve(
+                    const svbool_t _Pred, const svuint8_t _Data1, const svuint8_t _Data2) noexcept {
+                    return svmatch_u8(_Pred, _Data1, _Data2);
+                }
+
+                static uint64_t _Get_first_h_pos(const svbool_t _Pred) noexcept {
+                    return svcntp_b8(svptrue_b8(), svbrkb_z(svptrue_b8(), _Pred));
+                }
+            };
+
+            template <>
+            struct _Find_first_of_traits_sve2<uint16_t> {
+                static svuint16_t _Load_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                    return svld1_u16(_Pred, static_cast<const uint16_t*>(_Ptr));
+                }
+
+                static svuint16_t _Loadrq_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                    return svld1rq_u16(_Pred, static_cast<const uint16_t*>(_Ptr));
+                }
+
+                static bool _Test_any(const svbool_t _Pred) noexcept {
+                    return svptest_any(svptrue_b16(), _Pred);
+                }
+
+                static svuint16_t _Make_valid_needle(const svbool_t _Pred, const svuint16_t _Data) noexcept {
+                    // Fill any inactive lanes of the needle with valid needle elements.
+                    const auto _Broadcast = svdup_lane_u16(_Data, 0);
+                    return svsel_u16(_Pred, _Data, _Broadcast);
+                }
+
+                // Assumes that needle (_Data2) contains valid needle elements across all lanes.
+                static svbool_t _Match_sve(
+                    const svbool_t _Pred, const svuint16_t _Data1, const svuint16_t _Data2) noexcept {
+                    return svmatch_u16(_Pred, _Data1, _Data2);
+                }
+
+                static uint64_t _Get_first_h_pos(const svbool_t _Pred) noexcept {
+                    return svcntp_b16(svptrue_b16(), svbrkb_z(svptrue_b16(), _Pred)) * 2;
+                }
+            };
+
             // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
             // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE2())`.
             template <class _Ty>
