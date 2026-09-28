@@ -6997,11 +6997,11 @@ namespace {
 
             template <>
             struct _Find_first_of_traits_sve2<uint8_t> {
-                static svuint8_t _Load_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                static svuint8_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                     return svld1_u8(_Pred, static_cast<const uint8_t*>(_Ptr));
                 }
 
-                static svuint8_t _Loadrq_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                static svuint8_t _Loadrq(const svbool_t _Pred, const void* const _Ptr) noexcept {
                     return svld1rq_u8(_Pred, static_cast<const uint8_t*>(_Ptr));
                 }
 
@@ -7016,8 +7016,7 @@ namespace {
                 }
 
                 // Assumes that needle (_Data2) contains valid needle elements across all lanes.
-                static svbool_t _Match_sve(
-                    const svbool_t _Pred, const svuint8_t _Data1, const svuint8_t _Data2) noexcept {
+                static svbool_t _Match(const svbool_t _Pred, const svuint8_t _Data1, const svuint8_t _Data2) noexcept {
                     return svmatch_u8(_Pred, _Data1, _Data2);
                 }
 
@@ -7028,11 +7027,11 @@ namespace {
 
             template <>
             struct _Find_first_of_traits_sve2<uint16_t> {
-                static svuint16_t _Load_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                static svuint16_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                     return svld1_u16(_Pred, static_cast<const uint16_t*>(_Ptr));
                 }
 
-                static svuint16_t _Loadrq_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                static svuint16_t _Loadrq(const svbool_t _Pred, const void* const _Ptr) noexcept {
                     return svld1rq_u16(_Pred, static_cast<const uint16_t*>(_Ptr));
                 }
 
@@ -7047,7 +7046,7 @@ namespace {
                 }
 
                 // Assumes that needle (_Data2) contains valid needle elements across all lanes.
-                static svbool_t _Match_sve(
+                static svbool_t _Match(
                     const svbool_t _Pred, const svuint16_t _Data1, const svuint16_t _Data2) noexcept {
                     return svmatch_u16(_Pred, _Data1, _Data2);
                 }
@@ -7090,26 +7089,26 @@ namespace {
                     _Pred_needle_tail   = svcmplt(svptrue_b8(), _Indices, svdup_n_u8(_Needle_tail_bytes));
                 }
 
-                const auto _Data2_tail_in = _Traits::_Loadrq_sve(_Pred_needle_tail, _Stop2);
+                const auto _Data2_tail_in = _Traits::_Loadrq(_Pred_needle_tail, _Stop2);
                 const auto _Data2_tail    = _Traits::_Make_valid_needle(_Pred_needle_tail, _Data2_tail_in);
 
                 // VLA, all-true predicated main haystack loop.
                 const auto _True = svptrue_b8();
                 for (; _First1 != _Stop1; _Advance_bytes(_First1, _Sve_vl_bytes)) {
-                    const auto _Data1 = _Traits::_Load_sve(_True, _First1);
+                    const auto _Data1 = _Traits::_Load(_True, _First1);
 
                     // Fixed-width (128-bit), all-true predicated main needle loop.
                     auto _Match       = svpfalse();
                     const void* _Ptr2 = _First2;
                     for (; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, _Fixed_vl_bytes)) {
-                        const auto _Data2     = _Traits::_Loadrq_sve(_True, _Ptr2);
-                        const auto _Sub_match = _Traits::_Match_sve(_True, _Data1, _Data2);
+                        const auto _Data2     = _Traits::_Loadrq(_True, _Ptr2);
+                        const auto _Sub_match = _Traits::_Match(_True, _Data1, _Data2);
                         _Match                = svorr_z(_True, _Sub_match, _Match);
                     }
 
                     // Needle predicated tail.
                     if (_Have_needle_tail) {
-                        const auto _Sub_match = _Traits::_Match_sve(_True, _Data1, _Data2_tail);
+                        const auto _Sub_match = _Traits::_Match(_True, _Data1, _Data2_tail);
                         _Match                = svorr_z(_True, _Sub_match, _Match);
                     }
 
@@ -7124,20 +7123,20 @@ namespace {
                 const auto _Haystack_tail_bytes = static_cast<uint8_t>(_Haystack_length & size_t{_Sve_vl_bytes - 1});
                 if (_Haystack_tail_bytes != 0) {
                     const auto _Pred_haystack_tail = svwhilelt_b8(0, _Haystack_tail_bytes);
-                    const auto _Data1_tail         = _Traits::_Load_sve(_Pred_haystack_tail, _Stop1);
+                    const auto _Data1_tail         = _Traits::_Load(_Pred_haystack_tail, _Stop1);
 
                     // Fixed-width (128-bit), all-true predicated main needle loop.
                     auto _Match       = svpfalse();
                     const void* _Ptr2 = _First2;
                     for (; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, _Fixed_vl_bytes)) {
-                        const auto _Data2     = _Traits::_Loadrq_sve(_True, _Ptr2);
-                        const auto _Sub_match = _Traits::_Match_sve(_Pred_haystack_tail, _Data1_tail, _Data2);
+                        const auto _Data2     = _Traits::_Loadrq(_True, _Ptr2);
+                        const auto _Sub_match = _Traits::_Match(_Pred_haystack_tail, _Data1_tail, _Data2);
                         _Match                = svorr_z(_Pred_haystack_tail, _Sub_match, _Match);
                     }
 
                     // Needle predicated tail.
                     if (_Have_needle_tail) {
-                        const auto _Sub_match = _Traits::_Match_sve(_Pred_haystack_tail, _Data1_tail, _Data2_tail);
+                        const auto _Sub_match = _Traits::_Match(_Pred_haystack_tail, _Data1_tail, _Data2_tail);
                         _Match                = svorr_z(_Pred_haystack_tail, _Sub_match, _Match);
                     }
 
