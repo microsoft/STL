@@ -6807,8 +6807,14 @@ namespace {
                 static _Vec_t _Ext(const _Vec_t _Val) noexcept {
                     return vextq_u8(_Val, _Val, _Nx);
                 }
+            };
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+            template <class _Ty>
+            struct _Find_first_of_traits_sve2;
+
+            template <>
+            struct _Find_first_of_traits_sve2<uint8_t> {
                 static svuint8_t _Load_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
                     return svld1_u8(_Pred, static_cast<const uint8_t*>(_Ptr));
                 }
@@ -6836,8 +6842,8 @@ namespace {
                 static uint64_t _Get_first_h_pos(const svbool_t _Pred) noexcept {
                     return svcntp_b8(svptrue_b8(), svbrkb_z(svptrue_b8(), _Pred));
                 }
-#endif // ^^^ defined(_M_ARM64) ^^^
             };
+#endif // ^^^ defined(_M_ARM64) ^^^
 
             template <>
             struct _Find_first_of_traits<uint16_t> : _Finding::_Find_traits_2 {
@@ -6855,8 +6861,11 @@ namespace {
                 static _Vec_t _Ext(const _Vec_t _Val) noexcept {
                     return vextq_u16(_Val, _Val, _Nx);
                 }
+            };
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+            template <>
+            struct _Find_first_of_traits_sve2<uint16_t> {
                 static svuint16_t _Load_sve(const svbool_t _Pred, const void* const _Ptr) noexcept {
                     return svld1_u16(_Pred, static_cast<const uint16_t*>(_Ptr));
                 }
@@ -6884,8 +6893,8 @@ namespace {
                 static uint64_t _Get_first_h_pos(const svbool_t _Pred) noexcept {
                     return svcntp_b16(svptrue_b16(), svbrkb_z(svptrue_b16(), _Pred)) * 2;
                 }
-#endif // ^^^ defined(_M_ARM64) ^^^
             };
+#endif // ^^^ defined(_M_ARM64) ^^^
 
             template <>
             struct _Find_first_of_traits<uint32_t> : _Finding::_Find_traits_4 {
@@ -7057,7 +7066,7 @@ namespace {
             template <class _Ty>
             __declspec(noinline) const void* _Match_impl_sve2(const void* _First1, const void* const _Last1,
                 const void* const _First2, const void* const _Last2) noexcept {
-                using _Traits = _Find_first_of_traits<_Ty>;
+                using _Traits = _Find_first_of_traits_sve2<_Ty>;
 
                 if (_First2 == _Last2) {
                     return _Last1;
