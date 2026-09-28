@@ -41,8 +41,8 @@ if ($VMSku -ieq 'Fadsv7') {
   $Arch = 'x64'
   $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_F16ads_v7'
-  $PoolSkuName = 'Standard_F80ads_v7'
-  $PoolSize = 32 # Locations where we have quota for at least 2560 cores (32 VMs):
+  $PoolSkuName = 'Standard_F64ads_v7'
+  $PoolSize = 40 # Locations where we have quota for at least 2560 cores (40 VMs):
   $AvailableLocations = @('australiaeast', 'swedencentral')
 } elseif ($VMSku -ieq 'Dpdsv6') {
   $Arch = 'arm64'
