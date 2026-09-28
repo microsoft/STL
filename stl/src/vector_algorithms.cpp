@@ -7613,7 +7613,7 @@ namespace {
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
             template <class _Ty>
-            bool _Use_sve_match(const size_t _Count1, const size_t _Count2) noexcept {
+            bool _Use_sve2_match(const size_t _Count1, const size_t _Count2) noexcept {
                 if constexpr (sizeof(_Ty) == 1) {
                     if (_Count1 <= 64) {
                         return true;
@@ -7781,7 +7781,7 @@ namespace {
                 const size_t _Count2) noexcept {
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
                 if constexpr (sizeof(_Ty) <= 2 && _Pred == _Predicate::_Any_of) {
-                    if (_Use_FEAT_SVE2() && _Use_sve_match<_Ty>(_Count1, _Count2)) {
+                    if (_Use_FEAT_SVE2() && _Use_sve2_match<_Ty>(_Count1, _Count2)) {
                         const void* const _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
                         const void* const _Last2 = static_cast<const _Ty*>(_First2) + _Count2;
                         return _Pos_from_ptr<_Ty>(
