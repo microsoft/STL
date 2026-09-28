@@ -7055,7 +7055,7 @@ namespace {
             // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
             // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE2())`.
             template <class _Ty>
-            __declspec(noinline) const void* _Match_impl(const void* _First1, const void* const _Last1,
+            __declspec(noinline) const void* _Match_impl_sve2(const void* _First1, const void* const _Last1,
                 const void* const _First2, const void* const _Last2) noexcept {
                 using _Traits = _Find_first_of_traits<_Ty>;
 
@@ -7573,7 +7573,7 @@ namespace {
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
                 if constexpr (sizeof(_Ty) <= 2) {
                     if (_Use_FEAT_SVE2()) {
-                        return _Match_impl<_Ty>(_First1, _Last1, _First2, _Last2);
+                        return _Match_impl_sve2<_Ty>(_First1, _Last1, _First2, _Last2);
                     }
                 }
 #endif // ^^^ defined(_M_ARM64) ^^^
@@ -7780,7 +7780,8 @@ namespace {
                     if (_Use_FEAT_SVE2() && _Use_sve_match<_Ty>(_Count1, _Count2)) {
                         const void* const _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
                         const void* const _Last2 = static_cast<const _Ty*>(_First2) + _Count2;
-                        return _Pos_from_ptr<_Ty>(_Match_impl<_Ty>(_First1, _Last1, _First2, _Last2), _First1, _Last1);
+                        return _Pos_from_ptr<_Ty>(
+                            _Match_impl_sve2<_Ty>(_First1, _Last1, _First2, _Last2), _First1, _Last1);
                     }
                 }
 #endif // ^^^ defined(_M_ARM64) ^^^
