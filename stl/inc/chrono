@@ -494,7 +494,7 @@ namespace chrono {
         _NODISCARD static constexpr unsigned int _Weekday_from_days(int _Tp) noexcept {
             _STL_INTERNAL_STATIC_ASSERT(~0u % 7u == 3u); // offset for `_Tp < 0` needs to change
             const auto _Before_modulo = static_cast<unsigned int>(_Tp) + (_Tp >= 0 ? 4u : 0u);
-            return _Before_modulo % 7u; // separate expression for MSVC codegen, see GH-5153
+            return _Before_modulo % 7u; // TRANSITION, DevCom-11158605 (separate expression for MSVC codegen)
         }
     };
 
@@ -505,7 +505,7 @@ namespace chrono {
     _EXPORT_STD _NODISCARD constexpr weekday operator+(const weekday& _Left, const days& _Right) noexcept {
         const auto _Before_modulo =
             _Left.c_encoding() + ((_Right.count() < 0 ? 2147483653u : 0u) + static_cast<unsigned int>(_Right.count()));
-        return weekday{_Before_modulo % 7u}; // separate expression for MSVC codegen, see GH-5153
+        return weekday{_Before_modulo % 7u}; // TRANSITION, DevCom-11158605 (separate expression for MSVC codegen)
     }
     _EXPORT_STD _NODISCARD constexpr weekday operator+(const days& _Left, const weekday& _Right) noexcept {
         return _Right + _Left;
@@ -513,7 +513,7 @@ namespace chrono {
     _EXPORT_STD _NODISCARD constexpr weekday operator-(const weekday& _Left, const days& _Right) noexcept {
         const auto _Before_modulo =
             _Left.c_encoding() + ((_Right.count() < 0 ? 0u : 2147483653u) - static_cast<unsigned int>(_Right.count()));
-        return weekday{_Before_modulo % 7u}; // separate expression for MSVC codegen, see GH-5153
+        return weekday{_Before_modulo % 7u}; // TRANSITION, DevCom-11158605 (separate expression for MSVC codegen)
     }
     _EXPORT_STD _NODISCARD constexpr days operator-(const weekday& _Left, const weekday& _Right) noexcept {
         const auto _Wd = _Left.c_encoding() - _Right.c_encoding();
