@@ -753,7 +753,7 @@ namespace chrono {
         const auto _Div4 = static_cast<unsigned int>(_Mo / 4u);
         const auto _Div  = static_cast<unsigned long long>(_Div4 / 3u); // separate expression for MSVC codegen
 #endif // ^^^ 32-bit ^^^
-        return year_month{_Left.year() + years{static_cast<int>(_Div) - 178956971},
+        return year_month{_Left.year() + years{static_cast<int>(_Div) - 0x0AAA'AAAB},
             month{static_cast<unsigned int>(_Mo - _Div * 12u) + 1}};
     }
     _EXPORT_STD template <int = 0>
@@ -771,7 +771,7 @@ namespace chrono {
         const auto _Div4 = static_cast<unsigned int>(_Mo / 4u);
         const auto _Div  = static_cast<unsigned long long>(_Div4 / 3u); // separate expression for MSVC codegen
 #endif // ^^^ 32-bit ^^^
-        return year_month{_Left.year() + years{static_cast<int>(_Div) - 178956971},
+        return year_month{_Left.year() + years{static_cast<int>(_Div) - 0x0AAA'AAAB},
             month{static_cast<unsigned int>(_Mo - _Div * 12u) + 1}};
     }
 
