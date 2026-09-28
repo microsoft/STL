@@ -565,6 +565,23 @@ constexpr void year_month_test() {
     assert(ym - months{2} == 2019y / November);
     assert(ym - 2019y / January == months{12});
 
+    assert(2020y / month{0} + months::min() == 23865y / month{4});
+    assert(2020y / month{1} + months::min() == 23865y / month{5});
+    assert(2020y / month{12} + months::min() == 23866y / month{4});
+    assert(2020y / month{255} + months::min() == 23886y / month{7});
+    assert(2020y / month{0} + months::max() == -19826y / month{7});
+    assert(2020y / month{1} + months::max() == -19826y / month{8});
+    assert(2020y / month{12} + months::max() == -19825y / month{7});
+    assert(2020y / month{255} + months::max() == -19805y / month{10});
+    assert(2020y / month{0} - months::min() == -19826y / month{8});
+    assert(2020y / month{1} - months::min() == -19826y / month{9});
+    assert(2020y / month{12} - months::min() == -19825y / month{8});
+    assert(2020y / month{255} - months::min() == -19805y / month{11});
+    assert(2020y / month{0} - months::max() == 23865y / month{5});
+    assert(2020y / month{1} - months::max() == 23865y / month{6});
+    assert(2020y / month{12} - months::max() == 23866y / month{5});
+    assert(2020y / month{255} - months::max() == 23886y / month{8});
+
     assert(ym + years{2} == 2022y / January);
     assert(years{2} + ym == 2022y / January);
 
