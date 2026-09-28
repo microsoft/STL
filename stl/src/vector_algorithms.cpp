@@ -6991,7 +6991,7 @@ namespace {
                 return _Fallback<_Ty, _Pred>(_First1, _Last1, _First2, _Last2);
             }
 
-#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
             template <class _Ty>
             struct _Find_first_of_traits_sve2;
 
@@ -7574,7 +7574,7 @@ namespace {
             template <class _Ty>
             const void* __stdcall _Dispatch_ptr(const void* const _First1, const void* const _Last1,
                 const void* const _First2, const void* const _Last2) noexcept {
-#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
                 if constexpr (sizeof(_Ty) <= 2) {
                     if (_Use_FEAT_SVE2()) {
                         return _Match_impl_sve2<_Ty>(_First1, _Last1, _First2, _Last2);
@@ -7611,7 +7611,7 @@ namespace {
                 }
             }
 
-#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
             template <class _Ty>
             bool _Use_sve_match(const size_t _Count1, const size_t _Count2) noexcept {
                 if constexpr (sizeof(_Ty) == 1) {
@@ -7779,7 +7779,7 @@ namespace {
             template <class _Ty, _Predicate _Pred>
             size_t __stdcall _Dispatch_pos(const void* const _First1, const size_t _Count1, const void* const _First2,
                 const size_t _Count2) noexcept {
-#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
                 if constexpr (sizeof(_Ty) <= 2 && _Pred == _Predicate::_Any_of) {
                     if (_Use_FEAT_SVE2() && _Use_sve_match<_Ty>(_Count1, _Count2)) {
                         const void* const _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
