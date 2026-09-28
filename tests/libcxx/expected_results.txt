@@ -75,11 +75,6 @@ std/numerics/c.math/isunordered.pass.cpp:1 FAIL
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
 
-# These tests are extremely slow, taking over 23 minutes to execute (in debug mode, non-optimized).
-# They contain 10K^2 / 2 == 50M loops.
-std/input.output/iostreams.base/ios.base/ios.base.storage/iword.pass.cpp SKIPPED
-std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
-
 # This test is passing non-BidirectionalIterators to std::prev.
 # LWG-3197 "std::prev should not require BidirectionalIterator" (New)
 std/iterators/iterator.primitives/iterator.operations/prev.pass.cpp FAIL
@@ -196,6 +191,20 @@ std/containers/views/mdspan/layout_right/ctor.layout_stride.pass.cpp FAIL
 
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
+
+
+# *** SLOW TESTS ***
+# These tests are extremely slow, taking over 23 minutes to execute (in debug mode, non-optimized).
+# They contain 10K^2 / 2 == 50M loops.
+std/input.output/iostreams.base/ios.base/ios.base.storage/iword.pass.cpp SKIPPED
+std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
+
+# These tests take over 150 seconds on a 5950X when fully loaded by a test pass, but only 11 seconds when run alone.
+std/atomics/atomics.ref/compare_exchange_weak.pass.cpp SKIPPED
+std/atomics/atomics.ref/compare_exchange_strong.pass.cpp SKIPPED
+
+# This test takes 116 seconds on a 5950X when fully loaded by a test pass, and 46 seconds when run alone.
+std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.discrete/eval.pass.cpp SKIPPED
 
 
 # *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***

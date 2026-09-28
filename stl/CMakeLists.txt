@@ -400,7 +400,7 @@ add_compile_definitions(_CRTBLD _HAS_OLD_IOSTREAMS_MEMBERS=1)
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
 
 add_compile_options(/nologo /WX /Gy
-    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:preprocessor;/Zc:threadSafeInit-;/Zc:cmath-;/Zl>"
+    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:preprocessor;/Zc:threadSafeInit-;/Zl>"
     "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},x64;arm64;arm64ec>>:/guard:ehcont>"
     "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},arm64;arm64ec>>:/guard:signret>"
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/quiet>"
