@@ -313,12 +313,12 @@ namespace chrono {
     _EXPORT_STD _NODISCARD constexpr month operator+(const month& _Left, const months& _Right) noexcept {
 #ifdef _WIN64
         const auto _Mo =
-            static_cast<unsigned int>(_Left) + (2147483651ull + static_cast<unsigned long long>(_Right.count()));
+            static_cast<unsigned int>(_Left) + (0x8000'0003ull + static_cast<unsigned long long>(_Right.count()));
         return month{static_cast<unsigned int>(_Mo % 12u) + 1u};
 #else // ^^^ 64-bit / 32-bit vvv
         const auto _Before_modulo =
             static_cast<unsigned int>(_Left)
-            + ((_Right.count() < 0 ? 2147483651u : 11u) + static_cast<unsigned int>(_Right.count()));
+            + ((_Right.count() < 0 ? 0x8000'0003u : 11u) + static_cast<unsigned int>(_Right.count()));
         return month{_Before_modulo % 12u + 1u};
 #endif // ^^^ 32-bit ^^^
     }
@@ -328,12 +328,12 @@ namespace chrono {
     _EXPORT_STD _NODISCARD constexpr month operator-(const month& _Left, const months& _Right) noexcept {
 #ifdef _WIN64
         const auto _Mo =
-            static_cast<unsigned int>(_Left) + (2147483651ull - static_cast<unsigned long long>(_Right.count()));
+            static_cast<unsigned int>(_Left) + (0x8000'0003ull - static_cast<unsigned long long>(_Right.count()));
         return month{static_cast<unsigned int>(_Mo % 12u) + 1u};
 #else // ^^^ 64-bit / 32-bit vvv
         const auto _Before_modulo =
             static_cast<unsigned int>(_Left)
-            + ((_Right.count() < 0 ? 11u : 2147483651u) - static_cast<unsigned int>(_Right.count()));
+            + ((_Right.count() < 0 ? 11u : 0x8000'0003u) - static_cast<unsigned int>(_Right.count()));
         return month{_Before_modulo % 12u + 1u};
 #endif // ^^^ 32-bit ^^^
     }
@@ -746,7 +746,7 @@ namespace chrono {
     _EXPORT_STD template <int = 0>
     _NODISCARD constexpr year_month operator+(const year_month& _Left, const months& _Right) noexcept {
         const auto _Mo = static_cast<unsigned int>(_Left.month())
-                       + (2147483651ull + static_cast<unsigned long long>(_Right.count()));
+                       + (0x8000'0003ull + static_cast<unsigned long long>(_Right.count()));
 #ifdef _WIN64
         const auto _Div = _Mo / 12u;
 #else // ^^^ 64-bit / 32-bit vvv
@@ -764,7 +764,7 @@ namespace chrono {
     _EXPORT_STD template <int = 0>
     _NODISCARD constexpr year_month operator-(const year_month& _Left, const months& _Right) noexcept {
         const auto _Mo = static_cast<unsigned int>(_Left.month())
-                       + (2147483651ull - static_cast<unsigned long long>(_Right.count()));
+                       + (0x8000'0003ull - static_cast<unsigned long long>(_Right.count()));
 #ifdef _WIN64
         const auto _Div = _Mo / 12u;
 #else // ^^^ 64-bit / 32-bit vvv
