@@ -71,6 +71,12 @@ std/numerics/c.math/islessequal.pass.cpp:1 FAIL
 std/numerics/c.math/isunordered.pass.cpp:0 FAIL
 std/numerics/c.math/isunordered.pass.cpp:1 FAIL
 
+# LLVM-227505: [libc++] Some parallel specialized `<memory>` algorithms are incorrectly returning `void`
+std/utilities/memory/specialized.algorithms/specialized.destroy/pstl.destroy_n.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.construct.default/pstl.uninitialized_default_construct_n.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.construct.value/pstl.uninitialized_value_construct_n.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.fill.n/pstl.uninitialized_fill_n.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
