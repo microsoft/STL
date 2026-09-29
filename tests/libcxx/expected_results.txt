@@ -1301,6 +1301,14 @@ std/utilities/memory/util.smartptr/util.smartptr.shared/pointer_destruction.pass
 # Clang error: incomplete type 'complete_type_allocator<std::_Ref_count_resource_alloc<int *, std::default_delete<int>, complete_type_allocator<int>>>' used in type trait expression
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter_allocator.pass.cpp FAIL
 
+# Not analyzed.
+# Assertion failed: (reinterpret_cast<uintptr_t>(ptr) & (__STDCPP_DEFAULT_NEW_ALIGNMENT__ - 1)) == 0
+std/utilities/utility/mem.res/mem.res.global/new_delete_resource.align.pass.cpp FAIL
+
+# Not analyzed.
+# Assertion failed: globalMemCounter.checkAlignedNewCalledEq(2)
+std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_overaligned_request.pass.cpp FAIL
+
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
 
