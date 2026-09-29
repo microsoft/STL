@@ -178,10 +178,6 @@ std/ranges/range.adaptors/range.lazy.split/begin.pass.cpp FAIL
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
-# libc++ doesn't implement LWG-4013
-std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.default.pass.cpp FAIL
-std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.iter.pass.cpp FAIL
-
 # libc++ doesn't implement LWG-4112
 std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 
