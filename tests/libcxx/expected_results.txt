@@ -109,7 +109,7 @@ std/language.support/support.limits/support.limits.general/variant.version.compi
 
 # libc++ has not implemented P2278R4: "cbegin should always return a constant iterator"
 std/containers/views/views.span/span.cons/span.pass.cpp FAIL
-std/containers/views/views.span/types.pass.cpp FAIL
+std/containers/views/views.span/types.compile.pass.cpp FAIL
 std/ranges/range.access/begin.pass.cpp FAIL
 std/ranges/range.access/data.pass.cpp FAIL
 std/ranges/range.access/end.pass.cpp FAIL
