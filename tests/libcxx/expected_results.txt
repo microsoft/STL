@@ -852,10 +852,6 @@ std/localization/locale.categories/category.time/locale.time.get.byname/get_one_
 # static_assert(!noexcept((std::move(stride_iter).base())));
 std/ranges/range.adaptors/range.stride.view/iterator/base.pass.cpp FAIL
 
-# Bogus cpp03_allocator is not rebindable
-std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp FAIL
-
 # Bogus ASSERT_NOT_NOEXCEPT rejects our strengthening
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.assign/swap.pass.cpp FAIL
 
