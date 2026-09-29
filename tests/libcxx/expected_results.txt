@@ -423,7 +423,6 @@ std/ranges/range.adaptors/range.transform/iterator/ctor.parent.iter.compile.pass
 std/ranges/range.adaptors/range.transform/sentinel/ctor.base.compile.pass.cpp FAIL
 std/ranges/range.factories/range.iota.view/iterator/ctor.value.compile.pass.cpp FAIL
 std/ranges/range.factories/range.iota.view/sentinel/ctor.value.compile.pass.cpp FAIL
-std/ranges/range.factories/range.istream.view/ctor.pass.cpp FAIL
 std/ranges/range.factories/range.istream.view/iterator/ctor.parent.compile.pass.cpp FAIL
 
 # P3060R3 views::indices
