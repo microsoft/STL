@@ -683,12 +683,6 @@ std/depr/depr.c.headers/stddef_h.compile.pass.cpp:1 FAIL
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp:0 FAIL
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp:1 FAIL
 
-# Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.runtime.pass.cpp FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.single.pass.cpp FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp FAIL
-
 # `ALLOW_RETRIES` comments indicate tests with timing assumptions
 std/thread/futures/futures.async/async.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIPPED
