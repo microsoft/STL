@@ -39,6 +39,12 @@ std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
+# LLVM-104357: libc++ has not implemented LWG-3552
+std/utilities/memory/specialized.algorithms/uninitialized.copy/pstl.uninitialized_copy_n.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.copy/pstl.uninitialized_copy.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.move/pstl.uninitialized_move_n.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.move/pstl.uninitialized_move.pass.cpp FAIL
+
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
