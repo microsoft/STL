@@ -1309,6 +1309,12 @@ std/utilities/utility/mem.res/mem.res.global/new_delete_resource.align.pass.cpp 
 # Assertion failed: globalMemCounter.checkAlignedNewCalledEq(2)
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_overaligned_request.pass.cpp FAIL
 
+# Not analyzed.
+# MSVC warning C4018: '>': signed/unsigned mismatch
+# Clang error: comparison of integers of different signs: [...] [-Werror,-Wsign-compare]
+std/algorithms/alg.nonmodifying/alg.search/pstl.search_n_pred.pass.cpp FAIL
+std/algorithms/alg.nonmodifying/alg.search/pstl.search_n.pass.cpp FAIL
+
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
 
