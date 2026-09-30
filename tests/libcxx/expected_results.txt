@@ -361,6 +361,10 @@ std/utilities/const.wrap.class/unary_ops.pass.cpp FAIL
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/containers/views/views.span/span.elem/at.pass.cpp FAIL
 
+# P2830R10 type_order
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/language.support/cmp/cmp.type/type_order.compile.pass.cpp FAIL
+
 # P2835R7 atomic_ref::address()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/atomics/atomics.ref/address.pass.cpp FAIL
@@ -419,6 +423,16 @@ std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 # P3383R3 mdspan::at()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/containers/views/mdspan/mdspan/at.pass.cpp FAIL
+
+# P3793R2 Better Shifting
+# Add 'std-at-least-c++29' to tests/utils/stl/test/tests.py when beginning work on C++29.
+std/numerics/bit/bitops.shift/shl.pass.cpp FAIL
+std/numerics/bit/bitops.shift/shr.pass.cpp FAIL
+
+# P3798R1 expected::has_error()
+# Add 'std-at-least-c++29' to tests/utils/stl/test/tests.py when beginning work on C++29.
+std/utilities/expected/expected.expected/observers/has_error.pass.cpp FAIL
+std/utilities/expected/expected.void/observers/has_error.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
