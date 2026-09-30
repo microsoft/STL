@@ -269,6 +269,13 @@ std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/ref.pa
 std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.inv/invoke.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.ref/trivially_copyable.compile.pass.cpp FAIL
 
+# P1759R6 Native Handles And File Streams
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/input.output/file.streams/fstreams/filebuf.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/fstream.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ifstream.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ofstream.members/native_handle.pass.cpp FAIL
+
 # P1789R3 Library Support For Expansion Statements
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/intseq/intseq.binding/structured_binding.pass.cpp FAIL
@@ -311,6 +318,34 @@ std/utilities/memory/util.smartptr/util.smartptr.weak/util.smartptr.weak.obs/own
 std/utilities/memory/util.smartptr/util.smartptr.weak/util.smartptr.weak.obs/owner_hash.pass.cpp FAIL
 std/utilities/memory/util.smartptr/util.smartptr.weak/util.smartptr.weak.obs/owner_hash.pass.cpp FAIL
 
+# P2389R2 dims
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/containers/views/mdspan/extents/dims.pass.cpp FAIL
+
+# P2495R3 Interfacing stringstreams With string_view
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/input.output/string.streams/istringstream/istringstream.cons/string_view.alloc.pass.cpp FAIL
+std/input.output/string.streams/istringstream/istringstream.cons/string_view.mode.alloc.pass.cpp FAIL
+std/input.output/string.streams/istringstream/istringstream.cons/string_view.mode.pass.cpp FAIL
+std/input.output/string.streams/istringstream/istringstream.members/str.string_view.pass.cpp FAIL
+std/input.output/string.streams/ostringstream/ostringstream.cons/string_view.alloc.pass.cpp FAIL
+std/input.output/string.streams/ostringstream/ostringstream.cons/string_view.mode.alloc.pass.cpp FAIL
+std/input.output/string.streams/ostringstream/ostringstream.cons/string_view.mode.pass.cpp FAIL
+std/input.output/string.streams/ostringstream/ostringstream.members/str.string_view.pass.cpp FAIL
+std/input.output/string.streams/stringbuf/stringbuf.cons/string_view.alloc.pass.cpp FAIL
+std/input.output/string.streams/stringbuf/stringbuf.cons/string_view.mode.alloc.pass.cpp FAIL
+std/input.output/string.streams/stringbuf/stringbuf.cons/string_view.mode.pass.cpp FAIL
+std/input.output/string.streams/stringbuf/stringbuf.members/str.string_view.pass.cpp FAIL
+std/input.output/string.streams/stringstream/stringstream.cons/string_view.alloc.pass.cpp FAIL
+std/input.output/string.streams/stringstream/stringstream.cons/string_view.mode.alloc.pass.cpp FAIL
+std/input.output/string.streams/stringstream/stringstream.cons/string_view.mode.pass.cpp FAIL
+std/input.output/string.streams/stringstream/stringstream.members/str.string_view.pass.cpp FAIL
+
+# P2497R0 Testing For Success Or Failure Of <charconv> Functions
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/charconv/charconv.syn/from_chars_result.operator_bool.pass.cpp FAIL
+std/utilities/charconv/charconv.syn/to_chars_result.operator_bool.pass.cpp FAIL
+
 # P2542R8 views::concat
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/ranges/range.adaptors/range.concat/adaptor.pass.cpp FAIL
@@ -322,6 +357,7 @@ std/ranges/range.adaptors/range.concat/ctor.views.pass.cpp FAIL
 std/ranges/range.adaptors/range.concat/end.pass.cpp FAIL
 std/ranges/range.adaptors/range.concat/iterator/arithmetic.pass.cpp FAIL
 std/ranges/range.adaptors/range.concat/iterator/compare.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/ctor.default.pass.cpp FAIL
 std/ranges/range.adaptors/range.concat/iterator/ctor.other.pass.cpp FAIL
 std/ranges/range.adaptors/range.concat/iterator/decrement.pass.cpp FAIL
 std/ranges/range.adaptors/range.concat/iterator/deref.pass.cpp FAIL
@@ -332,13 +368,30 @@ std/ranges/range.adaptors/range.concat/iterator/member_types.compile.pass.cpp FA
 std/ranges/range.adaptors/range.concat/iterator/subscript.pass.cpp FAIL
 std/ranges/range.adaptors/range.concat/size.pass.cpp FAIL
 
+# P2591R5 Concatenating string And string_view
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/strings/basic.string/string.nonmembers/string_op+/string.string_view.pass.cpp FAIL
+
 # P2592R3 Hashing Support For chrono Value Classes
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/time/time.hash/time.hash_enabled.pass.cpp FAIL
 
+# P2637R3 Member visit
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/format/format.arguments/format.arg/visit.pass.cpp FAIL
+std/utilities/format/format.arguments/format.arg/visit.return_type.pass.cpp FAIL
+std/utilities/variant/variant.visit.member/robust_against_adl.pass.cpp FAIL
+std/utilities/variant/variant.visit.member/visit_return_type.pass.cpp FAIL
+std/utilities/variant/variant.visit.member/visit.pass.cpp FAIL
+
+# P2697R1 Interfacing bitset With string_view
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/template.bitset/bitset.cons/string_view_ctor.pass.cpp FAIL
+
 # P2714R1 bind_front(), bind_back(), not_fn() For NTTP Callables
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/function.objects/func.bind.partial/bind_front.nttp.pass.cpp FAIL
+std/utilities/function.objects/func.not_fn/not_fn.nttp.pass.cpp FAIL
 
 # P2781R9 constant_wrapper
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -357,6 +410,12 @@ std/utilities/const.wrap.class/subscript.pass.cpp FAIL
 std/utilities/const.wrap.class/types.compile.pass.cpp FAIL
 std/utilities/const.wrap.class/unary_ops.pass.cpp FAIL
 
+# P2819R2 Add The Tuple Protocol To complex
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/numerics/complex.number/complex.tuple/get.pass.cpp FAIL
+std/numerics/complex.number/complex.tuple/tuple_element.compile.pass.cpp FAIL
+std/numerics/complex.number/complex.tuple/tuple_size.compile.pass.cpp FAIL
+
 # P2821R5 span::at()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/containers/views/views.span/span.elem/at.pass.cpp FAIL
@@ -369,6 +428,24 @@ std/language.support/cmp/cmp.type/type_order.compile.pass.cpp FAIL
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/atomics/atomics.ref/address.pass.cpp FAIL
 
+# P2897R7 aligned_accessor, is_sufficiently_aligned()
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/containers/views/mdspan/aligned_accessor/access.pass.cpp FAIL
+std/containers/views/mdspan/aligned_accessor/ctor.conversion.from.default_accessor.pass.cpp FAIL
+std/containers/views/mdspan/aligned_accessor/ctor.conversion.pass.cpp FAIL
+std/containers/views/mdspan/aligned_accessor/ctor.default.pass.cpp FAIL
+std/containers/views/mdspan/aligned_accessor/offset.pass.cpp FAIL
+std/containers/views/mdspan/aligned_accessor/operator.conversion.to.default_accessor.pass.cpp FAIL
+std/containers/views/mdspan/aligned_accessor/types.pass.cpp FAIL
+std/utilities/memory/ptr.align/is_sufficiently_aligned.pass.cpp FAIL
+
+# P2918R2 Runtime Format Strings II
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/format/format.fmt.string/ctor.dynamic-format-string.pass.cpp FAIL
+std/utilities/format/format.functions/format.dynamic_format.pass.cpp FAIL
+std/utilities/format/format.functions/format.locale.dynamic_format.pass.cpp FAIL
+std/utilities/format/format.syn/dynamic_format_string.pass.cpp FAIL
+
 # P2944R3 Comparisons For reference_wrapper
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.const_ref.pass.cpp FAIL
@@ -378,6 +455,11 @@ std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.ref
 # P2988R12 optional<T&>
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/optional/optional.object/optional.object.ctor/ref_t.pass.cpp FAIL
+
+# P2996R13 <meta>: Reflection
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/meta/meta.const.eval/is_within_lifetime.compile.pass.cpp FAIL
+std/utilities/meta/meta.rel/is_virtual_base_of.pass.cpp FAIL
 
 # P3029R1 Improving mdspan And span CTAD
 # Will be implemented by GH-5692.
