@@ -142,10 +142,6 @@ std/containers/views/mdspan/layout_right/ctor.layout_stride.pass.cpp FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
 
-# LLVM-182392: [libc++][test] vector/trivial_relocation.pass.cpp uses implementation-specific attribute `[[clang::trivial_abi]]`
-std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
-std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
-
 # LLVM-182397: [libc++][test] rand.dist.bern.negbin/eval.pass.cpp constructs with `p == 1`, which has undefined behavior
 std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
 
