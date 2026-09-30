@@ -1415,3 +1415,6 @@ std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
 
 # This test is marked as `REQUIRES: target={{.+}}-apple-{{.+}}`.
 std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.writefail.pass.cpp:9 SKIPPED
+
+# This test was disabled upstream by marking it as UNSUPPORTED for every Standard version.
+std/time/time.zone/time.zone.timezone/time.zone.members/get_info.sys_time.pass.cpp:9 SKIPPED
