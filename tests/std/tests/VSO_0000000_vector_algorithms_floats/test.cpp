@@ -124,7 +124,7 @@ void test_is_sorted_until_floating_with_values(mt19937_64& gen, const vector<T>&
     }
 }
 
-void test_vector_algorithms(mt19937_64& gen) {
+void test_vector_algorithms(mt19937_64& gen, IsaLevel) {
     test_min_max_element_floating<float>(gen);
     test_min_max_element_floating<double>(gen);
 
