@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cwchar>
+#include <limits>
 #include <type_traits>
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
@@ -960,7 +961,7 @@ namespace {
         struct _Traits_scalar : _Base {
             static constexpr bool _Vectorized       = false;
             static constexpr size_t _Tail_mask      = 0;
-            static constexpr bool _Has_unsigned_cmp = false;
+            static constexpr bool _Has_unsigned_cmp = true;
             using _Vec_t                            = void;
         };
 
@@ -1069,13 +1070,8 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_1_base {
-            static constexpr bool _Is_floating = false;
-
             using _Signed_t   = int8_t;
             using _Unsigned_t = uint8_t;
-
-            static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7F);
-            static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x80);
 
             using _Minmax_i_t = _Min_max_1i;
             using _Minmax_u_t = _Min_max_1u;
@@ -1371,13 +1367,8 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_2_base {
-            static constexpr bool _Is_floating = false;
-
             using _Signed_t   = int16_t;
             using _Unsigned_t = uint16_t;
-
-            static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF);
-            static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000);
 
             using _Minmax_i_t = _Min_max_2i;
             using _Minmax_u_t = _Min_max_2u;
@@ -1669,16 +1660,11 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_4_base {
-            static constexpr bool _Is_floating = false;
-
             using _Signed_t   = int32_t;
             using _Unsigned_t = uint32_t;
 
             using _Minmax_i_t = _Min_max_4i;
             using _Minmax_u_t = _Min_max_4u;
-
-            static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFFUL);
-            static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000UL);
 
 #ifdef _WIN64
             static constexpr bool _Has_portion_max = true;
@@ -1965,13 +1951,8 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_8_base {
-            static constexpr bool _Is_floating = false;
-
             using _Signed_t   = int64_t;
             using _Unsigned_t = uint64_t;
-
-            static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFF'FFFF'FFFFULL);
-            static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000'0000'0000ULL);
 
             using _Minmax_i_t = _Min_max_8i;
             using _Minmax_u_t = _Min_max_8u;
@@ -2251,13 +2232,8 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_f_base {
-            static constexpr bool _Is_floating = true;
-
             using _Signed_t   = float;
             using _Unsigned_t = void;
-
-            static constexpr _Signed_t _Init_min_val = __builtin_huge_valf();
-            static constexpr _Signed_t _Init_max_val = -__builtin_huge_valf();
 
             using _Minmax_i_t = _Min_max_f;
             using _Minmax_u_t = void;
@@ -2513,13 +2489,8 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_d_base {
-            static constexpr bool _Is_floating = true;
-
             using _Signed_t   = double;
             using _Unsigned_t = void;
-
-            static constexpr _Signed_t _Init_min_val = __builtin_huge_val();
-            static constexpr _Signed_t _Init_max_val = -__builtin_huge_val();
 
             using _Minmax_i_t = _Min_max_d;
             using _Minmax_u_t = void;
@@ -2873,13 +2844,20 @@ namespace {
 
         template <_Min_max_mode _Mode, class _Traits, bool _Is_signed>
         auto _Minmax_element_impl(const void* _First, const void* const _Last) noexcept {
-            _Min_max_element_t _Res = {_First, _First};
-            auto _Cur_min_val       = _Traits::_Init_min_val;
-            auto _Cur_max_val       = _Traits::_Init_max_val;
+            constexpr bool _Use_signed_type = _Is_signed || !_Traits::_Has_unsigned_cmp;
+            using _Ty =
+                std::conditional_t<_Use_signed_type, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
-            if constexpr (!_Is_signed && _Traits::_Has_unsigned_cmp) {
-                _Cur_min_val = -1;
-                _Cur_max_val = 0;
+            _Min_max_element_t _Res = {_First, _First};
+            _Ty _Cur_min_val;
+            _Ty _Cur_max_val;
+
+            if constexpr (std::is_floating_point_v<_Ty>) {
+                _Cur_min_val = std::numeric_limits<_Ty>::infinity();
+                _Cur_max_val = -std::numeric_limits<_Ty>::infinity();
+            } else {
+                _Cur_min_val = std::numeric_limits<_Ty>::max();
+                _Cur_max_val = std::numeric_limits<_Ty>::min();
             }
 
             if constexpr (_Traits::_Vectorized) {
@@ -2908,64 +2886,44 @@ namespace {
                 auto _Cur_idx_max  = _Traits::_Zero(); // vector of vertical maximum indices
                 auto _Cur_idx      = _Traits::_Zero(); // current vector of indices
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
                 const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_Cmp_gt(_First, _Second);
                     } else {
                         return _Traits::_Cmp_gt_u(_First, _Second);
                     }
                 };
                 const auto _Min_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_Min(_First, _Second, _Mask);
                     } else {
                         return _Traits::_Min_u(_First, _Second, _Mask);
                     }
                 };
                 const auto _Max_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_Max(_First, _Second, _Mask);
                     } else {
                         return _Traits::_Max_u(_First, _Second, _Mask);
                     }
                 };
                 const auto _H_min_wrap = [](const auto _Vals) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_H_min(_Vals);
                     } else {
                         return _Traits::_H_min_u(_Vals);
                     }
                 };
                 const auto _H_max_wrap = [](const auto _Vals) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                    if constexpr (_Use_signed_type) {
                         return _Traits::_H_max(_Vals);
                     } else {
                         return _Traits::_H_max_u(_Vals);
                     }
                 };
                 const auto _Less_wrap = [](const auto _Lhs, const auto _Rhs) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
-                        return _Lhs < _Rhs;
-                    } else {
-                        using _UTy = _Traits::_Unsigned_t;
-                        return static_cast<_UTy>(_Lhs) < static_cast<_UTy>(_Rhs);
-                    }
+                    return static_cast<_Ty>(_Lhs) < static_cast<_Ty>(_Rhs);
                 };
-#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-                const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
-                    return _Traits::_Cmp_gt(_First, _Second);
-                };
-                const auto _Min_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    return _Traits::_Min(_First, _Second, _Mask);
-                };
-                const auto _Max_wrap = [](const auto _First, const auto _Second, const auto _Mask) noexcept {
-                    return _Traits::_Max(_First, _Second, _Mask);
-                };
-                const auto _H_min_wrap = [](const auto _Vals) noexcept { return _Traits::_H_min(_Vals); };
-                const auto _H_max_wrap = [](const auto _Vals) noexcept { return _Traits::_H_max(_Vals); };
-                const auto _Less_wrap  = [](const auto _Lhs, const auto _Rhs) noexcept { return _Lhs < _Rhs; };
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
                 const auto _Update_min_max = [&](const auto _Cur_vals, [[maybe_unused]] const auto _Blend_idx_0,
                                                  const auto _Blend_idx_1) noexcept {
@@ -3179,7 +3137,7 @@ namespace {
                 _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
             }
 
-            if constexpr (_Traits::_Is_floating) {
+            if constexpr (_Is_signed) {
                 if constexpr (_Mode == _Mode_min) {
                     return _Min_tail(_First, _Last, _Res._Min, _Cur_min_val);
                 } else if constexpr (_Mode == _Mode_max) {
@@ -3188,31 +3146,17 @@ namespace {
                     return _Both_tail(_First, _Last, _Res, _Cur_min_val, _Cur_max_val);
                 }
             } else {
-                using _STy = _Traits::_Signed_t;
                 using _UTy = _Traits::_Unsigned_t;
 
                 constexpr _UTy _Correction = _Traits::_Has_unsigned_cmp ? 0 : _UTy{1} << (sizeof(_UTy) * 8 - 1);
 
                 if constexpr (_Mode == _Mode_min) {
-                    if constexpr (_Is_signed) {
-                        return _Min_tail(_First, _Last, _Res._Min, static_cast<_STy>(_Cur_min_val));
-                    } else {
-                        return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min_val + _Correction));
-                    }
+                    return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min_val + _Correction));
                 } else if constexpr (_Mode == _Mode_max) {
-                    if constexpr (_Is_signed) {
-                        return _Max_tail(_First, _Last, _Res._Max, static_cast<_STy>(_Cur_max_val));
-                    } else {
-                        return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max_val + _Correction));
-                    }
+                    return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max_val + _Correction));
                 } else {
-                    if constexpr (_Is_signed) {
-                        return _Both_tail(
-                            _First, _Last, _Res, static_cast<_STy>(_Cur_min_val), static_cast<_STy>(_Cur_max_val));
-                    } else {
-                        return _Both_tail(_First, _Last, _Res, static_cast<_UTy>(_Cur_min_val + _Correction),
-                            static_cast<_UTy>(_Cur_max_val + _Correction));
-                    }
+                    return _Both_tail(_First, _Last, _Res, static_cast<_UTy>(_Cur_min_val + _Correction),
+                        static_cast<_UTy>(_Cur_max_val + _Correction));
                 }
             }
         }
@@ -3472,7 +3416,7 @@ namespace {
             }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
-                if constexpr (_Traits::_Avx::_Is_floating) {
+                if constexpr (std::is_floating_point_v<typename _Traits::_Avx::_Signed_t>) {
                     return _Minmax_impl_wrap<_Mode, typename _Traits::_Avx, _Is_signed>(_First, _Last);
                 } else {
                     return _Minmax_impl<_Mode, typename _Traits::_Avx, _Is_signed>(_First, _Last);
