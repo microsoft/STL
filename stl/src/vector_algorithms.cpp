@@ -61,6 +61,12 @@ namespace {
         return (__processor_features_0_63 & _Mask_sve) != 0;
     }
 
+    bool _Use_FEAT_SVE2() noexcept {
+        constexpr int _Idx_sve2   = 47; // PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE in <winnt.h>
+        constexpr auto _Mask_sve2 = 1ull << _Idx_sve2;
+        return (__processor_features_0_63 & _Mask_sve2) != 0;
+    }
+
     // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
     // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
     __declspec(noinline) size_t _Sve_vl() noexcept {
@@ -6929,6 +6935,166 @@ namespace {
                 return _Fallback<_Ty, _Pred>(_First1, _Last1, _First2, _Last2);
             }
 
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
+            template <class _Ty>
+            struct _Find_first_of_traits_sve2;
+
+            template <>
+            struct _Find_first_of_traits_sve2<uint8_t> {
+                static svuint8_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                    return svld1_u8(_Pred, static_cast<const uint8_t*>(_Ptr));
+                }
+
+                static svuint8_t _Loadrq(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                    return svld1rq_u8(_Pred, static_cast<const uint8_t*>(_Ptr));
+                }
+
+                static bool _Test_any(const svbool_t _Pred) noexcept {
+                    return svptest_any(svptrue_b8(), _Pred);
+                }
+
+                static svuint8_t _Make_valid_needle(const svbool_t _Pred, const svuint8_t _Data) noexcept {
+                    // Fill any inactive lanes of the needle with valid needle elements.
+                    const auto _Broadcast = svdup_lane_u8(_Data, 0);
+                    return svsel_u8(_Pred, _Data, _Broadcast);
+                }
+
+                // Assumes that needle (_Data2) contains valid needle elements across all lanes.
+                static svbool_t _Match(const svbool_t _Pred, const svuint8_t _Data1, const svuint8_t _Data2) noexcept {
+                    return svmatch_u8(_Pred, _Data1, _Data2);
+                }
+
+                static uint64_t _Get_first_h_pos(const svbool_t _Pred) noexcept {
+                    return svcntp_b8(svptrue_b8(), svbrkb_z(svptrue_b8(), _Pred));
+                }
+            };
+
+            template <>
+            struct _Find_first_of_traits_sve2<uint16_t> {
+                static svuint16_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                    return svld1_u16(_Pred, static_cast<const uint16_t*>(_Ptr));
+                }
+
+                static svuint16_t _Loadrq(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                    return svld1rq_u16(_Pred, static_cast<const uint16_t*>(_Ptr));
+                }
+
+                static bool _Test_any(const svbool_t _Pred) noexcept {
+                    return svptest_any(svptrue_b16(), _Pred);
+                }
+
+                static svuint16_t _Make_valid_needle(const svbool_t _Pred, const svuint16_t _Data) noexcept {
+                    // Fill any inactive lanes of the needle with valid needle elements.
+                    const auto _Broadcast = svdup_lane_u16(_Data, 0);
+                    return svsel_u16(_Pred, _Data, _Broadcast);
+                }
+
+                // Assumes that needle (_Data2) contains valid needle elements across all lanes.
+                static svbool_t _Match(
+                    const svbool_t _Pred, const svuint16_t _Data1, const svuint16_t _Data2) noexcept {
+                    return svmatch_u16(_Pred, _Data1, _Data2);
+                }
+
+                static uint64_t _Get_first_h_pos(const svbool_t _Pred) noexcept {
+                    return svcntp_b16(svptrue_b16(), svbrkb_z(svptrue_b16(), _Pred)) * 2;
+                }
+            };
+
+            // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+            // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE2())`.
+            template <class _Ty>
+            __declspec(noinline) const void* _Match_impl_sve2(const void* _First1, const void* const _Last1,
+                const void* const _First2, const void* const _Last2) noexcept {
+                using _Traits = _Find_first_of_traits_sve2<_Ty>;
+
+                if (_First2 == _Last2) {
+                    return _Last1;
+                }
+
+                const size_t _Sve_vl_bytes    = svcntb();
+                const void* _Stop1            = _First1;
+                const size_t _Haystack_length = _Byte_length(_First1, _Last1);
+                _Advance_bytes(_Stop1, _Haystack_length & ~(_Sve_vl_bytes - 1));
+
+                constexpr size_t _Fixed_vl_bytes = 16;
+                const void* _Stop2               = _First2;
+                const size_t _Needle_length      = _Byte_length(_First2, _Last2);
+                _Advance_bytes(_Stop2, _Needle_length & ~size_t{_Fixed_vl_bytes - 1});
+
+                const auto _Needle_tail_bytes = static_cast<uint8_t>(_Needle_length & size_t{_Fixed_vl_bytes - 1});
+                const bool _Have_needle_tail  = _Needle_tail_bytes != 0;
+
+                const auto _True = svptrue_b8();
+                svbool_t _Pred_needle_tail;
+                // Specialize for SVE VL128, where we don't need to duplicate the predicate.
+                if (_Sve_vl_bytes == _Fixed_vl_bytes) {
+                    _Pred_needle_tail = svwhilelt_b8(0, _Needle_tail_bytes);
+                } else {
+                    const auto _Indices = svand_z(_True, svindex_u8(0, 1), svdup_n_u8(0xF));
+                    _Pred_needle_tail   = svcmplt(_True, _Indices, svdup_n_u8(_Needle_tail_bytes));
+                }
+
+                const auto _Data2_tail_in = _Traits::_Loadrq(_Pred_needle_tail, _Stop2);
+                const auto _Data2_tail    = _Traits::_Make_valid_needle(_Pred_needle_tail, _Data2_tail_in);
+
+                // VLA, all-true predicated main haystack loop.
+                for (; _First1 != _Stop1; _Advance_bytes(_First1, _Sve_vl_bytes)) {
+                    const auto _Data1 = _Traits::_Load(_True, _First1);
+
+                    // Fixed-width (128-bit), all-true predicated main needle loop.
+                    auto _Match       = svpfalse();
+                    const void* _Ptr2 = _First2;
+                    for (; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, _Fixed_vl_bytes)) {
+                        const auto _Data2     = _Traits::_Loadrq(_True, _Ptr2);
+                        const auto _Sub_match = _Traits::_Match(_True, _Data1, _Data2);
+                        _Match                = svorr_z(_True, _Sub_match, _Match);
+                    }
+
+                    // Needle predicated tail.
+                    if (_Have_needle_tail) {
+                        const auto _Sub_match = _Traits::_Match(_True, _Data1, _Data2_tail);
+                        _Match                = svorr_z(_True, _Sub_match, _Match);
+                    }
+
+                    if (_Traits::_Test_any(_Match)) {
+                        const uint64_t _Offset = _Traits::_Get_first_h_pos(_Match);
+                        _Advance_bytes(_First1, _Offset);
+                        return _First1;
+                    }
+                }
+
+                // Haystack predicated tail.
+                const auto _Haystack_tail_bytes = static_cast<uint8_t>(_Haystack_length & size_t{_Sve_vl_bytes - 1});
+                if (_Haystack_tail_bytes != 0) {
+                    const auto _Pred_haystack_tail = svwhilelt_b8(0, _Haystack_tail_bytes);
+                    const auto _Data1_tail         = _Traits::_Load(_Pred_haystack_tail, _Stop1);
+
+                    // Fixed-width (128-bit), all-true predicated main needle loop.
+                    auto _Match       = svpfalse();
+                    const void* _Ptr2 = _First2;
+                    for (; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, _Fixed_vl_bytes)) {
+                        const auto _Data2     = _Traits::_Loadrq(_True, _Ptr2);
+                        const auto _Sub_match = _Traits::_Match(_Pred_haystack_tail, _Data1_tail, _Data2);
+                        _Match                = svorr_z(_Pred_haystack_tail, _Sub_match, _Match);
+                    }
+
+                    // Needle predicated tail.
+                    if (_Have_needle_tail) {
+                        const auto _Sub_match = _Traits::_Match(_Pred_haystack_tail, _Data1_tail, _Data2_tail);
+                        _Match                = svorr_z(_Pred_haystack_tail, _Sub_match, _Match);
+                    }
+
+                    if (_Traits::_Test_any(_Match)) {
+                        const uint64_t _Offset = _Traits::_Get_first_h_pos(_Match);
+                        _Advance_bytes(_First1, _Offset);
+                        return _First1;
+                    }
+                }
+
+                return _Last1;
+            }
+#endif // ^^^ defined(_M_ARM64) ^^^
+
             const void* _Fallback_find_not_2(const void* const _First1, const void* const _Last1,
                 const void* const _First2, const void* const _Last2) noexcept {
                 auto _Ptr_haystack           = static_cast<const uint16_t*>(_First1);
@@ -7352,6 +7518,14 @@ namespace {
             template <class _Ty>
             const void* __stdcall _Dispatch_ptr(const void* const _First1, const void* const _Last1,
                 const void* const _First2, const void* const _Last2) noexcept {
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
+                if constexpr (sizeof(_Ty) <= 2) {
+                    if (_Use_FEAT_SVE2()) {
+                        return _Match_impl_sve2<_Ty>(_First1, _Last1, _First2, _Last2);
+                    }
+                }
+#endif // ^^^ defined(_M_ARM64) ^^^
+
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
                 return _Shuffle_impl_dispatch<_Ty, _Predicate::_Any_of>(_First1, _Last1, _First2, _Last2);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
@@ -7380,6 +7554,61 @@ namespace {
                     return static_cast<size_t>(-1);
                 }
             }
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
+            template <class _Ty>
+            bool _Use_sve2_match(const size_t _Count1, const size_t _Count2) noexcept {
+                if constexpr (sizeof(_Ty) == 1) {
+                    if (_Count1 <= 64) {
+                        return true;
+                    }
+
+                    if (_Count2 < 4) {
+                        return false;
+                    }
+
+                    if (_Count1 <= 96) {
+                        return true;
+                    } else if (_Count1 <= 128) {
+                        return _Count2 <= 256;
+                    } else if (_Count1 <= 192) {
+                        return _Count2 <= 128;
+                    } else if (_Count1 <= 256) {
+                        return _Count2 <= 96;
+                    } else if (_Count1 <= 512) {
+                        return _Count2 <= 48;
+                    } else if (_Count1 <= 1024) {
+                        return _Count2 <= 32;
+                    } else {
+                        return _Count2 <= 16;
+                    }
+                } else {
+                    static_assert(sizeof(_Ty) == 2);
+
+                    if (_Count1 <= 32) {
+                        return true;
+                    }
+
+                    if (_Count2 < 4) {
+                        return false;
+                    }
+
+                    if (_Count1 <= 48) {
+                        return _Count2 <= 256;
+                    } else if (_Count1 <= 64) {
+                        return _Count2 <= 96;
+                    } else if (_Count1 <= 96) {
+                        return _Count2 <= 56;
+                    } else if (_Count1 <= 128) {
+                        return _Count2 <= 32;
+                    } else if (_Count1 <= 512) {
+                        return _Count2 <= 16;
+                    } else {
+                        return _Count2 <= 8;
+                    }
+                }
+            }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
             template <class _Ty, _Predicate _Pred>
@@ -7494,6 +7723,17 @@ namespace {
             template <class _Ty, _Predicate _Pred>
             size_t __stdcall _Dispatch_pos(const void* const _First1, const size_t _Count1, const void* const _First2,
                 const size_t _Count2) noexcept {
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE2
+                if constexpr (sizeof(_Ty) <= 2 && _Pred == _Predicate::_Any_of) {
+                    if (_Use_FEAT_SVE2() && _Use_sve2_match<_Ty>(_Count1, _Count2)) {
+                        const void* const _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
+                        const void* const _Last2 = static_cast<const _Ty*>(_First2) + _Count2;
+                        return _Pos_from_ptr<_Ty>(
+                            _Match_impl_sve2<_Ty>(_First1, _Last1, _First2, _Last2), _First1, _Last1);
+                    }
+                }
+#endif // ^^^ defined(_M_ARM64) ^^^
+
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
                 return _Dispatch_pos_neon<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
