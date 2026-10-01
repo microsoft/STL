@@ -34,6 +34,7 @@ $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 # |--------|----------------|------:|-------
 # | Fadsv7 | australiaeast  |  3024 |
 # | Fadsv7 | swedencentral  |  2560 |
+# | Fadsv7 | uksouth        |  2048 |
 # | Dpdsv6 | australiaeast  |  2048 |
 # | Dpdsv6 | southcentralus |  2048 |
 
@@ -41,9 +42,9 @@ if ($VMSku -ieq 'Fadsv7') {
   $Arch = 'x64'
   $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_F16ads_v7'
-  $PoolSkuName = 'Standard_F80ads_v7'
-  $PoolSize = 32 # Locations where we have quota for at least 2560 cores (32 VMs):
-  $AvailableLocations = @('australiaeast', 'swedencentral')
+  $PoolSkuName = 'Standard_F64ads_v7'
+  $PoolSize = 32 # Locations where we have quota for at least 2048 cores (32 VMs):
+  $AvailableLocations = @('australiaeast', 'swedencentral', 'uksouth')
 } elseif ($VMSku -ieq 'Dpdsv6') {
   $Arch = 'arm64'
   $DiskType = 'SCSI'
@@ -53,7 +54,7 @@ if ($VMSku -ieq 'Fadsv7') {
   $AvailableLocations = @('australiaeast', 'southcentralus')
 }
 
-$AvailableLocationIdx = 0 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 1 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {
