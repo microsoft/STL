@@ -1090,7 +1090,8 @@ namespace ranges {
     concept _Can_push_back = requires(_Container& _Cont) { _Cont.push_back(_STD declval<_Reference>()); };
 
     template <class _Container, class _Reference>
-    concept _Can_emplace_end = requires(_Container& _Cont) { _Cont.emplace(_Cont.end(), _STD declval<_Reference>()); };
+    concept _Can_emplace_hint =
+        requires(_Container& _Cont) { _Cont.emplace_hint(_Cont.end(), _STD declval<_Reference>()); };
 
     template <class _Container, class _Reference>
     concept _Can_insert_end = requires(_Container& _Cont) { _Cont.insert(_Cont.end(), _STD declval<_Reference>()); };
@@ -1099,7 +1100,7 @@ namespace ranges {
     concept _Constructible_appendable = constructible_from<_Container, _Types...>
                                      && (_Can_emplace_back<_Container, range_reference_t<_Rng>>
                                          || _Can_push_back<_Container, range_reference_t<_Rng>>
-                                         || _Can_emplace_end<_Container, range_reference_t<_Rng>>
+                                         || _Can_emplace_hint<_Container, range_reference_t<_Rng>>
                                          || _Can_insert_end<_Container, range_reference_t<_Rng>>);
 
     _EXPORT_STD template <class _Container, input_range _Rng, class... _Types>
@@ -1131,8 +1132,8 @@ namespace ranges {
                         _Cont.emplace_back(_STD forward<_ElemTy>(_Elem));
                     } else if constexpr (_Can_push_back<_Container, _ElemTy>) {
                         _Cont.push_back(_STD forward<_ElemTy>(_Elem));
-                    } else if constexpr (_Can_emplace_end<_Container, _ElemTy>) {
-                        _Cont.emplace(_Cont.end(), _STD forward<_ElemTy>(_Elem));
+                    } else if constexpr (_Can_emplace_hint<_Container, _ElemTy>) {
+                        _Cont.emplace_hint(_Cont.end(), _STD forward<_ElemTy>(_Elem));
                     } else {
                         _STL_INTERNAL_STATIC_ASSERT(_Can_insert_end<_Container, _ElemTy>);
                         _Cont.insert(_Cont.end(), _STD forward<_ElemTy>(_Elem));
