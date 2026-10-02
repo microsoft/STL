@@ -472,8 +472,7 @@ public:
               && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&& _Right)
-        : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {
-    }
+        : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {}
     template <_Different_from<tuple> _Other>
         requires _Tuple_like_non_subrange<_Other> && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
                   && _Can_construct_values_from_tuple_like_v<tuple, _Other>
@@ -642,8 +641,7 @@ public:
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>)
         tuple(allocator_arg_t, const _Alloc& _Al, _Other&& _Right)
-        : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Other>(_Right)) {
-    }
+        : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Other>(_Right)) {}
     template <class _Alloc, _Different_from<tuple> _Other>
         requires _Tuple_like_non_subrange<_Other> && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
                   && _Can_construct_values_from_tuple_like_v<tuple, _Other>
