@@ -92,6 +92,14 @@ concept has_member_difference_type = requires { typename T::difference_type; };
 template <class T>
 concept has_iter_diff = requires { typename std::iter_difference_t<T>; };
 
+#if _HAS_CXX23
+struct prvalue_only_to_bool {
+    operator bool(this prvalue_only_to_bool);
+    prvalue_only_to_bool(const prvalue_only_to_bool&)            = delete;
+    prvalue_only_to_bool& operator=(const prvalue_only_to_bool&) = delete;
+};
+#endif // _HAS_CXX23
+
 template <class T>
 struct arrow_base {
     T operator->() const;
@@ -207,6 +215,21 @@ public:
     friend simple_contiguous_iter operator+(D, const simple_contiguous_iter&);
 
     static simple_contiguous_iter pointer_to(element_type&) noexcept;
+
+#if _HAS_CXX23
+    friend prvalue_only_to_bool operator==(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator==(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator!=(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator!=(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator<(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator<(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator<=(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator<=(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator>(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator>(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator>=(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator>=(const V*, simple_contiguous_iter);
+#endif // _HAS_CXX23
 };
 
 template <class Base>
@@ -3299,6 +3322,44 @@ namespace reverse_iterator_test {
     static_assert(!has_greater_eq<reverse_iterator<int*>, reverse_iterator<string*>>);
     static_assert(!three_way_comparable_with<reverse_iterator<int*>, reverse_iterator<string*>>);
 
+    static_assert(!has_eq<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_neq<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_less<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_greater<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_less_eq<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_greater_eq<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!three_way_comparable_with<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+
+#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-10817483 (CWG-2813)
+    static_assert(has_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_neq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_neq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_less<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_less<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_less_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_less_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_greater<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_greater<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_greater_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_greater_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+#else // ^^^ _HAS_CXX23 (or no workaround) / !_HAS_CXX23 (or workaround) vvv
+    static_assert(!has_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_neq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_neq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_less<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_less<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_less_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_less_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_greater<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_greater<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_greater_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_greater_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+#endif // ^^^ !_HAS_CXX23 (or workaround) ^^^
+    static_assert(!three_way_comparable_with<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!three_way_comparable_with<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+
     constexpr bool test() {
         // Validate iter_move
         int count = 0;
@@ -3494,6 +3555,44 @@ namespace move_iterator_test {
     static_assert(!has_less_eq<move_iterator<int*>, move_iterator<string*>>);
     static_assert(!has_greater_eq<move_iterator<int*>, move_iterator<string*>>);
     static_assert(!three_way_comparable_with<move_iterator<int*>, move_iterator<string*>>);
+
+    static_assert(!has_eq<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_neq<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_less<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_greater<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_less_eq<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_greater_eq<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!three_way_comparable_with<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+
+#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-10817483 (CWG-2813)
+    static_assert(has_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_neq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_neq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_less<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_less<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_less_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_less_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_greater<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_greater<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_greater_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_greater_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+#else // ^^^ _HAS_CXX23 (or no workaround) / !_HAS_CXX23 (or workaround) vvv
+    static_assert(!has_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_neq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_neq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_less<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_less<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_less_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_less_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_greater<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_greater<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_greater_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_greater_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+#endif // ^^^ !_HAS_CXX23 (or workaround) ^^^
+    static_assert(!three_way_comparable_with<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!three_way_comparable_with<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
 
     // Validate that move_sentinel requires a semiregular template argument, and models semiregular
     template <class T>
