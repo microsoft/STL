@@ -1370,14 +1370,7 @@ struct _Signed128 : _Base128 {
     }
 
     _NODISCARD friend constexpr _Signed128 operator*(_Signed128 _Left, _Signed128 _Right) noexcept {
-        bool _Negative = false;
-        _Left._Strip_negative(_Negative);
-        _Right._Strip_negative(_Negative);
-        _Signed128 _Result{_Base128::_Multiply(_Left, _Right)};
-        if (_Negative) {
-            _Result = -_Result;
-        }
-        return _Result;
+        return _Signed128{_Base128::_Multiply(_Left, _Right)};
     }
 
     _TEMPLATE_CLASS_INTEGRAL(_Ty)
