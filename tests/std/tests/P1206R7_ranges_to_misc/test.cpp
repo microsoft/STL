@@ -258,12 +258,7 @@ constexpr bool test_lwg3785() {
     return true;
 }
 
-enum class restriction_kind {
-    emplace_back,
-    push_back,
-    emplace,
-    insert,
-};
+enum class restriction_kind { emplace_back, push_back, emplace_hint, insert, insert_and_emplace };
 
 template <restriction_kind K, class T, class A = std::allocator<T>>
 class restricted_vector : private std::vector<T, A> {
@@ -327,18 +322,26 @@ public:
 
     template <class... Args>
     constexpr iterator emplace(const const_iterator it, Args&&... args)
-        requires (K == restriction_kind::emplace)
+        requires (K == restriction_kind::insert_and_emplace)
+    {
+        assert(false); // see LWG-4121, ranges::to must ignore emplace
+        return base_type::emplace(it, std::forward<Args>(args)...);
+    }
+
+    template <class... Args>
+    constexpr iterator emplace_hint(const const_iterator it, Args&&... args)
+        requires (K == restriction_kind::emplace_hint)
     {
         return base_type::emplace(it, std::forward<Args>(args)...);
     }
 
     constexpr iterator insert(const const_iterator it, const T& t)
-        requires (K == restriction_kind::insert)
+        requires (K == restriction_kind::insert || K == restriction_kind::insert_and_emplace)
     {
         return base_type::emplace(it, t);
     }
     constexpr iterator insert(const const_iterator it, T&& t)
-        requires (K == restriction_kind::insert)
+        requires (K == restriction_kind::insert || K == restriction_kind::insert_and_emplace)
     {
         return base_type::emplace(it, std::move(t));
     }
@@ -386,8 +389,13 @@ constexpr void test_lwg4016_per_kind() {
 constexpr bool test_lwg4016() {
     test_lwg4016_per_kind<restriction_kind::emplace_back>();
     test_lwg4016_per_kind<restriction_kind::push_back>();
-    test_lwg4016_per_kind<restriction_kind::emplace>();
+    test_lwg4016_per_kind<restriction_kind::emplace_hint>(); // see LWG-4121
     test_lwg4016_per_kind<restriction_kind::insert>();
+    return true;
+}
+
+constexpr bool test_lwg4121() {
+    test_lwg4016_per_kind<restriction_kind::insert_and_emplace>();
     return true;
 }
 
@@ -439,4 +447,7 @@ int main() {
 
     test_lwg4016_regression();
     static_assert(test_lwg4016_regression());
+
+    test_lwg4121();
+    static_assert(test_lwg4121());
 }
