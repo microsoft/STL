@@ -888,16 +888,28 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem, const tm* _Pt, char _Specifier,
         char _Modifier = '\0') const { // put formatted time from _Pt to _Dest for [_Fmtfirst, _Fmtlast)
-        char _Fmt[5] = "!%x\0"; // '!' for nonzero count, null for modifier
+        const char* _Fmt_ptr = nullptr;
+        char _Fmt[5]         = "!%x\0"; // '!' for nonzero count, null for modifier
         size_t _Count;
         size_t _Num;
         string _Str;
 
-        if (_Modifier == '\0') {
-            _Fmt[2] = _Specifier;
-        } else { // add both modifier and specifier
-            _Fmt[2] = _Modifier;
-            _Fmt[3] = _Specifier;
+        if (_Iosbase.getloc() == locale::classic()) {
+            if (_Specifier == 'c') {
+                _Fmt_ptr = "!%a %b %e %T %Y";
+            } else if (_Specifier == 'r') {
+                _Fmt_ptr = "!%I:%M:%S %p";
+            }
+        }
+
+        if (!_Fmt_ptr) {
+            if (_Modifier == '\0') {
+                _Fmt[2] = _Specifier;
+            } else { // add both modifier and specifier
+                _Fmt[2] = _Modifier;
+                _Fmt[3] = _Specifier;
+            }
+            _Fmt_ptr = _Fmt;
         }
 
         int& _Errno_ref      = errno; // Nonzero cost, pay it once
@@ -905,7 +917,7 @@ protected:
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            _Count = _Strftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            _Count = _Strftime(&_Str[0], _Str.size(), _Fmt_ptr, _Pt, _Tnames._Getptr());
             if (0 < _Count) {
                 break;
             } else if (_Errno_ref == EINVAL) {
@@ -1034,16 +1046,28 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem, const tm* _Pt, char _Specifier,
         char _Modifier = '\0') const { // put formatted time from _Pt to _Dest for [_Fmtfirst, _Fmtlast)
-        wchar_t _Fmt[5] = L"!%x\0"; // ! for nonzero count, null for modifier
+        const wchar_t* _Fmt_ptr = nullptr;
+        wchar_t _Fmt[5]         = L"!%x\0"; // ! for nonzero count, null for modifier
         size_t _Count;
         size_t _Num;
         wstring _Str;
 
-        if (_Modifier == '\0') {
-            _Fmt[2] = static_cast<_Elem>(_Specifier); // conversion rule unspecified
-        } else { // add both modifier and specifier
-            _Fmt[2] = static_cast<_Elem>(_Modifier);
-            _Fmt[3] = static_cast<_Elem>(_Specifier);
+        if (_Iosbase.getloc() == locale::classic()) {
+            if (_Specifier == 'c') {
+                _Fmt_ptr = L"!%a %b %e %T %Y";
+            } else if (_Specifier == 'r') {
+                _Fmt_ptr = L"!%I:%M:%S %p";
+            }
+        }
+
+        if (!_Fmt_ptr) {
+            if (_Modifier == '\0') {
+                _Fmt[2] = static_cast<_Elem>(_Specifier);
+            } else {
+                _Fmt[2] = static_cast<_Elem>(_Modifier);
+                _Fmt[3] = static_cast<_Elem>(_Specifier);
+            }
+            _Fmt_ptr = _Fmt;
         }
 
         int& _Errno_ref      = errno; // Nonzero cost, pay it once
@@ -1051,7 +1075,7 @@ protected:
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt_ptr, _Pt, _Tnames._Getptr());
             if (0 < _Count) {
                 break;
             } else if (_Errno_ref == EINVAL) {
@@ -1183,16 +1207,28 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem, const tm* _Pt, char _Specifier,
         char _Modifier = '\0') const { // put formatted time from _Pt to _Dest for [_Fmtfirst, _Fmtlast)
-        wchar_t _Fmt[5] = L"!%x\0"; // ! for nonzero count, null for modifier
+        const wchar_t* _Fmt_ptr = nullptr;
+        wchar_t _Fmt[5]         = L"!%x\0"; // ! for nonzero count, null for modifier
         size_t _Count;
         size_t _Num;
         wstring _Str;
 
-        if (_Modifier == '\0') {
-            _Fmt[2] = static_cast<_Elem>(_Specifier); // conversion rule unspecified
-        } else { // add both modifier and specifier
-            _Fmt[2] = static_cast<_Elem>(_Modifier);
-            _Fmt[3] = static_cast<_Elem>(_Specifier);
+        if (_Iosbase.getloc() == locale::classic()) {
+            if (_Specifier == 'c') {
+                _Fmt_ptr = L"!%a %b %e %T %Y";
+            } else if (_Specifier == 'r') {
+                _Fmt_ptr = L"!%I:%M:%S %p";
+            }
+        }
+
+        if (!_Fmt_ptr) {
+            if (_Modifier == '\0') {
+                _Fmt[2] = static_cast<_Elem>(_Specifier);
+            } else {
+                _Fmt[2] = static_cast<_Elem>(_Modifier);
+                _Fmt[3] = static_cast<_Elem>(_Specifier);
+            }
+            _Fmt_ptr = _Fmt;
         }
 
         int& _Errno_ref      = errno; // Nonzero cost, pay it once
@@ -1200,7 +1236,7 @@ protected:
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt_ptr, _Pt, _Tnames._Getptr());
             if (0 < _Count) {
                 break;
             } else if (_Errno_ref == EINVAL) {
