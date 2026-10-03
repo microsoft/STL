@@ -1088,8 +1088,8 @@ namespace {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_1_neon : _Traits_1_base, _Traits_neon_base {
-            static constexpr bool _Has_min_max = true;
             using _Vec_t                       = int8x16_t;
+            static constexpr bool _Has_min_max = true;
 
             static _Vec_t _Zero() noexcept {
                 return vdupq_n_s8(0);
@@ -1388,8 +1388,8 @@ namespace {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_2_neon : _Traits_2_base, _Traits_neon_base {
-            static constexpr bool _Has_min_max = true;
             using _Vec_t                       = int16x8_t;
+            static constexpr bool _Has_min_max = true;
 
             static _Vec_t _Zero() noexcept {
                 return vdupq_n_s16(0);
@@ -1688,8 +1688,8 @@ namespace {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_4_neon : _Traits_4_base, _Traits_neon_base {
-            static constexpr bool _Has_min_max = true;
             using _Vec_t                       = int32x4_t;
+            static constexpr bool _Has_min_max = true;
 
             static _Vec_t _Zero() noexcept {
                 return vdupq_n_s32(0);
@@ -1977,8 +1977,8 @@ namespace {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_8_neon : _Traits_8_base, _Traits_neon_base {
-            static constexpr bool _Has_min_max = false;
             using _Vec_t                       = int64x2_t;
+            static constexpr bool _Has_min_max = false;
 
             // Compresses a 128-bit Mask of 2 64-bit values into a 64-bit Mask of 2 32-bit values.
             static uint64_t _Mask(const _Vec_t _Val) noexcept {
@@ -2307,8 +2307,8 @@ namespace {
         };
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_f_sse : _Traits_f_base, _Traits_sse_base {
-            static constexpr bool _Has_min_max = true;
             using _Vec_t                       = __m128;
+            static constexpr bool _Has_min_max = true;
 
             static __m128 _Load(const void* const _Src) noexcept {
                 return _mm_loadu_ps(reinterpret_cast<const float*>(_Src));
@@ -2378,9 +2378,9 @@ namespace {
         };
 
         struct _Traits_f_avx : _Traits_f_base, _Traits_avx_base {
-            static constexpr bool _Has_min_max = true;
             static constexpr size_t _Tail_mask = 0x1C;
             using _Vec_t                       = __m256;
+            static constexpr bool _Has_min_max = true;
 
             static __m256 _Blendval(const __m256 _Px1, const __m256 _Px2, const __m256i _Msk) noexcept {
                 return _mm256_blendv_ps(_Px1, _Px2, _mm256_castsi256_ps(_Msk));
@@ -2563,8 +2563,8 @@ namespace {
         };
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_d_sse : _Traits_d_base, _Traits_sse_base {
-            static constexpr bool _Has_min_max = true;
             using _Vec_t                       = __m128d;
+            static constexpr bool _Has_min_max = true;
 
             static __m128d _Load(const void* const _Src) noexcept {
                 return _mm_loadu_pd(reinterpret_cast<const double*>(_Src));
@@ -2632,9 +2632,9 @@ namespace {
         };
 
         struct _Traits_d_avx : _Traits_d_base, _Traits_avx_base {
-            static constexpr bool _Has_min_max = true;
             static constexpr size_t _Tail_mask = 0x18;
             using _Vec_t                       = __m256d;
+            static constexpr bool _Has_min_max = true;
 
             static __m256d _Blendval(const __m256d _Px1, const __m256d _Px2, const __m256i _Msk) noexcept {
                 return _mm256_blendv_pd(_Px1, _Px2, _mm256_castsi256_pd(_Msk));
