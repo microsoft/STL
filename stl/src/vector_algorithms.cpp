@@ -2820,6 +2820,24 @@ namespace {
             return _Res;
         }
 
+        template <class _Traits, bool _Use_signed_type>
+        auto _H_min_wrap(const auto _Vals) noexcept {
+            if constexpr (_Use_signed_type) {
+                return _Traits::_H_min(_Vals);
+            } else {
+                return _Traits::_H_min_u(_Vals);
+            }
+        }
+
+        template <class _Traits, bool _Use_signed_type>
+        auto _H_max_wrap(const auto _Vals) noexcept {
+            if constexpr (_Use_signed_type) {
+                return _Traits::_H_max(_Vals);
+            } else {
+                return _Traits::_H_max_u(_Vals);
+            }
+        }
+
         template <_Min_max_mode _Mode, class _Traits, bool _Is_signed>
         auto _Minmax_element_impl(const void* _First, const void* const _Last) noexcept {
             constexpr bool _Use_signed_type = _Is_signed || !_Traits::_Has_unsigned_cmp;
@@ -2889,20 +2907,6 @@ namespace {
                         return _Traits::_Max(_First, _Second);
                     } else {
                         return _Traits::_Max_u(_First, _Second);
-                    }
-                };
-                const auto _H_min_wrap = [](const auto _Vals) noexcept {
-                    if constexpr (_Use_signed_type) {
-                        return _Traits::_H_min(_Vals);
-                    } else {
-                        return _Traits::_H_min_u(_Vals);
-                    }
-                };
-                const auto _H_max_wrap = [](const auto _Vals) noexcept {
-                    if constexpr (_Use_signed_type) {
-                        return _Traits::_H_max(_Vals);
-                    } else {
-                        return _Traits::_H_max_u(_Vals);
                     }
                 };
                 const auto _Less_wrap = [](const auto _Lhs, const auto _Rhs) noexcept {
@@ -3002,7 +3006,7 @@ namespace {
 
                         if constexpr ((_Mode & _Mode_min) != 0) {
                             // Vector populated by the smallest element
-                            const auto _H_min     = _H_min_wrap(_Cur_vals_min);
+                            const auto _H_min     = _H_min_wrap<_Traits, _Use_signed_type>(_Cur_vals_min);
                             const auto _H_min_val = _Traits::_Get_any(_H_min); // Get any element of it
 
                             if (_Less_wrap(_H_min_val, _Cur_min_val)) { // Current horizontal min is less than the old
@@ -3029,7 +3033,7 @@ namespace {
 
                         if constexpr ((_Mode & _Mode_max) != 0) {
                             // Vector populated by the largest element
-                            const auto _H_max     = _H_max_wrap(_Cur_vals_max);
+                            const auto _H_max     = _H_max_wrap<_Traits, _Use_signed_type>(_Cur_vals_max);
                             const auto _H_max_val = _Traits::_Get_any(_H_max); // Get any element of it
 
                             if (_Mode == _Mode_both && !_Less_wrap(_H_max_val, _Cur_max_val)
@@ -3186,6 +3190,7 @@ namespace {
 
                 // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
                 constexpr bool _Sign_correction = !_Traits::_Has_min_max && !_Is_signed && !_Traits::_Has_unsigned_cmp;
+                constexpr bool _Use_signed_type = _Is_signed || _Sign_correction;
 
                 _VecTy _Cur_vals[_Lanes];
                 _VecTy _Cur_vals_min[_Lanes]; // vector of vertical minimum values
@@ -3201,13 +3206,13 @@ namespace {
 
                 const auto _Min_wrap = [](const auto _First, const auto _Second) noexcept {
                     if constexpr (!_Traits::_Has_min_max) {
-                        if constexpr (_Is_signed || _Sign_correction) {
+                        if constexpr (_Use_signed_type) {
                             return _Traits::_Blendval(_First, _Second, _Traits::_Cmp_gt(_First, _Second));
                         } else {
                             return _Traits::_Blendval(_First, _Second, _Traits::_Cmp_gt_u(_First, _Second));
                         }
                     } else {
-                        if constexpr (_Is_signed || _Sign_correction) {
+                        if constexpr (_Use_signed_type) {
                             return _Traits::_Min(_First, _Second);
                         } else {
                             return _Traits::_Min_u(_First, _Second);
@@ -3217,13 +3222,13 @@ namespace {
 
                 const auto _Max_wrap = [](const auto _First, const auto _Second) noexcept {
                     if constexpr (!_Traits::_Has_min_max) {
-                        if constexpr (_Is_signed || _Sign_correction) {
+                        if constexpr (_Use_signed_type) {
                             return _Traits::_Blendval(_First, _Second, _Traits::_Cmp_gt(_Second, _First));
                         } else {
                             return _Traits::_Blendval(_First, _Second, _Traits::_Cmp_gt_u(_Second, _First));
                         }
                     } else {
-                        if constexpr (_Is_signed || _Sign_correction) {
+                        if constexpr (_Use_signed_type) {
                             return _Traits::_Max(_First, _Second);
                         } else {
                             return _Traits::_Max_u(_First, _Second);
@@ -3295,33 +3300,17 @@ namespace {
                         // Reached end. Compute horizontal min and/or max.
 
                         if constexpr ((_Mode & _Mode_min) != 0) {
-                            const auto _H_min_wrap = [](const auto _Val) {
-                                if constexpr (_Is_signed || _Sign_correction) {
-                                    return _Traits::_H_min(_Val);
-                                } else {
-                                    return _Traits::_H_min_u(_Val);
-                                }
-                            };
-
                             if constexpr (_Unrolled) {
                                 for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
                                     _Cur_vals_min[0] = _Min_wrap(_Cur_vals_min[0], _Cur_vals_min[_Lane]);
                                 }
                             }
                             // Vector populated by the smallest element
-                            const auto _H_min = _H_min_wrap(_Cur_vals_min[0]);
+                            const auto _H_min = _H_min_wrap<_Traits, _Use_signed_type>(_Cur_vals_min[0]);
                             _Cur_min_val      = _Traits::_Get_any(_H_min); // Get any element of it
                         }
 
                         if constexpr ((_Mode & _Mode_max) != 0) {
-                            const auto _H_max_wrap = [](const auto _Val) {
-                                if constexpr (_Is_signed || _Sign_correction) {
-                                    return _Traits::_H_max(_Val);
-                                } else {
-                                    return _Traits::_H_max_u(_Val);
-                                }
-                            };
-
                             if constexpr (_Unrolled) {
                                 for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
                                     _Cur_vals_max[0] = _Max_wrap(_Cur_vals_max[0], _Cur_vals_max[_Lane]);
@@ -3329,7 +3318,7 @@ namespace {
                             }
 
                             // Vector populated by the largest element
-                            const auto _H_max = _H_max_wrap(_Cur_vals_max[0]);
+                            const auto _H_max = _H_max_wrap<_Traits, _Use_signed_type>(_Cur_vals_max[0]);
                             _Cur_max_val      = _Traits::_Get_any(_H_max); // Get any element of it
                         }
 
