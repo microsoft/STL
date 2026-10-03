@@ -3291,40 +3291,42 @@ namespace {
                         // Reached end. Compute horizontal min and/or max.
 
                         if constexpr ((_Mode & _Mode_min) != 0) {
+                            const auto _H_min_wrap = [](const auto _Val) {
+                                if constexpr (_Is_signed || _Sign_correction) {
+                                    return _Traits::_H_min(_Val);
+                                } else {
+                                    return _Traits::_H_min_u(_Val);
+                                }
+                            };
+
                             if constexpr (_Unrolled) {
                                 for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
                                     _Cur_vals_min[0] = _Min_wrap(_Cur_vals_min[0], _Cur_vals_min[_Lane]);
                                 }
                             }
-
-                            if constexpr (_Is_signed || _Sign_correction) {
-
-                                // Vector populated by the smallest element
-                                const auto _H_min = _Traits::_H_min(_Cur_vals_min[0]);
-                                _Cur_min_val      = _Traits::_Get_any(_H_min); // Get any element of it
-                            } else {
-                                // Vector populated by the smallest element
-                                const auto _H_min = _Traits::_H_min_u(_Cur_vals_min[0]);
-                                _Cur_min_val      = _Traits::_Get_any(_H_min); // Get any element of it
-                            }
+                            // Vector populated by the smallest element
+                            const auto _H_min = _H_min_wrap(_Cur_vals_min[0]);
+                            _Cur_min_val      = _Traits::_Get_any(_H_min); // Get any element of it
                         }
 
                         if constexpr ((_Mode & _Mode_max) != 0) {
+                            const auto _H_max_wrap = [](const auto _Val) {
+                                if constexpr (_Is_signed || _Sign_correction) {
+                                    return _Traits::_H_max(_Val);
+                                } else {
+                                    return _Traits::_H_max_u(_Val);
+                                }
+                            };
+
                             if constexpr (_Unrolled) {
                                 for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
                                     _Cur_vals_max[0] = _Max_wrap(_Cur_vals_max[0], _Cur_vals_max[_Lane]);
                                 }
                             }
 
-                            if constexpr (_Is_signed || _Sign_correction) {
-                                // Vector populated by the largest element
-                                const auto _H_max = _Traits::_H_max(_Cur_vals_max[0]);
-                                _Cur_max_val      = _Traits::_Get_any(_H_max); // Get any element of it
-                            } else {
-                                // Vector populated by the largest element
-                                const auto _H_max = _Traits::_H_max_u(_Cur_vals_max[0]);
-                                _Cur_max_val      = _Traits::_Get_any(_H_max); // Get any element of it
-                            }
+                            // Vector populated by the largest element
+                            const auto _H_max = _H_max_wrap(_Cur_vals_max[0]);
+                            _Cur_max_val      = _Traits::_Get_any(_H_max); // Get any element of it
                         }
 
                         if constexpr (_Sign_correction) {
