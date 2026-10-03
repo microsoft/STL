@@ -2944,6 +2944,86 @@ void test_gh_6464() {
     }
 }
 
+void test_gh_6475() {
+    // GH-6475: Accelerate greedy wildcard loops
+    for (syntax_option_type options : {ECMAScript, extended}) {
+        g_regexTester.should_not_match("", ".+", options);
+        g_regexTester.should_match("b", ".{0}b", options);
+        g_regexTester.should_not_match("ab", ".{0}b", options);
+        g_regexTester.should_match("ab", ".{0,1}b", options);
+        g_regexTester.should_not_match("aab", ".{0,1}b", options);
+        g_regexTester.should_match("aab", ".{0,2}b", options);
+        g_regexTester.should_match("aab", ".{1,2}b", options);
+        g_regexTester.should_not_match("aab", ".{1}b", options);
+        g_regexTester.should_not_match("aaab", ".{1,2}b", options);
+        g_regexTester.should_match("aaab", ".{1,3}b", options);
+
+        for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+            const auto c = static_cast<char>(i);
+            if (c != '\0' && c != '\r' && c != '\n') {
+                g_regexTester.should_match(string(1u, c), ".*", options);
+            }
+        }
+
+        {
+            test_regex greedy_dot_star(&g_regexTester, ".*", options);
+            greedy_dot_star.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex bounded_greedy_dot_rep(&g_regexTester, ".{5}", options);
+            bounded_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex upper_bounded_greedy_dot_rep(&g_regexTester, ".{0,5}", options);
+            upper_bounded_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex lower_bounded_greedy_dot_rep(&g_regexTester, ".{4,1000}", options);
+            lower_bounded_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex lower_and_upper_bounded_greedy_dot_rep(&g_regexTester, ".{2,5}", options);
+            lower_and_upper_bounded_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex too_large_min_greedy_dot_rep(&g_regexTester, ".{11,1000}", options);
+            too_large_min_greedy_dot_rep.should_search_fail("aaaaaaaaaa");
+        }
+    }
+
+    g_regexTester.should_not_match("aaa\r", ".*");
+    g_regexTester.should_not_match("aaa\n", ".*");
+    g_regexTester.should_match("aaa" + string(1u, '\0'), ".*");
+
+    {
+        test_wregex greedy_dot_star_ecma(&g_regexTester, L"^.*$");
+        greedy_dot_star_ecma.should_search_fail(L"aaa\r");
+        greedy_dot_star_ecma.should_search_fail(L"aaa\n");
+        greedy_dot_star_ecma.should_search_fail(L"aaa\u2028"); // U+2028 LINE SEPARATOR
+        greedy_dot_star_ecma.should_search_fail(L"aaa\u2029"); // U+2029 PARAGRAPH SEPARATOR
+        greedy_dot_star_ecma.should_search_match(L"aaa" + wstring(1u, '\0'), L"aaa" + wstring(1u, '\0'));
+    }
+
+
+    g_regexTester.should_match("aaa\r", ".*", extended);
+    g_regexTester.should_match("aaa\n", ".*", extended);
+    g_regexTester.should_not_match("aaa" + string(1u, '\0'), ".*", extended);
+
+    {
+        test_wregex greedy_dot_star_extended(&g_regexTester, L"^.*$", extended);
+        greedy_dot_star_extended.should_search_match(L"aaa\r", L"aaa\r");
+        greedy_dot_star_extended.should_search_match(L"aaa\n", L"aaa\n");
+        greedy_dot_star_extended.should_search_match(L"aaa\u2028", L"aaa\u2028"); // U+2028 LINE SEPARATOR
+        greedy_dot_star_extended.should_search_match(L"aaa\u2029", L"aaa\u2029"); // U+2029 PARAGRAPH SEPARATOR
+        greedy_dot_star_extended.should_search_fail(L"aaa" + wstring(1u, '\0'));
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -3018,6 +3098,7 @@ int main() {
     test_gh_6359();
     test_gh_6423();
     test_gh_6464();
+    test_gh_6475();
 
     return g_regexTester.result();
 }
