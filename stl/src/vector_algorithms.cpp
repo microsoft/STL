@@ -2037,7 +2037,7 @@ namespace {
                 return vreinterpretq_s64_u64(vcgtq_u64(vreinterpretq_u64_s64(_First), vreinterpretq_u64_s64(_Second)));
             }
 
-            static _Vec_t _Blend(const _Vec_t _First, const _Vec_t _Second, const _Vec_t _Mask) noexcept {
+            static _Vec_t _Blendval(const _Vec_t _First, const _Vec_t _Second, const _Vec_t _Mask) noexcept {
                 return vbslq_s64(vreinterpretq_u64_s64(_Mask), _Second, _First);
             }
 
@@ -2069,6 +2069,10 @@ namespace {
                     _H_min_a = _H_min_b;
                 }
                 return _mm_set1_epi64x(_H_min_a);
+            }
+
+            static __m128i _Blendval(const __m128i _Px1, const __m128i _Px2, const __m128i _Msk) noexcept {
+                return _mm_blendv_epi8(_Px1, _Px2, _Msk);
             }
 
             static __m128i _H_min(const __m128i _Cur) noexcept {
@@ -2870,7 +2874,7 @@ namespace {
                 const auto _Min_wrap = [](const auto _First, const auto _Second,
                                            [[maybe_unused]] const auto _Mask) noexcept {
                     if constexpr (!_Traits::_Has_min_max) {
-                        return _Traits::_Blend(_First, _Second, _Mask);
+                        return _Traits::_Blendval(_First, _Second, _Mask);
                     } else if constexpr (_Use_signed_type) {
                         return _Traits::_Min(_First, _Second);
                     } else {
@@ -2880,7 +2884,7 @@ namespace {
                 const auto _Max_wrap = [](const auto _First, const auto _Second,
                                            [[maybe_unused]] const auto _Mask) noexcept {
                     if constexpr (!_Traits::_Has_min_max) {
-                        return _Traits::_Blend(_First, _Second, _Mask);
+                        return _Traits::_Blendval(_First, _Second, _Mask);
                     } else if constexpr (_Use_signed_type) {
                         return _Traits::_Max(_First, _Second);
                     } else {
@@ -3198,9 +3202,9 @@ namespace {
                 const auto _Min_wrap = [](const auto _First, const auto _Second) noexcept {
                     if constexpr (!_Traits::_Has_min_max) {
                         if constexpr (_Is_signed || _Sign_correction) {
-                            return _Traits::_Blend(_First, _Second, _Traits::_Cmp_gt(_First, _Second));
+                            return _Traits::_Blendval(_First, _Second, _Traits::_Cmp_gt(_First, _Second));
                         } else {
-                            return _Traits::_Blend(_First, _Second, _Traits::_Cmp_gt_u(_First, _Second));
+                            return _Traits::_Blendval(_First, _Second, _Traits::_Cmp_gt_u(_First, _Second));
                         }
                     } else {
                         if constexpr (_Is_signed || _Sign_correction) {
@@ -3214,9 +3218,9 @@ namespace {
                 const auto _Max_wrap = [](const auto _First, const auto _Second) noexcept {
                     if constexpr (!_Traits::_Has_min_max) {
                         if constexpr (_Is_signed || _Sign_correction) {
-                            return _Traits::_Blend(_First, _Second, _Traits::_Cmp_gt(_Second, _First));
+                            return _Traits::_Blendval(_First, _Second, _Traits::_Cmp_gt(_Second, _First));
                         } else {
-                            return _Traits::_Blend(_First, _Second, _Traits::_Cmp_gt_u(_Second, _First));
+                            return _Traits::_Blendval(_First, _Second, _Traits::_Cmp_gt_u(_Second, _First));
                         }
                     } else {
                         if constexpr (_Is_signed || _Sign_correction) {
