@@ -967,7 +967,15 @@ namespace ranges {
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         _NODISCARD static constexpr range_difference_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) {
-            return _Count_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _STD _Pass_fn(_Proj));
+            auto _UFirst = _Ubegin(_Range);
+            if constexpr (random_access_iterator<decltype(_UFirst)> && sized_range<_Rng>
+                          && !sized_sentinel_for<decltype(_Uend(_Range)), decltype(_UFirst)>) {
+                const auto _Count = _RANGES _Idl_distance(_Range);
+                auto _ULast       = _RANGES _Get_final_iterator_unwrapped(_UFirst, _Count);
+                return _Count_unchecked(_STD move(_UFirst), _STD move(_ULast), _Val, _STD _Pass_fn(_Proj));
+            } else {
+                return _Count_unchecked(_STD move(_UFirst), _Uend(_Range), _Val, _STD _Pass_fn(_Proj));
+            }
         }
 
     private:
@@ -5299,8 +5307,19 @@ namespace ranges {
         static constexpr remove_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Output, const _Ty& _Val, _Pj _Proj = {}) {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Remove_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _STD _Get_unwrapped_unverified(_STD move(_Output)), _Val, _STD _Pass_fn(_Proj));
+            auto _UFirst  = _RANGES _Unwrap_range_iter<_Rng>(_STD move(_First));
+            auto _UResult = [&] {
+                if constexpr (random_access_iterator<decltype(_UFirst)> && sized_range<_Rng>
+                              && !sized_sentinel_for<decltype(_Uend(_Range)), decltype(_UFirst)>) {
+                    const auto _Count = _RANGES _Idl_distance(_Range);
+                    auto _ULast       = _RANGES _Get_final_iterator_unwrapped(_UFirst, _Count);
+                    return _Remove_copy_unchecked(_STD move(_UFirst), _STD move(_ULast),
+                        _STD _Get_unwrapped_unverified(_STD move(_Output)), _Val, _STD _Pass_fn(_Proj));
+                } else {
+                    return _Remove_copy_unchecked(_STD move(_UFirst), _Uend(_Range),
+                        _STD _Get_unwrapped_unverified(_STD move(_Output)), _Val, _STD _Pass_fn(_Proj));
+                }
+            }();
 
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
