@@ -1200,6 +1200,41 @@ void test_insert_or_assign() {
     assert(check_value_content(direct_fm, {direct_init_only(direct_init_only::src_type{42u})}));
 }
 
+// GH-6069: exercise the backward-search path of hinted insertion, where the hint is positioned after the key
+void test_gh_6069() {
+    flat_map<int, char> fm{{10, 'm'}, {20, 'o'}, {70, 'e'}, {90, 'w'}};
+
+    // hint is after the key, key not yet present: insert at the correct position
+    const auto ins = fm.try_emplace(fm.find(70), 15, 'a');
+    assert(ins->first == 15);
+    assert(ins->second == 'a');
+    assert(check_key_content(fm, {10, 15, 20, 70, 90}));
+    assert(check_value_content(fm, {'m', 'a', 'o', 'e', 'w'}));
+
+    // duplicate key after the hint: try_emplace returns the existing element without inserting
+    const auto dup = fm.try_emplace(fm.find(70), 20, 'z');
+    assert(dup->first == 20);
+    assert(dup->second == 'o');
+    assert(fm.size() == 5);
+    assert(check_key_content(fm, {10, 15, 20, 70, 90}));
+    assert(check_value_content(fm, {'m', 'a', 'o', 'e', 'w'}));
+
+    // duplicate key after the hint: insert returns the existing element without inserting
+    pair dup_pair{20, 'q'};
+    const auto dup_ins = fm.insert(fm.find(90), move(dup_pair));
+    assert(dup_ins->first == 20);
+    assert(dup_ins->second == 'o');
+    assert(check_key_content(fm, {10, 15, 20, 70, 90}));
+    assert(check_value_content(fm, {'m', 'a', 'o', 'e', 'w'}));
+
+    // duplicate key after the hint: insert_or_assign overwrites the mapped value
+    const auto ovr = fm.insert_or_assign(fm.find(90), 15, 'q');
+    assert(ovr->first == 15);
+    assert(ovr->second == 'q');
+    assert(check_key_content(fm, {10, 15, 20, 70, 90}));
+    assert(check_value_content(fm, {'m', 'q', 'o', 'e', 'w'}));
+}
+
 void test_comparison() {
     {
         flat_map<int, char> fm1{{1, '1'}, {2, '7'}, {3, '2'}, {4, '9'}};
@@ -1538,6 +1573,7 @@ void run_normal_tests() {
     test_insert_range();
     test_gh_4344();
     test_insert_or_assign();
+    test_gh_6069();
     test_comparison();
 
     test_map_operations_transparent<flat_map>();
