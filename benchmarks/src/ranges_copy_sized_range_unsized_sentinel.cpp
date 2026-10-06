@@ -43,7 +43,7 @@ static_assert(ranges::sized_range<sized_c_string_range>);
 static_assert(!ranges::common_range<sized_c_string_range>);
 static_assert(!sized_sentinel_for<c_string_sentinel, const char*>);
 
-void copy_sized_c_string_sentinel(benchmark::State& state) {
+void copy_sized_range_unsized_sentinel(benchmark::State& state) {
     const size_t size = static_cast<size_t>(state.range(0));
     string input(size, 'x');
     for (size_t i = 0; i != size; ++i) {
@@ -61,6 +61,6 @@ void copy_sized_c_string_sentinel(benchmark::State& state) {
     }
 }
 
-BENCHMARK(copy_sized_c_string_sentinel)->Arg(0)->RangeMultiplier(8)->Range(1, 1 << 16);
+BENCHMARK(copy_sized_range_unsized_sentinel)->Arg(0)->RangeMultiplier(8)->Range(1, 1 << 16);
 
 BENCHMARK_MAIN();
