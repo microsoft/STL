@@ -753,6 +753,7 @@ std/re/re.traits/lookup_classname.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
 std/thread/thread.jthread/detach.pass.cpp SKIPPED
+std/thread/thread.threads/thread.thread.class/thread.thread.member/detach.pass.cpp SKIPPED
 
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
