@@ -281,6 +281,7 @@ tests\GH_005800_stable_sort_large_alignment
 tests\GH_005816_numeric_limits_traps
 tests\GH_005968_headers_provide_begin_end
 tests\GH_005974_asan_annotate_optional
+tests\GH_006294_vectorized_find_is_safe
 tests\GH_006323_pwl_dist_rounding
 tests\GH_006381_replace_non_value_bool
 tests\LWG2381_num_get_floating_point
