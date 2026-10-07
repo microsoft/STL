@@ -1208,6 +1208,50 @@ struct _Iterator_base0 {
     static constexpr bool _Unwrap_when_unverified = true;
 };
 
+// The machinery below implements iterator debugging (informally "IDL", after the _ITERATOR_DEBUG_LEVEL macro,
+// where "L" stands for "level"). It lets a container invalidate ("orphan") its iterators without either side
+// needing to know about the other directly, by routing everything through a shared proxy object.
+//
+// Most containers use it only when _ITERATOR_DEBUG_LEVEL != 0; at level 0 they derive from _Container_base0 and
+// use _Fake_proxy_ptr_impl, so no proxy is allocated. deque is the exception: _Deque_val derives from
+// _Container_base12 and _Deque_const_iterator from _Iterator_base12 at every level, because deque's offset-based
+// iterators reach the container through the proxy (see _Getcont() and _Unwrapped()) even when iterator debugging
+// is off. A deque therefore allocates a real proxy at level 0 too.
+//
+// Invariants for any container that uses _Container_base12:
+//
+// * Such a container owns a dynamically allocated _Container_proxy at all times, including in its
+//   default-constructed and moved-from states. This is TRANSITION, ABI: because the proxy is allocated separately
+//   instead of being stored inline, any operation that has to attach a fresh proxy has to allocate. Where such an
+//   operation is still declared noexcept, it deliberately terminates on OOM rather than weaken its specification
+//   -- see the _Reload_proxy call in vector's move assignment operator, tagged TRANSITION, VSO-466800. We intend
+//   to revisit this strategy in vNext (see GH-169).
+// * A container and its proxy always point to each other, via _Container_base12::_Myproxy and
+//   _Container_proxy::_Mycont respectively. (_Container_proxy_ptr12 can briefly hold a freshly allocated proxy
+//   that isn't bound to a container yet; see _Leave_proxy_unbound and _Bind.)
+// * Every iterator associated with a parent container holds a non-owning pointer to that container's proxy
+//   (_Iterator_base12::_Myproxy). Container-driven orphaning nulls that pointer, but _Orphan_all only does so at
+//   level 2. Below level 2, an iterator invalidated by its container retains its _Myproxy, which dangles only once
+//   the proxy itself is destroyed.
+//
+// Additional invariants at _ITERATOR_DEBUG_LEVEL == 2 only, where we also track iterators individually:
+//
+// * The proxy's _Myfirstiter, together with each iterator's _Mynextiter, forms an intrusive singly linked list of
+//   iterators rooted at the proxy. Every valid iterator currently associated with a container is reachable
+//   through this list. A null _Myproxy means no such association: the iterator was orphaned, was never adopted,
+//   or disowned itself -- an end-of-sequence regex_iterator is a valid iterator in that state (see the
+//   _Adopt(nullptr) calls in <regex>). Below level 2 the list is unused: _Adopt merely copies _Myproxy,
+//   _Orphan_all does nothing, and _Myfirstiter remains null.
+// * Whenever that list is manipulated at runtime, the debug lock (_Lockit(_LOCK_DEBUG)) is held. During constant
+//   evaluation we skip the lock and take the unlocked paths instead (see the is_constant_evaluated() checks
+//   below), as constant evaluation is single-threaded and _Lockit isn't usable there.
+//
+// The lock guards that list, not the proxy pointers themselves: _Alloc_proxy and _Reload_proxy install a new
+// proxy without taking it at any level, and below level 2 _Swap_proxy_and_iterators calls the unlocked helper
+// directly. Iterator compatibility checks also run outside the lock; they compare the container addresses that
+// _Getcont() reads back out of the proxies (see deque's _Compat). Note what swapping actually changes: the two
+// containers exchange their _Myproxy values and each proxy's _Mycont is rewritten to its new container, while
+// existing iterators go on pointing at the same proxy object -- which is how they follow the contents across.
 struct _Container_base12;
 struct _Container_proxy { // store head of iterator chain and back pointer
     _CONSTEXPR20 _Container_proxy() noexcept = default;
