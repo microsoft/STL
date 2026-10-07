@@ -5,6 +5,7 @@
 #include <cassert>
 #include <ranges>
 #include <span>
+#include <sstream>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -383,6 +384,24 @@ void test_lwg_4027() { // COMPILE-ONLY
     static_assert(is_const_v<remove_reference_t<R1>>);
 }
 
+void test_lwg_4249() {
+    // Iterating over an inner range advances the shared current, so the outer iterator can only be
+    // incremented once more before reaching the end; it must not compare equal to default_sentinel
+    // in between.
+    istringstream is{"1 0 2"};
+    auto plain = views::istream<int>(is) | views::lazy_split(0);
+    auto j     = plain.begin();
+    assert(j != plain.end());
+    assert(ranges::equal(*j, views::single(1)));
+    assert(j != plain.end());
+    ++j;
+    assert(j != plain.end());
+    assert(ranges::equal(*j, views::single(2)));
+    assert(j != plain.end());
+    ++j;
+    assert(j == plain.end());
+}
+
 int main() {
     static_assert(instantiation_test());
     instantiation_test();
@@ -392,4 +411,6 @@ int main() {
 
     static_assert(test_lwg_3904());
     assert(test_lwg_3904());
+
+    test_lwg_4249();
 }
