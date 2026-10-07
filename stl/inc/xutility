@@ -6099,16 +6099,24 @@ namespace ranges {
 #endif // _HAS_CXX20
 
 template <class _Elem1, class _Elem2>
+constexpr bool _Lex_compare_memcmp_is_safe_elements =
+    sizeof(_Elem1) == 1 && sizeof(_Elem2) == 1
+    && conjunction_v<_Is_character_or_bool<_Elem1>, _Is_character_or_bool<_Elem2>, is_unsigned<_Elem1>,
+        is_unsigned<_Elem2>>;
+
+template <class _Elem1, class _Elem2>
 constexpr bool _Lex_compare_memcmp_classify_elements =
 #if _VECTORIZED_MISMATCH
     is_integral_v<_Elem1> && is_integral_v<_Elem2> && sizeof(_Elem1) == sizeof(_Elem2)
     && is_unsigned_v<_Elem1> == is_unsigned_v<_Elem2>;
 #else // ^^^ _VECTORIZED_MISMATCH / !_VECTORIZED_MISMATCH vvv
-    conjunction_v<_Is_character_or_bool<_Elem1>, _Is_character_or_bool<_Elem2>, is_unsigned<_Elem1>,
-        is_unsigned<_Elem2>>;
+    _Lex_compare_memcmp_is_safe_elements<_Elem1, _Elem2>;
 #endif // ^^^ !_VECTORIZED_MISMATCH ^^^
 
 #ifdef __cpp_lib_byte
+template <>
+inline constexpr bool _Lex_compare_memcmp_is_safe_elements<byte, byte> = true;
+
 template <>
 inline constexpr bool _Lex_compare_memcmp_classify_elements<byte, byte> = true;
 #endif // defined(__cpp_lib_byte)
