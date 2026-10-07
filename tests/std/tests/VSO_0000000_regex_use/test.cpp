@@ -2948,6 +2948,7 @@ void test_gh_6475() {
     // GH-6475: Accelerate greedy wildcard loops
     for (syntax_option_type options : {ECMAScript, extended}) {
         g_regexTester.should_not_match("", ".+", options);
+        g_regexTester.should_match("a", ".+", options);
         g_regexTester.should_match("b", ".{0}b", options);
         g_regexTester.should_not_match("ab", ".{0}b", options);
         g_regexTester.should_match("ab", ".{0,1}b", options);
@@ -2957,6 +2958,9 @@ void test_gh_6475() {
         g_regexTester.should_not_match("aab", ".{1}b", options);
         g_regexTester.should_not_match("aaab", ".{1,2}b", options);
         g_regexTester.should_match("aaab", ".{1,3}b", options);
+        g_regexTester.should_not_match("ab", ".{2,}b", options);
+        g_regexTester.should_match("aab", ".{2,}b", options);
+        g_regexTester.should_match("aaab", ".{2,}b", options);
 
         for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
             const auto c = static_cast<char>(i);
@@ -2983,6 +2987,11 @@ void test_gh_6475() {
         {
             test_regex lower_bounded_greedy_dot_rep(&g_regexTester, ".{4,1000}", options);
             lower_bounded_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex lower_bounded_and_upper_unlimited_greedy_dot_rep(&g_regexTester, ".{4,}", options);
+            lower_bounded_and_upper_unlimited_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
         }
 
         {
