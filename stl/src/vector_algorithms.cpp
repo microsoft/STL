@@ -2820,8 +2820,8 @@ namespace {
             return _Res;
         }
 
-        template <class _Traits, bool _Use_signed_type>
-        auto _H_min_wrap(const auto _Vals) noexcept {
+        template <class _Traits, bool _Use_signed_type, class _Ty>
+        auto _H_min_wrap(const _Ty _Vals) noexcept {
             if constexpr (_Use_signed_type) {
                 return _Traits::_H_min(_Vals);
             } else {
@@ -2829,8 +2829,8 @@ namespace {
             }
         }
 
-        template <class _Traits, bool _Use_signed_type>
-        auto _H_max_wrap(const auto _Vals) noexcept {
+        template <class _Traits, bool _Use_signed_type, class _Ty>
+        auto _H_max_wrap(const _Ty _Vals) noexcept {
             if constexpr (_Use_signed_type) {
                 return _Traits::_H_max(_Vals);
             } else {
