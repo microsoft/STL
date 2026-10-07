@@ -4320,7 +4320,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                 } else {
                     const _Elem _Ch = *_Tgt_state._Cur;
                     if (_Sflags & regex_constants::_Any_posix) {
-                        if (_Ch == _Elem()) {
+                        if (_Ch == _Elem{}) {
                             _Failed = true;
                         }
                     } else if (_STD _Is_ecmascript_line_terminator(_Ch)) {
@@ -4564,7 +4564,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                                 _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
                                 break;
                             case _Fl_rep_dot_posix:
-                                _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem());
+                                _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem{});
                                 break;
                             default:
                                 _Xregex_error(regex_constants::error_complexity); // this should not happen
