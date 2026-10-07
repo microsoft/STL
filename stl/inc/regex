@@ -4552,7 +4552,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                             _Sav._Loop_length = static_cast<_Iter_diff_t<_It>>(1);
                             _It _Last         = _End;
                             if (_Node->_Max != -1) {
-                                auto _Dist = _STD distance(_Cur, _Last);
+                                const auto _Dist = _STD distance(_Cur, _Last);
                                 if (_Dist > _Node->_Max) {
                                     _Last = _Cur;
                                     _STD advance(_Last, static_cast<_Iter_diff_t<_It>>(_Node->_Max));
