@@ -208,9 +208,18 @@ namespace {
     };
 
     [[nodiscard]] _Transcode_result _Transcode_utf8_string(
-        _Allocated_string& _Dst_str, const _Minimal_string_view _Src_str) noexcept {
+        _Allocated_string& _Dst_str, const _Minimal_string_view _Src_str, const bool _Append_newline) noexcept {
         // MultiByteToWideChar() fails if strLength == 0.
         if (_Src_str._Empty()) {
+            if (_Append_newline) {
+                if (!_Dst_str._Grow(1)) {
+                    return __std_win_error::_Not_enough_memory;
+                }
+
+                _Dst_str._Data()[0] = L'\n';
+                return _Minimal_wstring_view{_Dst_str._Data(), 1};
+            }
+
             return {};
         }
 
@@ -224,7 +233,8 @@ namespace {
             return static_cast<__std_win_error>(GetLastError());
         }
 
-        const bool _Has_space = _Dst_str._Grow(static_cast<size_t>(_Num_chars_required));
+        const size_t _Num_chars_required_size = static_cast<size_t>(_Num_chars_required);
+        const bool _Has_space = _Dst_str._Grow(_Num_chars_required_size + static_cast<size_t>(_Append_newline));
         if (!_Has_space) {
             return __std_win_error::_Not_enough_memory;
         }
@@ -237,7 +247,12 @@ namespace {
             _CSTD abort();
         }
 
-        return _Minimal_wstring_view{_Dst_str._Data(), static_cast<size_t>(_Conversion_result)};
+        const size_t _Num_chars_written = static_cast<size_t>(_Conversion_result);
+        if (_Append_newline) {
+            _Dst_str._Data()[_Num_chars_written] = L'\n';
+        }
+
+        return _Minimal_wstring_view{_Dst_str._Data(), _Num_chars_written + static_cast<size_t>(_Append_newline)};
     }
 
     [[nodiscard]] __std_win_error _Write_console(
@@ -251,6 +266,49 @@ namespace {
 
         return __std_win_error::_Success;
     }
+
+    [[nodiscard]] __std_win_error _Print_to_unicode_console(const __std_unicode_console_handle _Console_handle,
+        const char* const _Str, const size_t _Str_size, const bool _Append_newline) noexcept {
+        if (_Console_handle == __std_unicode_console_handle::_Invalid || _Str == nullptr) {
+            return __std_win_error::_Invalid_parameter;
+        }
+
+        const HANDLE _Actual_console_handle = reinterpret_cast<HANDLE>(_Console_handle);
+
+        // We transcode in fairly large segments of 8,192 bytes per segment,
+        // so one iteration should handle the vast majority of strings.
+        const char* _Remaining_str = _Str;
+        size_t _Remaining_str_size = _Str_size;
+
+        _Minimal_string_view _Curr_str_segment{};
+        _Allocated_string _Allocated_str{};
+        _Transcode_result _Transcoded_str{};
+
+        for (;;) {
+            _Curr_str_segment           = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
+            const bool _Is_last_segment = _Remaining_str_size == _Curr_str_segment._Size();
+            _Transcoded_str =
+                _Transcode_utf8_string(_Allocated_str, _Curr_str_segment, _Append_newline && _Is_last_segment);
+
+            if (!_Transcoded_str._Has_value()) {
+                return _Transcoded_str._Error();
+            }
+
+            const __std_win_error _Write_result = _Write_console(_Actual_console_handle, _Transcoded_str._Value());
+
+            if (_Write_result != __std_win_error::_Success) {
+                return _Write_result;
+            }
+
+            _Remaining_str_size -= _Curr_str_segment._Size();
+
+            if (_Remaining_str_size == 0) {
+                return __std_win_error::_Success;
+            }
+
+            _Remaining_str += _Curr_str_segment._Size();
+        }
+    }
 } // unnamed namespace
 
 extern "C" {
@@ -258,43 +316,13 @@ extern "C" {
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_print_to_unicode_console(
     _In_ const __std_unicode_console_handle _Console_handle, _In_reads_(_Str_size) const char* const _Str,
     _In_ const size_t _Str_size) noexcept {
-    if (_Console_handle == __std_unicode_console_handle::_Invalid || _Str == nullptr) {
-        return __std_win_error::_Invalid_parameter;
-    }
+    return _Print_to_unicode_console(_Console_handle, _Str, _Str_size, false);
+}
 
-    const HANDLE _Actual_console_handle = reinterpret_cast<HANDLE>(_Console_handle);
-
-    // We transcode in fairly large segments of 8,192 bytes per segment,
-    // so one iteration should handle the vast majority of strings.
-    const char* _Remaining_str = _Str;
-    size_t _Remaining_str_size = _Str_size;
-
-    _Minimal_string_view _Curr_str_segment{};
-    _Allocated_string _Allocated_str{};
-    _Transcode_result _Transcoded_str{};
-
-    for (;;) {
-        _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
-        _Transcoded_str   = _Transcode_utf8_string(_Allocated_str, _Curr_str_segment);
-
-        if (!_Transcoded_str._Has_value()) {
-            return _Transcoded_str._Error();
-        }
-
-        const __std_win_error _Write_result = _Write_console(_Actual_console_handle, _Transcoded_str._Value());
-
-        if (_Write_result != __std_win_error::_Success) {
-            return _Write_result;
-        }
-
-        _Remaining_str_size -= _Curr_str_segment._Size();
-
-        if (_Remaining_str_size == 0) {
-            return __std_win_error::_Success;
-        }
-
-        _Remaining_str += _Curr_str_segment._Size();
-    }
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
+    __std_print_to_unicode_console_with_newline(_In_ const __std_unicode_console_handle _Console_handle,
+        _In_reads_(_Str_size) const char* const _Str, _In_ const size_t _Str_size) noexcept {
+    return _Print_to_unicode_console(_Console_handle, _Str, _Str_size, true);
 }
 
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
