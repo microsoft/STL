@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+# Keep shared settings synchronized with contest_asan.yaml.
 ---
   tests-root: '..\..\llvm-project\libcxx\test\std'
   skipped-test-lists-relative-to-tests-root: true
