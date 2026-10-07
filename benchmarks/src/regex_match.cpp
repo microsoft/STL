@@ -45,6 +45,10 @@ void common_args(benchmark::Benchmark* bm) {
     bm->Arg(100)->Arg(200)->Arg(400);
 }
 
+void large_args(benchmark::Benchmark* bm) {
+    bm->Arg(1000)->Arg(10000)->Arg(100000);
+}
+
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*", "a*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*" posix longest, "a*", extended)->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*?", "a*?")->Apply(common_args);
@@ -56,11 +60,8 @@ BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(b|a)*", "(b|a)*")->Apply(common_arg
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*", "(a)(?:b|a)*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(b|a)*", "(a)(b|a)*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*c", "(a)(?:b|a)*c")->Apply(common_args);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, ".*" ecma, ".*")->Arg(1000)->Arg(10000)->Arg(100000);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, ".*" posix any, ".*", extended, match_any)
-    ->Arg(1000)
-    ->Arg(10000)
-    ->Arg(100000);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, ".*" ecma, ".*")->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, ".*" posix any, ".*", extended, match_any)->Apply(large_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, ".*" posix longest, ".*", extended)->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_9a1b, "(?:a*b)*", "(?:a*b)*")->Apply(common_args);
 
