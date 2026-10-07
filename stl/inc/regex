@@ -1283,8 +1283,10 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_rep_branchless    = 0x01000,
     _Fl_rep_str           = 0x02000, // 1 << 13
     _Fl_rep_char          = 0x04000, // 2 << 13
-    // values 3 << 13 through 15 << 13 inclusive are reserved for new special cases to optimize
-    _Fl_rep_known_subtype = 0x04000, // 2 << 13, increase to be equal to the newest special case
+    _Fl_rep_dot_ecma      = 0x06000, // 3 << 13
+    _Fl_rep_dot_posix     = 0x08000, // 4 << 13
+    // values 5 << 13 through 15 << 13 inclusive are reserved for new special cases to optimize
+    _Fl_rep_known_subtype = 0x08000, // 4 << 13, increase to be equal to the newest special case
     _Fl_rep_subtype_mask  = 0x1E000, // 15 << 13, don't change
 };
 
@@ -4256,6 +4258,26 @@ bool _Is_ecmascript_line_terminator(_Elem _Ch) {
     }
 }
 
+template <class _Elem, class _FwdIt>
+_FwdIt _Find_next_ecmascript_line_terminator(_FwdIt _First, _FwdIt _Last) {
+    if constexpr (is_same_v<_Elem, bool>) {
+        return _Last;
+    } else if constexpr (is_integral_v<_Elem>) {
+        if constexpr (sizeof(_Elem) == 1) {
+            static constexpr _Elem _Line_terminators_size_1[] = {
+                static_cast<_Elem>(_Meta_cr), static_cast<_Elem>(_Meta_nl)};
+            return _STD find_first_of(_First, _Last, _Line_terminators_size_1, _STD end(_Line_terminators_size_1));
+        } else {
+            static constexpr _Elem _Line_terminators_size_at_least_2[] = {static_cast<_Elem>(_Meta_cr),
+                static_cast<_Elem>(_Meta_nl), static_cast<_Elem>(_Meta_ls), static_cast<_Elem>(_Meta_ps)};
+            return _STD find_first_of(
+                _First, _Last, _Line_terminators_size_at_least_2, _STD end(_Line_terminators_size_at_least_2));
+        }
+    } else {
+        return _STD find_if(_First, _Last, [](const _Elem& _Ch) { return _STD _Is_ecmascript_line_terminator(_Ch); });
+    }
+}
+
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
     bool _Failed = false;
@@ -4298,7 +4320,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                 } else {
                     const _Elem _Ch = *_Tgt_state._Cur;
                     if (_Sflags & regex_constants::_Any_posix) {
-                        if (_Ch == _Elem()) {
+                        if (_Ch == _Elem{}) {
                             _Failed = true;
                         }
                     } else if (_STD _Is_ecmascript_line_terminator(_Ch)) {
@@ -4501,23 +4523,19 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     if (_Greedy && _Rep_subtype != 0 && _Rep_subtype <= _Fl_rep_known_subtype) {
                         _It _Min_pos = _Tgt_state._Cur;
 
-                        const auto _Nstr      = static_cast<const _Node_str<_Elem>*>(_Next);
-                        const auto _Str_first = _Nstr->_Data._Str();
-                        const auto _Size      = _Nstr->_Data._Size();
-                        const auto _Str_last  = _Str_first + _Size;
-
-                        _Sav._Loop_length = static_cast<ptrdiff_t>(_Size);
-
                         _Iter_diff_t<_It> _Count{};
                         int _Loop_idx = 0;
 
                         _It _Prev = _Tgt_state._Cur;
                         _It _Cur  = _Tgt_state._Cur;
-                        _It _Res0 = _Tgt_state._Cur;
 
-                        switch (static_cast<int>(_Rep_subtype)) {
-                        case _Fl_rep_char:
-                        case _Fl_rep_str:
+                        if (_Rep_subtype == _Fl_rep_char || _Rep_subtype == _Fl_rep_str) {
+                            const auto _Nstr      = static_cast<const _Node_str<_Elem>*>(_Next);
+                            const auto _Str_first = _Nstr->_Data._Str();
+                            const auto _Size      = _Nstr->_Data._Size();
+                            const auto _Str_last  = _Str_first + _Size;
+                            _Sav._Loop_length     = static_cast<_Iter_diff_t<_It>>(_Size);
+                            _It _Res0;
                             while (_Loop_idx != _Node->_Max
                                    && (_Res0 = _STD _Compare_translate_left(
                                            _Cur, _End, _Str_first, _Str_last, _Traits, _Sflags, _Count))
@@ -4530,9 +4548,38 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                                     }
                                 }
                             }
-                            break;
-                        default:
-                            _Xregex_error(regex_constants::error_complexity); // this should not happen
+                        } else {
+                            _Sav._Loop_length = static_cast<_Iter_diff_t<_It>>(1);
+                            _It _Last         = _End;
+                            if (_Node->_Max != -1) {
+                                const auto _Dist = _STD distance(_Cur, _Last);
+                                if (_Dist > _Node->_Max) {
+                                    _Last = _Cur;
+                                    _STD advance(_Last, static_cast<_Iter_diff_t<_It>>(_Node->_Max));
+                                }
+                            }
+
+                            switch (static_cast<int>(_Rep_subtype)) {
+                            case _Fl_rep_dot_ecma:
+                                _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
+                                break;
+                            case _Fl_rep_dot_posix:
+                                _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem{});
+                                break;
+                            default:
+                                _Xregex_error(regex_constants::error_complexity); // this should not happen
+                            }
+
+                            _Count    = _STD distance(_Tgt_state._Cur, _Cur);
+                            _Loop_idx = _Count >= INT_MAX ? INT_MAX : static_cast<int>(_Count);
+                            if (_Loop_idx >= _Node->_Min && _Node->_Min != 0) {
+                                _STD advance(_Min_pos, static_cast<_Iter_diff_t<_It>>(_Node->_Min - 1));
+                            }
+
+                            if (_Loop_idx != 0) {
+                                _Prev = _Cur;
+                                --_Prev;
+                            }
                         }
 
                         _Increase_complexity_count(_Count);
@@ -5023,11 +5070,8 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip2(
     _It _First, const _It _Last, const _Node_base* _Nx, const unsigned int _Recursion_depth) {
     // skip until possible match
     // assumes --_First is valid
-    static constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
-    static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
-        static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
-    constexpr unsigned int _Max_recursion_depth          = 50U;
-    constexpr short _Max_lookahead                       = 512;
+    constexpr unsigned int _Max_recursion_depth = 50U;
+    constexpr short _Max_lookahead              = 512;
 
     while (_First != _Last && _Nx) { // check current node
         switch (_Nx->_Kind) { // handle current node's type
@@ -5035,19 +5079,12 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip2(
             break;
 
         case _N_bol: // check for beginning anchor
-            if (_Sflags & regex_constants::multiline) {
+            if ((_Sflags & regex_constants::multiline) != 0) {
                 // multiline mode: check for embedded line terminator
                 // return iterator to character just after the newline; for input like "\nabc"
                 // matching "^abc", _First could be pointing at 'a', so we need to check --_First for '\n'
                 if (!_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_First))) {
-                    if constexpr (sizeof(_Elem) == 1) {
-                        _First =
-                            _STD find_first_of(_First, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
-                    } else {
-                        _First = _STD find_first_of(
-                            _First, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
-                    }
-
+                    _First = _STD _Find_next_ecmascript_line_terminator<_Elem>(_First, _Last);
                     if (_First != _Last) {
                         ++_First;
                     }
@@ -5060,14 +5097,9 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip2(
             }
 
         case _N_eol:
-            if (_Sflags & regex_constants::multiline) {
+            if ((_Sflags & regex_constants::multiline) != 0) {
                 // multiline mode: matches at next line terminator or end of input
-                if constexpr (sizeof(_Elem) == 1) {
-                    return _STD find_first_of(_First, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
-                } else {
-                    return _STD find_first_of(
-                        _First, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
-                }
+                return _STD _Find_next_ecmascript_line_terminator<_Elem>(_First, _Last);
             } else {
                 return _Last; // non-multiline mode: matches at end of input or not at all
             }
@@ -6145,6 +6177,11 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                         }
                         break;
 
+                    case _N_dot:
+                        _Outer_rep->_Flags |=
+                            (this->_Flags & regex_constants::_Any_posix) != 0 ? _Fl_rep_dot_posix : _Fl_rep_dot_ecma;
+                        break;
+
                     case _N_nop:
                     case _N_bol:
                     case _N_eol:
@@ -6159,7 +6196,6 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                     case _N_assert:
                     case _N_neg_assert:
                     case _N_wbound:
-                    case _N_dot:
                     case _N_begin:
                     case _N_endif:
                     case _N_end:
