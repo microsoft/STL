@@ -2117,8 +2117,10 @@ namespace ranges {
         static constexpr move_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Output) {
             const auto _Count = _RANGES _Idl_distance(_Range);
             auto _First       = _RANGES begin(_Range);
-            auto _UResult = _RANGES _Move_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _STD _Get_unwrapped_n(_STD move(_Output), _Count));
+            auto [_UFirst, _ULast] = _RANGES _Get_final_range_endpoints_unwrapped(
+                _Range, _RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Count);
+            auto _UResult = _RANGES _Move_unchecked(
+                _STD move(_UFirst), _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
 
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
