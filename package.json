@@ -25,20 +25,20 @@
   },
   "homepage": "https://github.com/microsoft/STL/tree/gh-pages#readme",
   "dependencies": {
-    "@octokit/graphql": "^9.0.4",
+    "@octokit/graphql": "^9.0.5",
     "@types/cli-progress": "^3.11.6",
-    "@types/luxon": "^3.7.4",
-    "@types/node": "^26.2.0",
+    "@types/luxon": "^3.7.6",
+    "@types/node": "^26.6.3",
     "@types/yargs": "^17.0.35",
     "chart.js": "^4.5.1",
     "chartjs-adapter-luxon": "^1.3.1",
     "cli-progress": "^3.12.0",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.5",
     "esbuild": "^0.28.2",
     "luxon": "^3.7.2",
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.9",
     "serve": "^14.2.6",
     "typescript": "^7.0.2",
-    "yargs": "^18.1.0"
+    "yargs": "^18.2.0"
   }
 }
