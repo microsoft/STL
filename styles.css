@@ -1,0 +1,256 @@
+/* Copyright (c) Microsoft Corporation. */
+/* SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light dark;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--base-size-16);
+  font-family: var(--fontStack-sansSerif);
+  font-size: var(--text-body-size-large);
+  line-height: var(--text-body-lineHeight-large);
+  color: var(--fgColor-default);
+  background-color: var(--bgColor-default);
+  overflow-wrap: break-word;
+}
+
+h1,
+h2 {
+  margin: var(--base-size-24) 0 var(--base-size-16);
+  padding-bottom: 0.3em;
+  border-bottom: var(--borderWidth-thin) solid var(--borderColor-muted);
+  font-weight: var(--base-text-weight-semibold);
+  line-height: var(--base-text-lineHeight-tight);
+}
+
+h1 {
+  font-size: 2em;
+}
+
+h2 {
+  font-size: 1.5em;
+}
+
+body > :first-child {
+  margin-top: 0;
+}
+
+body > :last-child {
+  margin-bottom: 0;
+}
+
+p,
+ul {
+  margin: 0 0 var(--base-size-16);
+}
+
+ul {
+  padding-left: 2em;
+}
+
+ul ul {
+  margin-bottom: 0;
+}
+
+li + li {
+  margin-top: 0.25em;
+}
+
+hr {
+  height: 0.25em;
+  margin: var(--base-size-24) 0;
+  padding: 0;
+  border: 0;
+  background-color: var(--borderColor-default);
+}
+
+a {
+  color: var(--fgColor-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:focus-visible,
+.btn:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+a:focus-visible {
+  outline-offset: 0;
+}
+
+@media (forced-colors: active) {
+  body {
+    --fgColor-onEmphasis: LinkText;
+    --fgColor-accent: Highlight;
+  }
+}
+
+code {
+  margin: 0;
+  padding: 0.2em 0.4em;
+  border-radius: var(--borderRadius-medium);
+  font-family: var(--fontStack-monospace);
+  font-size: 85%;
+  white-space: break-spaces;
+  background-color: var(--bgColor-neutral-muted);
+}
+
+.btn {
+  position: relative;
+  display: inline-block;
+  padding: 5px var(--base-size-16);
+  border: var(--borderWidth-thin) solid var(--button-default-borderColor-rest);
+  border-radius: var(--borderRadius-medium);
+  font-family: inherit;
+  font-size: var(--text-body-size-medium);
+  font-weight: var(--base-text-weight-medium);
+  line-height: var(--base-size-20);
+  color: var(--button-default-fgColor-rest);
+  background-color: var(--button-default-bgColor-rest);
+  vertical-align: middle;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  appearance: none;
+  transition:
+    color 80ms,
+    background-color 80ms,
+    border-color 80ms;
+  transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.btn:hover {
+  border-color: var(--button-default-borderColor-hover);
+  background-color: var(--button-default-bgColor-hover);
+  transition-duration: 0.1s;
+}
+
+.btn:active {
+  border-color: var(--button-default-borderColor-active);
+  background-color: var(--button-default-bgColor-active);
+  transition: none;
+}
+
+.btn:disabled {
+  border-color: var(--button-default-borderColor-disabled);
+  color: var(--fgColor-disabled);
+  background-color: var(--button-default-bgColor-disabled);
+  cursor: default;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn:disabled {
+    color: color-mix(in srgb, var(--fgColor-disabled) 60%, transparent);
+  }
+}
+
+.Counter,
+.Label {
+  display: inline-block;
+  padding: 0 var(--base-size-6);
+  border: var(--borderWidth-thin) solid var(--counter-borderColor);
+  border-radius: 2em;
+  font-size: var(--text-body-size-small);
+  font-weight: var(--base-text-weight-medium);
+  line-height: calc(var(--base-size-20) - var(--borderWidth-thin) * 2);
+}
+
+.Counter {
+  min-width: var(--base-size-20);
+  color: var(--fgColor-default);
+  background-color: var(--bgColor-neutral-muted);
+  text-align: center;
+}
+
+.Counter:empty {
+  display: none;
+}
+
+.Counter--primary {
+  color: var(--fgColor-onEmphasis);
+  background-color: var(--bgColor-neutral-emphasis);
+}
+
+.bgColor-emphasis {
+  background-color: var(--bgColor-emphasis);
+}
+
+.bgColor-severe-emphasis {
+  background-color: var(--bgColor-severe-emphasis);
+}
+
+.bgColor-sponsors-emphasis {
+  background-color: var(--bgColor-sponsors-emphasis);
+}
+
+.bgColor-done-emphasis {
+  background-color: var(--bgColor-done-emphasis);
+}
+
+.bgColor-accent-emphasis {
+  background-color: var(--bgColor-accent-emphasis);
+}
+
+.bgColor-success-emphasis {
+  background-color: var(--bgColor-success-emphasis);
+}
+
+.bgColor-danger-emphasis {
+  background-color: var(--bgColor-danger-emphasis);
+}
+
+.bgColor-attention-emphasis {
+  background-color: var(--bgColor-attention-emphasis);
+}
+
+.fgColor-onEmphasis {
+  color: var(--fgColor-onEmphasis);
+}
+
+.Label {
+  border-radius: var(--borderRadius-full);
+  white-space: nowrap;
+}
+
+.Label--danger {
+  border-color: var(--borderColor-danger-emphasis);
+  color: var(--fgColor-danger);
+}
+
+.Label--accent {
+  border-color: var(--borderColor-accent-emphasis);
+  color: var(--fgColor-accent);
+}
+
+.Label--done {
+  border-color: var(--borderColor-done-emphasis);
+  color: var(--fgColor-done);
+}
+
+.Label--attention {
+  border-color: var(--borderColor-attention-emphasis);
+  color: var(--fgColor-attention);
+}
+
+.Label--severe {
+  border-color: var(--borderColor-severe-emphasis);
+  color: var(--fgColor-severe);
+}
+
+.Label--success {
+  border-color: var(--borderColor-success-emphasis);
+  color: var(--fgColor-success);
+}
