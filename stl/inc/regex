@@ -2870,12 +2870,13 @@ _OutIt _Regex_replace1(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_
 
         _Result = _Matches._Format1(_Result, _Fmt.data(), _Fmt.data() + _Fmt.size(), _Flags);
 
-        _Pos = _Matches[0].second;
-        if (_Pos == _Last || (_Flgs & regex_constants::format_first_only)) {
+        _Pos                    = _Matches[0].second;
+        const bool _Zero_length = _Matches[0].first == _Pos;
+        if ((_Zero_length && _Pos == _Last) || (_Flgs & regex_constants::format_first_only) != 0) {
             break;
         }
 
-        if (_Matches[0].first == _Matches[0].second) {
+        if (_Zero_length) {
             _Not_null = regex_constants::_Match_not_null;
         } else { // non-null match, recognize earlier text
             _Not_null = regex_constants::match_flag_type{};

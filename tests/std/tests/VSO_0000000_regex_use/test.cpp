@@ -2944,6 +2944,19 @@ void test_gh_6464() {
     }
 }
 
+void test_gh_6480() {
+    // GH-6480: regex_replace() implementation divergence for zero-length matches at the end
+    // regex_replace() should replace final zero-length match at the end of the input string
+    g_regexTester.should_replace_to("", "a?", "X", match_default, "X");
+    g_regexTester.should_replace_to("a", "a?", "X", match_default, "XX");
+    g_regexTester.should_replace_to("bab", "b*", "X", match_default, "XXaXX");
+    g_regexTester.should_replace_to("bbabb", "b*", "X", match_default, "XXaXX");
+    g_regexTester.should_replace_to("bab", "b+", "X", match_default, "XaX");
+    g_regexTester.should_replace_to("bbabb", "b+", "X", match_default, "XaX");
+    g_regexTester.should_replace_to("bbabb", "b*$", "X", match_default, "bbaXX");
+    g_regexTester.should_replace_to("aaabbb", "b*$", "X", match_default, "aaaXX");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -3018,6 +3031,7 @@ int main() {
     test_gh_6359();
     test_gh_6423();
     test_gh_6464();
+    test_gh_6480();
 
     return g_regexTester.result();
 }
