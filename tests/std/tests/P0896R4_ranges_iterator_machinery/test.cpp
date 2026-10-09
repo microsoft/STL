@@ -386,6 +386,9 @@ struct increment_ops {
         requires (I < 8 || I >= 10);
     Post operator++(int)
         requires (I != 10);
+    Post operator++(int)
+        requires (I == 10)
+    = delete;
 };
 
 template <std::size_t I>
@@ -430,6 +433,9 @@ struct iterator_archetype : weakly_incrementable_archetype<I> {
         requires (I > 9);
     void operator++(int)
         requires (I != 10);
+    void operator++(int)
+        requires (I == 10)
+    = delete;
 
     void operator*()
         requires (I == 11);
@@ -1471,9 +1477,7 @@ namespace iterator_concept_winc_test {
     constexpr bool test(std::index_sequence<Is...>) {
         static_assert(
             std::same_as<std::index_sequence<Is...>, std::make_index_sequence<weakly_incrementable_archetype_max>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!weakly_incrementable<weakly_incrementable_archetype<Is>> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(weakly_incrementable<weakly_incrementable_archetype<weakly_incrementable_archetype_max>>);
         return true;
     }
@@ -1512,9 +1516,7 @@ namespace iterator_concept_iterator_test {
     template <std::size_t... Is>
     constexpr bool test(std::index_sequence<Is...>) {
         static_assert(std::same_as<std::index_sequence<Is...>, std::make_index_sequence<iterator_archetype_max>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!input_or_output_iterator<iterator_archetype<Is>> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(input_or_output_iterator<iterator_archetype<iterator_archetype_max>>);
         return true;
     }
@@ -1544,10 +1546,8 @@ namespace iterator_concept_sentinel_test {
 
     template <std::size_t I, std::size_t J>
     constexpr bool test_one_pair() {
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         constexpr bool expected = I >= sentinel_archetype_max && J >= iterator_archetype_max;
         static_assert(sentinel_for<sentinel_archetype<I>, iterator_archetype<J>> == expected);
-#endif // ^^^ no workaround ^^^
         return true;
     }
 
@@ -1574,10 +1574,8 @@ namespace iterator_concept_sizedsentinel_test {
 
     template <std::size_t I, std::size_t J>
     constexpr bool test_one_pair() {
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         constexpr bool expected = I >= sized_sentinel_archetype_max && J >= iterator_archetype_max;
         static_assert(sized_sentinel_for<sized_sentinel_archetype<I>, iterator_archetype<J>> == expected);
-#endif // ^^^ no workaround ^^^
         return true;
     }
 
@@ -1603,9 +1601,7 @@ namespace iterator_concept_input_test {
     template <std::size_t... Is>
     constexpr bool test(std::index_sequence<Is...>) {
         static_assert(std::same_as<std::index_sequence<Is...>, std::make_index_sequence<input_iterator_archetype_max>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!input_iterator<input_iterator_archetype<Is>> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(input_iterator<input_iterator_archetype<input_iterator_archetype_max>>);
         return true;
     }
@@ -1628,12 +1624,10 @@ namespace iterator_concept_output_test {
     constexpr bool test(std::index_sequence<Is...>) {
         static_assert(
             std::same_as<std::index_sequence<Is...>, std::make_index_sequence<output_iterator_archetype_max>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!output_iterator<output_iterator_archetype<Is>, int> && ...));
         static_assert((!output_iterator<output_iterator_archetype<Is>, int const> && ...));
         static_assert((!output_iterator<output_iterator_archetype<Is>, int&> && ...));
         static_assert((!output_iterator<output_iterator_archetype<Is>, int const&> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int>);
         static_assert(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int const>);
         static_assert(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int&>);
@@ -1881,9 +1875,7 @@ namespace unreachable_sentinel_test {
         static_assert(42 != unreachable_sentinel);
         static_assert(noexcept(42 != unreachable_sentinel));
 
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!Comparable<weakly_incrementable_archetype<Is>> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(Comparable<weakly_incrementable_archetype<weakly_incrementable_archetype_max>>);
 
         return true;
