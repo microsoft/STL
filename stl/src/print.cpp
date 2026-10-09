@@ -34,7 +34,7 @@ typedef struct _FILE_FS_DEVICE_INFORMATION {
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_fsinfoclass
 #define FileFsDeviceInformation 4
 
-inline bool _Is_console_handle(HANDLE handle) {
+static bool _Is_console_handle(HANDLE handle) {
     IO_STATUS_BLOCK iosb;
     FILE_FS_DEVICE_INFORMATION info;
     const auto status = NtQueryVolumeInformationFile(handle, &iosb, &info, sizeof(info), FileFsDeviceInformation);
