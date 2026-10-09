@@ -588,7 +588,7 @@ static_assert(!CanDestroyN<const char*>);
 static_assert(!CanDestroyN<volatile char*>);
 static_assert(!CanDestroyN<const volatile char*>);
 
-#ifdef __clang__ // TRANSITION, DevCom-10642767 (MSVC), DevCom-10896316 (EDG)
+#ifndef __EDG__ // TRANSITION, DevCom-10896316 (EDG)
 // Test that destroy, destroy_at, and destroy_n properly destroy trivially destructible objects
 // during constant evaluation.
 // After such destruction, further access will cause core language undefined behavior,
