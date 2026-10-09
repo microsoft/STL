@@ -1475,13 +1475,9 @@ namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
     static_assert(default_initializable<int>);
-#ifndef __EDG__ // TRANSITION, VSO-1898941
     static_assert(!default_initializable<int const>);
-#endif // ^^^ no workaround ^^^
     static_assert(default_initializable<int volatile>);
-#ifndef __EDG__ // TRANSITION, VSO-1898941
     static_assert(!default_initializable<int const volatile>);
-#endif // ^^^ no workaround ^^^
     static_assert(default_initializable<double>);
     static_assert(!default_initializable<void>);
 
@@ -1494,9 +1490,7 @@ namespace test_default_initializable {
     static_assert(!default_initializable<int[]>);
     static_assert(!default_initializable<char[]>);
     static_assert(!default_initializable<char[][3]>);
-#ifndef __EDG__ // TRANSITION, VSO-1898941
     static_assert(!default_initializable<int const[2]>);
-#endif // ^^^ no workaround ^^^
 
     static_assert(!default_initializable<int&>);
     static_assert(!default_initializable<int const&>);
