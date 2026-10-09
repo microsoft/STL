@@ -37,10 +37,7 @@ extern "C" {
         return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Invalid_parameter};
     }
 
-    // We can check if _Console_handle actually refers to a console or not by checking the
-    // return value of GetConsoleMode().
-    DWORD _Console_mode;
-    const bool _Is_unicode_console = GetConsoleMode(_Console_handle, &_Console_mode) != 0;
+    const bool _Is_unicode_console = GetFileType(_Console_handle) == FILE_TYPE_CHAR;
 
     if (!_Is_unicode_console) {
         return __std_unicode_console_retrieval_result{._Error = __std_win_error::_File_not_found};
