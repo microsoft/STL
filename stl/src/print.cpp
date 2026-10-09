@@ -9,10 +9,12 @@
 #include <internal_shared.h>
 #include <io.h>
 #include <type_traits>
-#include <winternl.h>
 
-#include <Windows.h>
+// clang-format off
+#include <windows.h>
+#include <winternl.h>
 #include <winioctl.h>
+// clang-format on
 
 #pragma comment(lib, "ntdll.lib")
 
