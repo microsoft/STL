@@ -28,7 +28,7 @@ extern "C" {
         // This happens in apps whose Subsystem is Windows, as well as in apps whose Subsystem is Console and whose
         // Console Allocation Policy is set to detached, see
         // https://learn.microsoft.com/en-us/windows/console/console-allocation-policy .
-        // In that case, this FILE* has no associated console HANDLE.
+        // In that case, this FILE* has no associated console HANDLE.
 
         return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Not_supported};
     } else if (_Fd == -1) {
