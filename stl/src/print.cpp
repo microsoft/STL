@@ -40,7 +40,7 @@ static bool _Is_console_handle(HANDLE handle) {
     IO_STATUS_BLOCK iosb;
     FILE_FS_DEVICE_INFORMATION info;
     const auto status = NtQueryVolumeInformationFile(handle, &iosb, &info, sizeof(info), FileFsDeviceInformation);
-    return (status >= 0) & (info.DeviceType == FILE_DEVICE_CONSOLE);
+    return (status >= 0) && (info.DeviceType == FILE_DEVICE_CONSOLE);
 }
 
 extern "C" {
