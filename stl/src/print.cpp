@@ -10,7 +10,38 @@
 #include <io.h>
 #include <type_traits>
 
-#include <Windows.h>
+// clang-format off
+#include <windows.h>
+#include <winternl.h>
+#include <winioctl.h>
+// clang-format on
+
+#pragma comment(lib, "ntdll.lib")
+
+extern "C" {
+
+// Exported by ntdll.lib and can most efficiently query whether a HANDLE references a console.
+// Since the user mode header isn't provided, all needed declarations are declared manually.
+NTSYSAPI NTSTATUS NTAPI NtQueryVolumeInformationFile(
+    HANDLE handle, PIO_STATUS_BLOCK ioStatus, PVOID information, ULONG length, ULONG informationClass);
+
+} // extern "C"
+
+// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_fs_device_information
+typedef struct _FILE_FS_DEVICE_INFORMATION {
+    DEVICE_TYPE DeviceType;
+    ULONG Characteristics;
+} FILE_FS_DEVICE_INFORMATION, *PFILE_FS_DEVICE_INFORMATION;
+
+// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_fsinfoclass
+#define FileFsDeviceInformation 4
+
+static bool _Is_console_handle(HANDLE handle) {
+    IO_STATUS_BLOCK iosb;
+    FILE_FS_DEVICE_INFORMATION info;
+    const auto status = NtQueryVolumeInformationFile(handle, &iosb, &info, sizeof(info), FileFsDeviceInformation);
+    return (status >= 0) && (info.DeviceType == FILE_DEVICE_CONSOLE);
+}
 
 extern "C" {
 
@@ -37,10 +68,7 @@ extern "C" {
         return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Invalid_parameter};
     }
 
-    // We can check if _Console_handle actually refers to a console or not by checking the
-    // return value of GetConsoleMode().
-    DWORD _Console_mode;
-    const bool _Is_unicode_console = GetConsoleMode(_Console_handle, &_Console_mode) != 0;
+    const bool _Is_unicode_console = _Is_console_handle(_Console_handle);
 
     if (!_Is_unicode_console) {
         return __std_unicode_console_retrieval_result{._Error = __std_win_error::_File_not_found};
