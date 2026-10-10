@@ -4541,20 +4541,30 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                         _Failed         = _Node->_Min > _Loop_idx;
                         _Tgt_state._Cur = _Cur;
                         if (!_Failed && _Loop_idx != 0) {
-                            _Rx_unwind_ops _Code;
-                            if (_Node->_Simple_loop == 1) {
-                                _Code = _Node->_Min == 0 ? _Rx_unwind_ops::_Loop_simple_greedy_firstrep
-                                                         : _Rx_unwind_ops::_Do_nothing;
-                            } else {
-                                _Code = _Node->_Min == 0 ? _Rx_unwind_ops::_Loop_greedy
-                                                         : _Rx_unwind_ops::_Loop_restore_vals;
+                            // Usually, the loop variables _Loop_frame_idx and _Loop_idx
+                            // must be restored if a loop is not simple.
+                            // But here, we do not have to bother restoring their values
+                            // by pushing _Loop_greedy or _Loop_restore_vals frames on the stack:
+                            // * _Loop_frame_idx is only used by _N_end_rep's processing.
+                            // * _Loop_idx is only used by _N_end_rep's processing
+                            //   and when backtracking non-greedy loops.
+                            // Since the loops handled here are greedy and
+                            // avoiding _N_end_rep's processing is the point of this code,
+                            // we can skip restoring _Loop_frame_idx and _Loop_idx
+                            // and use the simpler unwinding opcodes
+                            // _Loop_simple_greedy_firstrep and _Do_nothing instead.
+                            const _Rx_unwind_ops _Code = _Node->_Min == 0 ? _Rx_unwind_ops::_Loop_simple_greedy_firstrep
+                                                                          : _Rx_unwind_ops::_Do_nothing;
+
+                            const bool _Second_frame_required = _Prev != _Min_pos;
+                            size_t _First_frame_idx{};
+                            if (_Code != _Rx_unwind_ops::_Do_nothing || _Second_frame_required) {
+                                _First_frame_idx               = _Push_frame(_Code, _Node);
+                                _Frames[_First_frame_idx]._Pos = _Min_pos;
                             }
 
-                            auto _First_frame_idx = _Push_frame(_Code, _Node);
-                            auto& _First_frame    = _Frames[_First_frame_idx];
-                            _First_frame._Pos     = _Min_pos;
-                            if (_Prev != _Min_pos) {
-                                auto _Second_frame_idx =
+                            if (_Second_frame_required) {
+                                const auto _Second_frame_idx =
                                     _Push_frame(_Rx_unwind_ops::_Loop_simple_greedy_lastrep, _Node);
                                 auto& _Second_frame               = _Frames[_Second_frame_idx];
                                 _Second_frame._Loop_frame_idx_sav = _First_frame_idx;
