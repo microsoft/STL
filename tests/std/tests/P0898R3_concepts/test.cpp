@@ -2589,7 +2589,7 @@ namespace test_totally_ordered {
     static_assert(test<int[42]>());
     static_assert(test<int(int)>());
 
-#ifndef __EDG__ // TRANSITION, VSO-1898947
+#ifndef __EDG__ // TRANSITION, EDG-267
     static_assert(!test<std::nullptr_t>());
 #endif // ^^^ no workaround ^^^
     static_assert(!test<EmptyClass>());
@@ -2693,7 +2693,7 @@ namespace test_totally_ordered_with {
     static_assert(test<int>());
     static_assert(test<double>());
     static_assert(test<int, double>());
-#ifndef __EDG__ // TRANSITION, VSO-1898947
+#ifndef __EDG__ // TRANSITION, EDG-267
     static_assert(!test<std::nullptr_t>());
 #endif // ^^^ no workaround ^^^
 
