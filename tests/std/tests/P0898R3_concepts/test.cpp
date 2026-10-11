@@ -356,7 +356,7 @@ namespace test_derived_from {
 
     void PrivateDerived::f() {
         // Check these in a member to verify that access doesn't depend on context
-#ifndef __EDG__ // TRANSITION, VSO-1898937
+#ifndef __EDG__ // TRANSITION, EDG-266
         static_assert(!derived_from<PrivateDerived, Middle<0>>);
         static_assert(!derived_from<PrivateDerived, Middle<1>>);
 #endif // ^^^ no workaround ^^^
@@ -1540,12 +1540,12 @@ namespace test_default_initializable {
         int x;
     };
     static_assert(default_initializable<S>);
-#ifndef __EDG__ // TRANSITION, VSO-1898941
+#ifndef __EDG__ // TRANSITION, EDG-266
     static_assert(!default_initializable<S const>);
 #endif // ^^^ no workaround ^^^
 
     // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
-#ifndef __EDG__ // TRANSITION, VSO-1898945
+#ifndef __EDG__ // TRANSITION, EDG-266
     static_assert(!default_initializable<AggregatesExplicitDefault>);
 #endif // ^^^ no workaround ^^^
 } // namespace test_default_initializable
