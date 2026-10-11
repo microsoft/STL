@@ -4670,7 +4670,7 @@ namespace chrono {
     }
 
     namespace _From_stream_adl_only {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-3077350
         void from_stream() = delete; // Block unqualified name lookup
 #else // ^^^ no workaround / workaround vvv
         void from_stream();
