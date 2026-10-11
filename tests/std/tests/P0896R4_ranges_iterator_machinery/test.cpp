@@ -1784,7 +1784,7 @@ namespace incomplete_test {
         };
 
         static_assert(std::sentinel_for<validating_base*, validating_derived*>);
-#ifndef __EDG__ // TRANSITION, DevCom-10581519
+#ifndef __EDG__ // TRANSITION, EDG-269
         static_assert(!std::sized_sentinel_for<validating_base*, validating_derived*>);
 #endif // ^^^ no workaround ^^^
 
