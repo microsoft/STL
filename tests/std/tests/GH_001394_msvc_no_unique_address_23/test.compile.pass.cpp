@@ -72,7 +72,7 @@ static_assert(sizeof((stateless_input_range{} | views::enumerate).begin()) == si
 static_assert(is_empty_v<decltype((stateless_input_range{} | views::enumerate).end())>);
 
 static_assert(sizeof((stateless_fwd_range{} | views::chunk(42)).begin()) == sizeof(ptrdiff_t) * 2);
-#ifndef __EDG__ // TRANSITION, DevCom-10747012
+#ifndef __EDG__ // TRANSITION, EDG-277
 static_assert(sizeof((stateless_fwd_common_range{} | views::chunk(42)).begin()) == sizeof(ptrdiff_t) * 2);
 #endif // ^^^ no workaround ^^^
 
