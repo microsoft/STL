@@ -1354,11 +1354,11 @@ namespace test_expected {
         test_triviality_of_assignment<TrivialityScenario1>();
         test_triviality_of_assignment<TrivialityScenario2>();
         test_triviality_of_assignment<TrivialityScenario3>();
-#ifndef __EDG__ // TRANSITION, VSO-1949451
+#ifndef __EDG__ // TRANSITION, EDG-276
         test_triviality_of_assignment<TrivialityScenario4>();
 #endif // ^^^ no workaround ^^^
         test_triviality_of_assignment<TrivialityScenario5>();
-#ifndef __EDG__ // TRANSITION, VSO-1949451
+#ifndef __EDG__ // TRANSITION, EDG-276
         test_triviality_of_assignment<TrivialityScenario6>();
 #endif // ^^^ no workaround ^^^
     }
