@@ -1423,7 +1423,7 @@ namespace test_constructible_from {
     };
     static_assert(!test<Multiparameter>());
     static_assert(test<Multiparameter, int>());
-#ifndef __EDG__ // TRANSITION, VSO-1898939
+#ifndef __EDG__ // TRANSITION, EDG-270
     static_assert(test<Multiparameter, long>() == is_permissive);
 #endif // ^^^ no workaround ^^^
     static_assert(!test<Multiparameter, double>());
