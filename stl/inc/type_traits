@@ -773,7 +773,7 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool reference_converts_from_tempor
 #endif // _HAS_CXX23
 
 #if _HAS_CXX17
-#ifdef __EDG__ // TRANSITION, VSO-1690654
+#ifdef __EDG__ // TRANSITION, EDG-285
 template <class _Ty>
 struct _Is_aggregate_impl : bool_constant<__is_aggregate(_Ty)> {};
 
