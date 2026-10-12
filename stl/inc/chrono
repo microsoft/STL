@@ -372,7 +372,7 @@ namespace chrono {
         }
 
         constexpr year& operator+=(const years& _Years) noexcept {
-#ifdef __EDG__ // TRANSITION, VSO-1271098
+#ifdef __EDG__ // TRANSITION, EDG-283
             _Year = static_cast<short>(_Year + _Years.count());
 #else // ^^^ workaround / no workaround vvv
             _Year += static_cast<short>(_Years.count());
@@ -380,7 +380,7 @@ namespace chrono {
             return *this;
         }
         constexpr year& operator-=(const years& _Years) noexcept {
-#ifdef __EDG__ // TRANSITION, VSO-1271098
+#ifdef __EDG__ // TRANSITION, EDG-283
             _Year = static_cast<short>(_Year - _Years.count());
 #else // ^^^ workaround / no workaround vvv
             _Year -= static_cast<short>(_Years.count());
