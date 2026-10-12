@@ -2606,7 +2606,7 @@ static_assert(
 static_assert(
     !is_invocable_v<ambiguating_expected_copy_constructor_caller<void, move_only>, const expected<void, move_only>&>);
 
-#ifndef __EDG__ // TRANSITION, VSO-1601179
+#ifndef __EDG__ // TRANSITION, EDG-284
 static_assert(!is_assignable_v<expected<int, char>&, ambiguating_expected_assignment_source<int, char>>);
 static_assert(!is_assignable_v<expected<void, int>&, ambiguating_expected_assignment_source<void, int>>);
 static_assert(!is_assignable_v<expected<move_only, char>&, ambiguating_expected_assignment_source<move_only, char>>);
