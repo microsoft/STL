@@ -365,6 +365,5 @@ class LibcxxTest(STLTest):
     def getTempPaths(self):
         tmpDir = self.getExecDir()
         tmpBase = os.path.join(tmpDir, self.path_in_suite[-1])
-        if tmpBase.endswith('.cpp'):
-            tmpBase = tmpBase[:-4]
+        tmpBase = tmpBase.removesuffix('.cpp')
         return tmpDir, os.path.normpath(tmpBase)
