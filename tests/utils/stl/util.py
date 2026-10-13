@@ -6,7 +6,6 @@
 #
 #===----------------------------------------------------------------------===##
 
-import platform
 import signal
 import subprocess
 import threading
@@ -34,11 +33,6 @@ class ExecuteCommandTimeoutException(Exception):
         self.out = out
         self.err = err
         self.exitCode = exitCode
-
-
-# Close extra file handles on UNIX (on Windows this cannot be done while
-# also redirecting input).
-kUseCloseFDs = not (platform.system() == 'Windows')
 
 
 def decodeOutput(bytes):
@@ -78,7 +72,7 @@ def executeCommand(command, cwd=None, env=None, input=None, timeout=0):
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
-                         env=env, close_fds=kUseCloseFDs)
+                         env=env)
     timerObject = None
     hitTimeOut = False
     try:
