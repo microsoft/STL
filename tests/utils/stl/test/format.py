@@ -8,7 +8,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 import itertools
 import os
 import re
@@ -24,9 +24,9 @@ import stl.util
 
 @dataclass
 class TestStep:
-    cmd: List[str] = field(default_factory=list)
+    cmd: list[str] = field(default_factory=list)
     workDir: os.PathLike = field(default=Path('.'))
-    env: Dict[str, str] = field(default_factory=dict)
+    env: dict[str, str] = field(default_factory=dict)
     shouldFail: bool = field(default=False)
 
 def _mergeEnvironments(currentEnv, otherEnv):
@@ -119,7 +119,7 @@ class STLTestFormat:
         class SharedState:
             execFile: Optional[os.PathLike] = field(default=None)
             execDir: os.PathLike = field(default_factory=Path)
-            env: Dict[str, str] = field(default_factory=dict)
+            env: dict[str, str] = field(default_factory=dict)
 
         execDir, _ = test.getTempPaths()
         shared = SharedState(None, execDir, _mergeEnvironments(litConfig.test_env, test.env))

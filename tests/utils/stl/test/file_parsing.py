@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Optional, Union
 import itertools
 import os
 import re
@@ -19,8 +19,8 @@ _expected_result_entry_cache = dict()
 
 @dataclass
 class _TmpEnvEntry:
-    env: Dict[str, str] = field(default_factory=dict)
-    tags: Set[str] = field(default_factory=set)
+    env: dict[str, str] = field(default_factory=dict)
+    tags: set[str] = field(default_factory=set)
 
 
 @dataclass(frozen=True)
@@ -29,7 +29,7 @@ class EnvEntry:
         object.__setattr__(self, "_env", frozendict(tmp_env.env))
         object.__setattr__(self, "_env_tags", tmp_env.tags)
 
-    def hasAnyTag(self, tags: Set[str]) -> bool:
+    def hasAnyTag(self, tags: set[str]) -> bool:
         return bool(self._env_tags & tags)
 
     def getEnvVal(self, key: str, default: Optional[str] = None) \
@@ -37,13 +37,13 @@ class EnvEntry:
         return self._env.get(key, default)
 
     _env: frozendict[str, str]
-    _env_tags: Set[str]
+    _env_tags: set[str]
 
 
 @dataclass
 class _ParseCtx:
-    current: List[_TmpEnvEntry] = field(default_factory=list)
-    result: List[List[_TmpEnvEntry]] = field(default_factory=list)
+    current: list[_TmpEnvEntry] = field(default_factory=list)
+    result: list[list[_TmpEnvEntry]] = field(default_factory=list)
 
 
 _COMMENT_REGEX = re.compile(r"\s*#.*", re.DOTALL)
@@ -106,7 +106,7 @@ def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
 
 
 def _parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
-        -> List[Tuple[int, str]]:
+        -> list[tuple[int, str]]:
     if str(filename) in _preprocessed_file_cache:
         return _preprocessed_file_cache[str(filename)]
 
@@ -124,7 +124,7 @@ def _parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
 
 
 def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
-        -> Dict[str, lit.Test.ResultCode]:
+        -> dict[str, lit.Test.ResultCode]:
     if str(filename) in _expected_result_entry_cache:
         return _expected_result_entry_cache[str(filename)]
 
@@ -147,7 +147,7 @@ def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
 
 
 def parse_env_lst_file(env_list: Union[str, bytes, os.PathLike]) \
-        -> Tuple[EnvEntry, ...]:
+        -> tuple[EnvEntry, ...]:
     if str(env_list) in _envlst_cache:
         return _envlst_cache[str(env_list)]
 
