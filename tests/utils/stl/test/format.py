@@ -8,7 +8,6 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 import itertools
 import os
 import re
@@ -117,7 +116,7 @@ class STLTestFormat:
     def getStages(self, test, litConfig):
         @dataclass
         class SharedState:
-            execFile: Optional[os.PathLike] = field(default=None)
+            execFile: os.PathLike | None = field(default=None)
             execDir: os.PathLike = field(default_factory=Path)
             env: dict[str, str] = field(default_factory=dict)
 

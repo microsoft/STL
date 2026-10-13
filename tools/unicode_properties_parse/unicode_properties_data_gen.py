@@ -4,7 +4,6 @@
 from io import StringIO
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Optional
 import re
 
 
@@ -27,7 +26,7 @@ LINE_REGEX = re.compile(
 INCB_LINE_REGEX = re.compile(
     r"^(?P<lower>[0-9A-F]{4,5})(?:\.\.(?P<upper>[0-9A-F]{4,5}))?\s*;\s*InCB;\s*(?P<prop>\w+)")
 
-def parse_property_line(inputLine: str, line_regex: re.Pattern[str]) -> Optional[PropertyRange]:
+def parse_property_line(inputLine: str, line_regex: re.Pattern[str]) -> PropertyRange | None:
     result = PropertyRange()
     if m := line_regex.match(inputLine):
         lower_str, upper_str, result.prop = m.group("lower", "upper", "prop")

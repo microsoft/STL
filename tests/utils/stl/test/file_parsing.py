@@ -3,7 +3,6 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Union
 import itertools
 import os
 import re
@@ -32,8 +31,8 @@ class EnvEntry:
     def hasAnyTag(self, tags: set[str]) -> bool:
         return bool(self._env_tags & tags)
 
-    def getEnvVal(self, key: str, default: Optional[str] = None) \
-            -> Optional[str]:
+    def getEnvVal(self, key: str, default: str | None = None) \
+            -> str | None:
         return self._env.get(key, default)
 
     _env: frozendict[str, str]
@@ -54,7 +53,7 @@ _CROSSLIST_REGEX = re.compile(r'^RUNALL_CROSSLIST$')
 _EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>[^ ]+) (?P<result>\w+)$')
 
 
-def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
+def _parse_env_line(line: str) -> _TmpEnvEntry | None:
     result = _TmpEnvEntry()
     if (m:=_TAGS_REGEX.match(line)) is not None:
         tags = m.group("tags").split(',')
@@ -105,7 +104,7 @@ def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
             ctx.current.append(_parse_env_line(line))
 
 
-def _parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
+def _parse_commented_file(filename: str | bytes | os.PathLike) \
         -> list[tuple[int, str]]:
     if str(filename) in _preprocessed_file_cache:
         return _preprocessed_file_cache[str(filename)]
@@ -123,7 +122,7 @@ def _parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
         return result
 
 
-def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
+def parse_result_file(filename: str | bytes | os.PathLike) \
         -> dict[str, lit.Test.ResultCode]:
     if str(filename) in _expected_result_entry_cache:
         return _expected_result_entry_cache[str(filename)]
@@ -146,7 +145,7 @@ def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
     return res
 
 
-def parse_env_lst_file(env_list: Union[str, bytes, os.PathLike]) \
+def parse_env_lst_file(env_list: str | bytes | os.PathLike) \
         -> tuple[EnvEntry, ...]:
     if str(env_list) in _envlst_cache:
         return _envlst_cache[str(env_list)]
