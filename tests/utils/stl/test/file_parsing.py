@@ -26,8 +26,7 @@ class _TmpEnvEntry:
 @dataclass(frozen=True)
 class EnvEntry:
     def __init__(self, tmp_env: _TmpEnvEntry):
-        object.__setattr__(self, "_env_keys", tuple(tmp_env.env.keys()))
-        object.__setattr__(self, "_env_vals", tuple(tmp_env.env.values()))
+        object.__setattr__(self, "_env", frozendict(tmp_env.env))
         object.__setattr__(self, "_env_tags", tmp_env.tags)
 
     def hasAnyTag(self, tags: Set[str]) -> bool:
@@ -35,15 +34,9 @@ class EnvEntry:
 
     def getEnvVal(self, key: str, default: Optional[str] = None) \
             -> Optional[str]:
-        if key not in self._env_keys:
-            return default
+        return self._env.get(key, default)
 
-        # TRANSITION: All of this is to avoid having to install frozendict.
-        # Reconsider this at a future date.
-        return self._env_vals[self._env_keys.index(key)]
-
-    _env_keys: Tuple[str]
-    _env_vals: Tuple[str]
+    _env: frozendict[str, str]
     _env_tags: Set[str]
 
 
