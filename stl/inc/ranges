@@ -3474,7 +3474,7 @@ namespace ranges {
             using _Parent_t = _Maybe_const<_Const, join_with_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
 
-            _MSVC_NO_UNIQUE_ADDRESS sentinel_t<_Base> _Last{};
+            [[msvc::no_unique_address]] sentinel_t<_Base> _Last{};
 
             constexpr explicit _Sentinel(_Parent_t& _Parent)
                 noexcept(noexcept(_RANGES end(_Parent._Range))
@@ -5147,7 +5147,7 @@ namespace ranges {
             using _Base_iterator  = iterator_t<_Base_t>;
             using _Reference_type = tuple<range_difference_t<_Base_t>, range_reference_t<_Base_t>>;
 
-            _MSVC_NO_UNIQUE_ADDRESS _Base_iterator _Current{};
+            [[msvc::no_unique_address]] _Base_iterator _Current{};
             range_difference_t<_Base_t> _Pos = 0;
 
             constexpr explicit _Iterator(_Base_iterator _Current_, range_difference_t<_Base_t> _Pos_)
@@ -5309,7 +5309,7 @@ namespace ranges {
             template <bool _OtherConst>
             using _Difference_type = _Iterator<_OtherConst>::difference_type;
 
-            _MSVC_NO_UNIQUE_ADDRESS _Base_sentinel _End{};
+            [[msvc::no_unique_address]] _Base_sentinel _End{};
 
             constexpr explicit _Sentinel(_Base_sentinel _End_)
                 noexcept(is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
@@ -5750,8 +5750,8 @@ namespace ranges {
             using _Base_iterator = iterator_t<_Base>;
             using _Base_sentinel = sentinel_t<_Base>;
 
-            _MSVC_NO_UNIQUE_ADDRESS _Base_iterator _Current{};
-            _MSVC_NO_UNIQUE_ADDRESS _Base_sentinel _End{};
+            [[msvc::no_unique_address]] _Base_iterator _Current{};
+            [[msvc::no_unique_address]] _Base_sentinel _End{};
             range_difference_t<_Base> _Count   = 0;
             range_difference_t<_Base> _Missing = 0;
 
@@ -6307,7 +6307,7 @@ namespace ranges {
         class _Sentinel {
         private:
             friend slide_view;
-            _MSVC_NO_UNIQUE_ADDRESS sentinel_t<_Vw> _Last{};
+            [[msvc::no_unique_address]] sentinel_t<_Vw> _Last{};
 
             constexpr explicit _Sentinel(sentinel_t<_Vw> _Last_)
                 noexcept(is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */

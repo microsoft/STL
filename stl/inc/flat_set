@@ -818,7 +818,7 @@ private:
     }
 
     container_type _Data;
-    _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
+    [[msvc::no_unique_address]] key_compare _Key_compare;
 };
 
 _EXPORT_STD template <class _Key, class _Compare, class _Container>

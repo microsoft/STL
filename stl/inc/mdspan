@@ -1169,7 +1169,7 @@ struct _Mdspan_mapping_holder {
     template <class _OtherMapping>
     constexpr explicit _Mdspan_mapping_holder(const _OtherMapping& _Map_) : _Map(_Map_) {}
 
-    _MSVC_NO_UNIQUE_ADDRESS _Mapping _Map = _Mapping();
+    [[msvc::no_unique_address]] _Mapping _Map = _Mapping();
 };
 
 template <class _Extents, _Elidable_layout_mapping<_Extents> _LayoutPolicy>
@@ -1205,7 +1205,7 @@ struct _Mdspan_accessor_holder {
     template <class _OtherAccessorPolicy>
     constexpr explicit _Mdspan_accessor_holder(const _OtherAccessorPolicy& _Acc_) : _Acc(_Acc_) {}
 
-    _MSVC_NO_UNIQUE_ADDRESS _AccessorPolicy _Acc = _AccessorPolicy();
+    [[msvc::no_unique_address]] _AccessorPolicy _Acc = _AccessorPolicy();
 };
 
 template <_Elidable_accessor_policy _AccessorPolicy>
@@ -1523,9 +1523,9 @@ private:
         return _Accessor._Acc.access(_Ptr, static_cast<size_t>(_Mapping._Map(_Indices...)));
     }
 
-    _MSVC_NO_UNIQUE_ADDRESS _Mdspan_mapping_holder<extents_type, layout_type> _Mapping;
-    _MSVC_NO_UNIQUE_ADDRESS _Mdspan_accessor_holder<accessor_type> _Accessor;
-    _MSVC_NO_UNIQUE_ADDRESS data_handle_type _Ptr = data_handle_type();
+    [[msvc::no_unique_address]] _Mdspan_mapping_holder<extents_type, layout_type> _Mapping;
+    [[msvc::no_unique_address]] _Mdspan_accessor_holder<accessor_type> _Accessor;
+    [[msvc::no_unique_address]] data_handle_type _Ptr = data_handle_type();
 };
 
 template <class _CArray>
