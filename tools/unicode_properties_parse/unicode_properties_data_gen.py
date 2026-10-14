@@ -278,11 +278,7 @@ def read_file(filename: str, line_regex: re.Pattern[str] = LINE_REGEX) -> tuple[
 
 
 def generate_width_estimate_intervals(filename: str, timestamp: str, width_2_ranges: list[PropertyRange]):
-    values = []
-
-    for width_2_range in width_2_ranges:
-        values.append(width_2_range.lower)
-        values.append(width_2_range.upper + 1)
+    values = [*(r.lower, r.upper + 1) for r in width_2_ranges]
 
     return WIDTH_ESTIMATE_INTERVALS_TEMPLATE.lstrip().format(
             filename=filename, timestamp=timestamp, data=",".join(['0x' + format(x, 'x') for x in values]))
