@@ -11,7 +11,6 @@ from pathlib import Path
 import os
 import re
 import shutil
-import sys
 
 import lit
 
@@ -219,7 +218,7 @@ class STLTestFormat:
             return (lit.Test.PASS, '')
 
         except Exception as e:
-            _, _, exception_traceback = sys.exc_info()
+            exception_traceback = e.__traceback__
             filename = exception_traceback.tb_frame.f_code.co_filename
             line_number = exception_traceback.tb_lineno
             message = repr(e) + ' at ' + filename + ':' + str(line_number)
