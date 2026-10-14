@@ -85,21 +85,22 @@ class STLTestFormat:
             envNumWidth = len(str(len(envEntries)))
 
         sourcePath = testSuite.getSourcePath(pathInSuite)
-        for filename in os.listdir(sourcePath):
-            # Ignore dot files and excluded tests.
-            if filename.startswith('.') or filename in localConfig.excludes:
-                continue
+        with os.scandir(sourcePath) as entries:
+            for entry in entries:
+                filename = entry.name
+                # Ignore dot files and excluded tests.
+                if filename.startswith('.') or filename in localConfig.excludes:
+                    continue
 
-            filepath = os.path.join(sourcePath, filename)
-            if not os.path.isdir(filepath):
-                if any(re.search(ext, filename) for ext in localConfig.suffixes):
-                    if envEntries is None:
-                        litConfig.fatal("Could not find an env.lst file.")
+                if not entry.is_dir():
+                    if any(re.search(ext, filename) for ext in localConfig.suffixes):
+                        if envEntries is None:
+                            litConfig.fatal("Could not find an env.lst file.")
 
-                    for envNum, envEntry in enumerate(envEntries):
-                        yield testClass(testSuite, pathInSuite + (filename,),
-                                        litConfig, localConfig, envEntry,
-                                        f'{envNum:0{envNumWidth}d}')
+                        for envNum, envEntry in enumerate(envEntries):
+                            yield testClass(testSuite, pathInSuite + (filename,),
+                                            litConfig, localConfig, envEntry,
+                                            f'{envNum:0{envNumWidth}d}')
 
     def runStep(self, testStep, litConfig):
         if str(testStep.workDir) == '.':
