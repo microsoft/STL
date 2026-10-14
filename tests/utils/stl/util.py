@@ -13,13 +13,13 @@ import threading
 
 
 def makeReport(cmd, out, err, rc):
-    report = "Command: \"%s\"\n" % "\" \"".join(cmd)
+    report = f'Command: "{'" "'.join(cmd)}"\n'
     report += f"Exit Code: {rc} (0x{rc:X})\n"
     # Replacing CRLFs with LFs avoids ugly double newlines when this is displayed in Azure Pipelines.
     if out:
-        report += "Standard Output:\n--\n%s--\n" % out.replace("\r\n", "\n")
+        report += f"Standard Output:\n--\n{out.replace("\r\n", "\n")}--\n"
     if err:
-        report += "Standard Error:\n--\n%s--\n" % err.replace("\r\n", "\n")
+        report += f"Standard Error:\n--\n{err.replace("\r\n", "\n")}--\n"
     report += '\n'
     return report
 
@@ -99,7 +99,7 @@ def executeCommand(command, cwd=None, env=None, input=None, timeout=0):
 
     if hitTimeOut:
         raise ExecuteCommandTimeoutException(
-            msg='Reached timeout of {} seconds'.format(timeout),
+            msg=f'Reached timeout of {timeout} seconds',
             out=out,
             err=err,
             exitCode=exitCode

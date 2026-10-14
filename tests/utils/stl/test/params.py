@@ -19,7 +19,7 @@ class AddRunPLTags(ConfigAction):
     config.runPLTags = {x.casefold() for x in self._taglist}
 
   def pretty(self, config, litParams):
-    return 'select run.pl tags {}'.format(str(self._taglist))
+    return f'select run.pl tags {self._taglist!s}'
 
 
 class AddRunPLNotags(ConfigAction):
@@ -33,7 +33,7 @@ class AddRunPLNotags(ConfigAction):
     config.runPLNotags = {x.casefold() for x in self._taglist}
 
   def pretty(self, config, litParams):
-    return 'exclude run.pl tags {}'.format(str(self._taglist))
+    return f'exclude run.pl tags {self._taglist!s}'
 
 
 def beNice(prio: str) -> list[ConfigAction]:

@@ -36,5 +36,5 @@ if __name__ == "__main__":
                     # The JSON contains embedded CRLFs (which aren't affected by opening the file in text mode).
                     # If we don't replace these CRLFs with LFs here, this script will appear to be okay in the console,
                     # but redirecting it to a file will result in ugly double newlines.
-                    print("output: {}".format(result["output"].replace("\r\n", "\n")))
+                    print(f"output: {result["output"].replace("\r\n", "\n")}")
                     print("==================================================")

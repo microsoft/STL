@@ -65,17 +65,17 @@ class STLTest(Test):
         missing_required_features = self.getMissingRequiredFeatures()
         if missing_required_features:
             msg = ', '.join(missing_required_features)
-            return Result(UNSUPPORTED, "Test requires the following unavailable features: %s" % msg)
+            return Result(UNSUPPORTED, f"Test requires the following unavailable features: {msg}")
 
         unsupported_features = self.getUnsupportedFeatures()
         if unsupported_features:
             msg = ', '.join(unsupported_features)
-            return Result(UNSUPPORTED, "Test does not support the following features and/or targets: %s" % msg)
+            return Result(UNSUPPORTED, f"Test does not support the following features and/or targets: {msg}")
 
         if not self.isWithinFeatureLimits():
             msg = ', '.join(self.config.limit_to_features)
-            return Result(UNSUPPORTED, "Test does not require any of the features specified in limit_to_features: %s" %
-                          msg)
+            return Result(UNSUPPORTED,
+                          f"Test does not require any of the features specified in limit_to_features: {msg}")
 
         if 'test-only-edg' in self.config.available_features and 'edg' not in self.requires:
             return Result(UNSUPPORTED, 'We run only /BE tests with the test-only-edg flag')
@@ -111,7 +111,7 @@ class STLTest(Test):
 
         for feature in self.config.available_features:
             parser = lit.TestRunner.IntegratedTestKeywordParser(
-                "ADDITIONAL_COMPILE_FLAGS({}):".format(feature),
+                f"ADDITIONAL_COMPILE_FLAGS({feature}):",
                 lit.TestRunner.ParserKind.SPACE_LIST,
                 initial_value=additionalCompileFlags,
             )
@@ -196,12 +196,12 @@ class STLTest(Test):
         envCompiler = self.envlstEntry.getEnvVal('PM_COMPILER', 'cl')
 
         if self.config.runPLTags and not self.envlstEntry.hasAnyTag(self.config.runPLTags):
-            return Result(SKIPPED, 'This test was skipped because its tags {}'.format(str(self.envlstEntry._env_tags)) +
-                                   ' do not match any of the selected tags {}'.format(str(self.config.runPLTags)))
+            return Result(SKIPPED, f'This test was skipped because its tags {self.envlstEntry._env_tags!s}'
+                                   f' do not match any of the selected tags {self.config.runPLTags!s}')
 
         if self.config.runPLNotags and self.envlstEntry.hasAnyTag(self.config.runPLNotags):
-            return Result(SKIPPED, 'This test was skipped because its tags {}'.format(str(self.envlstEntry._env_tags)) +
-                                   ' match any of the excluded tags {}'.format(str(self.config.runPLNotags)))
+            return Result(SKIPPED, f'This test was skipped because its tags {self.envlstEntry._env_tags!s}'
+                                   f' match any of the excluded tags {self.config.runPLNotags!s}')
 
         cxx = None
         if os.path.isfile(envCompiler):
@@ -217,7 +217,7 @@ class STLTest(Test):
         if not cxx:
             if envCompiler not in self.compilerNotFound:
                 self.compilerNotFound.add(envCompiler)
-                litConfig.warning('Could not find: %r' % envCompiler)
+                litConfig.warning(f'Could not find: {envCompiler!r}')
             return Result(SKIPPED, 'This test was skipped because the compiler, "' +
                                    envCompiler + '", could not be found')
 

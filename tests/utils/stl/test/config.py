@@ -33,7 +33,7 @@ def configure(parameters, features, config, lit_config):
   lit_config.test_subdirs[config.name] = [os.path.normpath(subdir) for subdir in lit_config.test_subdirs[config.name]]
   for subdir in lit_config.test_subdirs[config.name]:
     if not os.path.exists(subdir):
-        lit_config.fatal("The directory {} does not exist and was marked as a subdirectory to test".format(subdir))
+        lit_config.fatal(f"The directory {subdir} does not exist and was marked as a subdirectory to test")
 
   lit_config.flags         = getattr(lit_config, 'flags', dict())
   lit_config.compile_flags = getattr(lit_config, 'compile_flags', dict())
