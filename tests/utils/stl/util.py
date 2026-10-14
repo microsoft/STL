@@ -6,6 +6,7 @@
 #
 #===----------------------------------------------------------------------===##
 
+lazy import locale
 import signal
 import subprocess
 import threading
@@ -42,7 +43,6 @@ def decodeOutput(bytes):
         return bytes.decode()
     except UnicodeError:
         # Use 'backslashreplace' to avoid throwing another exception when tests emit garbage bytes.
-        import locale
         return bytes.decode(locale.getencoding(), 'backslashreplace')
 
 

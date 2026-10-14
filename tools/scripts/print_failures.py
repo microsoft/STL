@@ -4,10 +4,10 @@
 # This script prints the output of test failures that were recorded by `stl-lit.py -o TEST_LOG_FILENAME`
 # or `stl-lit.py --xunit-xml-output=TEST_RESULTS.xml`.
 
-import json
+lazy import json
 import os
 import sys
-import xml.dom.minidom
+lazy import xml.dom.minidom
 
 
 if __name__ == "__main__":
