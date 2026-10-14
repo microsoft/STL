@@ -29,7 +29,7 @@ class EnvEntry:
         object.__setattr__(self, "_env_tags", tmp_env.tags)
 
     def hasAnyTag(self, tags: set[str]) -> bool:
-        return bool(self._env_tags & tags)
+        return not self._env_tags.isdisjoint(tags)
 
     def getEnvVal(self, key: str, default: str | None = None) \
             -> str | None:
