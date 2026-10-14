@@ -112,7 +112,7 @@ def _parse_commented_file(filename: str | bytes | os.PathLike) \
     filename_path = Path(filename)
     result = list()
     with filename_path.open() as f:
-        for line_number, line in enumerate(f.readlines(), start=1):
+        for line_number, line in enumerate(f, start=1):
             if (line:=_COMMENT_REGEX.sub("", line)):
                 line = line.strip()
                 if line:
