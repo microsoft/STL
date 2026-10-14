@@ -252,7 +252,7 @@ def property_ranges_to_table(ranges: list[PropertyRange], props: list[str], is_b
 
 def generate_cpp_data(filename: str, timestamp: str, prop_name: str, ranges: list[PropertyRange]) -> str:
     result = StringIO()
-    prop_values = sorted(set(x.prop for x in ranges))
+    prop_values = sorted({x.prop for x in ranges})
     is_binary_property = len(prop_values) == 1
     table = property_ranges_to_table(ranges, prop_values, is_binary_property)
     enumerator_values = [PROP_VALUE_ENUMERATOR_TEMPLATE.format(

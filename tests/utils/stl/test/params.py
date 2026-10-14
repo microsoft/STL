@@ -16,7 +16,7 @@ class AddRunPLTags(ConfigAction):
     self._taglist = taglist
 
   def applyTo(self, config):
-    config.runPLTags = set(map(lambda x: x.casefold(), self._taglist))
+    config.runPLTags = {x.casefold() for x in self._taglist}
 
   def pretty(self, config, litParams):
     return 'select run.pl tags {}'.format(str(self._taglist))
@@ -30,7 +30,7 @@ class AddRunPLNotags(ConfigAction):
     self._taglist = taglist
 
   def applyTo(self, config):
-    config.runPLNotags = set(map(lambda x: x.casefold(), self._taglist))
+    config.runPLNotags = {x.casefold() for x in self._taglist}
 
   def pretty(self, config, litParams):
     return 'exclude run.pl tags {}'.format(str(self._taglist))

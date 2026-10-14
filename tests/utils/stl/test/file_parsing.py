@@ -57,7 +57,7 @@ def _parse_env_line(line: str) -> _TmpEnvEntry | None:
     result = _TmpEnvEntry()
     if (m:=_TAGS_REGEX.match(line)) is not None:
         tags = m.group("tags").split(',')
-        result.tags = set([x.strip().casefold() for x in tags])
+        result.tags = {x.strip().casefold() for x in tags}
         line = m.group("remainder")
     for env_match in _ENV_VAR_MULTI_ITEM_REGEX.finditer(line):
         name = env_match.group("name")
@@ -68,7 +68,7 @@ def _parse_env_line(line: str) -> _TmpEnvEntry | None:
 
 def _merge_crosslist_entries(*args) -> _TmpEnvEntry:
     result = _TmpEnvEntry()
-    result.tags = set(['*'])
+    result.tags = {'*'}
     for entry in args:
         # tags are intersected; `*` matches everything
         if len(entry.tags) == 1 and '*' in entry.tags:
