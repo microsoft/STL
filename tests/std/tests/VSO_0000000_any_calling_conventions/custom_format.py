@@ -9,7 +9,7 @@ from stl.test.tests import STLTest, TestType
 
 class CustomTest(STLTest):
     def __init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum):
-        STLTest.__init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum)
+        super().__init__(suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum)
         self.callingConventionA = envlstEntry.getEnvVal('CALLING_CONVENTION_A')
         self.callingConventionB = envlstEntry.getEnvVal('CALLING_CONVENTION_B')
 

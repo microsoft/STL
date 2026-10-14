@@ -35,7 +35,7 @@ class STLTest(Test):
     def __init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum):
         self.envNum = envNum
         self.envlstEntry = envlstEntry
-        Test.__init__(self, suite, pathInSuite, testConfig, None)
+        super().__init__(suite, pathInSuite, testConfig, None)
 
     def configureTest(self, litConfig):
         # The TestingConfig is shared by all tests in a directory (and by all tests in a batch that lit sends to a
