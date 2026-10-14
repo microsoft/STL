@@ -82,7 +82,7 @@ class STLTestFormat:
         envEntries = None
         if envlstPath is not None:
             envEntries = stl.test.file_parsing.parse_env_lst_file(envlstPath)
-            formatString = '{:0' + str(len(str(len(envEntries)))) + 'd}'
+            envNumWidth = len(str(len(envEntries)))
 
         sourcePath = testSuite.getSourcePath(pathInSuite)
         for filename in os.listdir(sourcePath):
@@ -99,7 +99,7 @@ class STLTestFormat:
                     for envNum, envEntry in enumerate(envEntries):
                         yield testClass(testSuite, pathInSuite + (filename,),
                                         litConfig, localConfig, envEntry,
-                                        formatString.format(envNum))
+                                        f'{envNum:0{envNumWidth}d}')
 
     def runStep(self, testStep, litConfig):
         if str(testStep.workDir) == '.':
