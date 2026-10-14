@@ -19,5 +19,4 @@ class CustomTestFormat(STLTestFormat):
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
 
-        for step in super().getBuildSteps(test, litConfig, shared):
-            yield step
+        yield from super().getBuildSteps(test, litConfig, shared)
