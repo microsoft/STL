@@ -93,7 +93,7 @@ class STLTestFormat:
 
             filepath = os.path.join(sourcePath, filename)
             if not os.path.isdir(filepath):
-                if any([re.search(ext, filename) for ext in localConfig.suffixes]):
+                if any(re.search(ext, filename) for ext in localConfig.suffixes):
                     if envEntries is None:
                         litConfig.fatal("Could not find an env.lst file.")
 
