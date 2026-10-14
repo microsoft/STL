@@ -8,7 +8,6 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-import itertools
 import os
 import re
 import shutil
@@ -98,7 +97,7 @@ class STLTestFormat:
                     if envEntries is None:
                         litConfig.fatal("Could not find an env.lst file.")
 
-                    for envEntry, envNum in zip(envEntries, itertools.count()):
+                    for envNum, envEntry in enumerate(envEntries):
                         yield testClass(testSuite, pathInSuite + (filename,),
                                         litConfig, localConfig, envEntry,
                                         formatString.format(envNum))
