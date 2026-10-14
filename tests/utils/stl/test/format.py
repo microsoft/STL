@@ -221,7 +221,7 @@ class STLTestFormat:
             exception_traceback = e.__traceback__
             filename = exception_traceback.tb_frame.f_code.co_filename
             line_number = exception_traceback.tb_lineno
-            message = repr(e) + ' at ' + filename + ':' + str(line_number)
+            message = f'{e!r} at {filename}:{line_number}'
             litConfig.error(message)
             return (lit.Test.UNRESOLVED, message)
 

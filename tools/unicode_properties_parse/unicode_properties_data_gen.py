@@ -263,8 +263,8 @@ def generate_cpp_data(filename: str, timestamp: str, prop_name: str, ranges: lis
     result.write(DATA_ARRAY_TEMPLATE.lstrip().format(filename=filename, timestamp=timestamp, prop_name=prop_name,
                  size=len(table.lower_bounds),
                  is_binary_property='true' if is_binary_property else 'false',
-                 lower_bounds=",".join(["0x" + format(x, 'x') for x in table.lower_bounds]),
-                 props_and_size=",".join(["0x" + format(x, 'x') for x in table.props_and_range])))
+                 lower_bounds=",".join([f"0x{x:x}" for x in table.lower_bounds]),
+                 props_and_size=",".join([f"0x{x:x}" for x in table.props_and_range])))
     return result.getvalue()
 
 
@@ -281,7 +281,7 @@ def generate_width_estimate_intervals(filename: str, timestamp: str, width_2_ran
     values = [*(r.lower, r.upper + 1) for r in width_2_ranges]
 
     return WIDTH_ESTIMATE_INTERVALS_TEMPLATE.lstrip().format(
-            filename=filename, timestamp=timestamp, data=",".join(['0x' + format(x, 'x') for x in values]))
+            filename=filename, timestamp=timestamp, data=",".join([f'0x{x:x}' for x in values]))
 
 
 def generate_data_tables() -> str:
