@@ -150,10 +150,10 @@ class STLTest(Test):
         self.testType = self.testType & ~TestType.UNKNOWN
 
     def getTestName(self):
-        return '/'.join(self.path_in_suite[:-1]) + ":" + self.envNum
+        return f"{'/'.join(self.path_in_suite[:-1])}:{self.envNum}"
 
     def getFullName(self):
-        return self.suite.config.name + ' :: ' + self.getTestName()
+        return f'{self.suite.config.name} :: {self.getTestName()}'
 
     def getSourcePath(self):
         return os.path.normpath(super().getSourcePath())
@@ -218,8 +218,8 @@ class STLTest(Test):
             if envCompiler not in self.compilerNotFound:
                 self.compilerNotFound.add(envCompiler)
                 litConfig.warning(f'Could not find: {envCompiler!r}')
-            return Result(SKIPPED, 'This test was skipped because the compiler, "' +
-                                   envCompiler + '", could not be found')
+            return Result(SKIPPED,
+                          f'This test was skipped because the compiler, "{envCompiler}", could not be found')
 
         self.flags = copy.deepcopy(litConfig.flags[self.config.name])
         self.compileFlags = copy.deepcopy(litConfig.compile_flags[self.config.name])
@@ -354,11 +354,11 @@ class STLTest(Test):
 
 class LibcxxTest(STLTest):
     def getTestName(self):
-        return '/'.join(self.path_in_suite) + ':' + self.envNum
+        return f"{'/'.join(self.path_in_suite)}:{self.envNum}"
 
     def getExecDir(self):
         execDir, _ = lit.TestRunner.getTempPaths(self)
-        execDir = os.path.join(execDir, self.path_in_suite[-1] + '.dir')
+        execDir = os.path.join(execDir, f'{self.path_in_suite[-1]}.dir')
         execDir = os.path.join(execDir, self.envNum)
         return os.path.normpath(execDir)
 

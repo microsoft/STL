@@ -71,7 +71,7 @@ def getDefaultParameters(config, litConfig):
                 help="Comma-separated list of run.pl tags to exclude tests",
                 actions=lambda tags: [AddRunPLNotags(tags)]),
       Parameter(name="priority", choices=["idle", "low", "normal"], default="idle", type=str,
-                help='Process priority to run tests with: "idle" (the default), "low", or "normal". ' +
+                help='Process priority to run tests with: "idle" (the default), "low", or "normal". '
                   'Module "psutil" must be installed for this to have any effect.',
                 actions=beNice),
     ]

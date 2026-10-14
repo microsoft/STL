@@ -148,17 +148,17 @@ class STLTestFormat:
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.LINK in test.testType or \
                 ('clang' in test.config.available_features and 'asan' in test.config.available_features):
-            objFile = tmpBase + '.o'
-            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags, '-Fo' + objFile]
+            objFile = f'{tmpBase}.o'
+            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags, f'-Fo{objFile}']
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
-            shared.execFile = tmpBase + '.exe'
-            cmd = ['link.exe', objFile, *test.flags, '-out:' + shared.execFile, *test.linkFlags]
+            shared.execFile = f'{tmpBase}.exe'
+            cmd = ['link.exe', objFile, *test.flags, f'-out:{shared.execFile}', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.RUN in test.testType:
-            shared.execFile = tmpBase + '.exe'
+            shared.execFile = f'{tmpBase}.exe'
             cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
-                   '-Fe' + shared.execFile, '-link', *test.linkFlags]
+                   f'-Fe{shared.execFile}', '-link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
     def getTestSetupSteps(self, test, litConfig, shared):
@@ -200,14 +200,14 @@ class STLTestFormat:
                 if not isBuildStep and litConfig.build_only:
                     continue
 
-                report += stageName + ' steps:\n'
+                report += f'{stageName} steps:\n'
                 for step in steps:
                     cmd, out, err, rc = self.runStep(step, litConfig)
 
                     if step.shouldFail and rc == 0:
-                        report += stageName + ' step succeeded unexpectedly.\n'
+                        report += f'{stageName} step succeeded unexpectedly.\n'
                     elif rc != 0:
-                        report += stageName + ' step failed unexpectedly.\n'
+                        report += f'{stageName} step failed unexpectedly.\n'
 
                     report += stl.util.makeReport(cmd, out, err, rc)
                     if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
