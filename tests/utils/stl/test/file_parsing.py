@@ -71,9 +71,9 @@ def _merge_crosslist_entries(*args) -> _TmpEnvEntry:
     result.tags = {'*'}
     for entry in args:
         # tags are intersected; `*` matches everything
-        if len(entry.tags) == 1 and '*' in entry.tags:
+        if entry.tags == {'*'}:
             pass
-        elif len(result.tags) == 1 and '*' in result.tags:
+        elif result.tags == {'*'}:
             result.tags = entry.tags
         else:
             result.tags &= entry.tags
