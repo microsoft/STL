@@ -55,7 +55,7 @@ _EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>[^ ]+) (?P<result>\w+)$')
 
 def _parse_env_line(line: str) -> _TmpEnvEntry | None:
     result = _TmpEnvEntry()
-    if (m:=_TAGS_REGEX.match(line)) is not None:
+    if (m:=_TAGS_REGEX.prefixmatch(line)) is not None:
         tags = m.group("tags").split(',')
         result.tags = {x.strip().casefold() for x in tags}
         line = m.group("remainder")
@@ -94,10 +94,10 @@ def _do_crosslist(ctx: _ParseCtx):
 
 def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
     for _, line in _parse_commented_file(env_lst):
-        if (m:=_INCLUDE_REGEX.match(line)) is not None:
+        if (m:=_INCLUDE_REGEX.prefixmatch(line)) is not None:
             p = env_lst.parent / Path(m.group("filename"))
             _parse_env_lst(p, ctx)
-        elif _CROSSLIST_REGEX.match(line) is not None:
+        elif _CROSSLIST_REGEX.prefixmatch(line) is not None:
             ctx.result.append(ctx.current)
             ctx.current = []
         else:
@@ -129,7 +129,7 @@ def parse_result_file(filename: str | bytes | os.PathLike) \
 
     res = dict()
     for line_number, line in _parse_commented_file(filename):
-        m = _EXPECTED_RESULT_REGEX.match(line)
+        m = _EXPECTED_RESULT_REGEX.prefixmatch(line)
         if m is None:
             raise Exception(f'Incorrectly formatted line {line_number}: "{line}" in {filename}.')
         prefix = m.group("prefix")

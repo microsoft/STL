@@ -28,7 +28,7 @@ INCB_LINE_REGEX = re.compile(
 
 def parse_property_line(inputLine: str, line_regex: re.Pattern[str]) -> PropertyRange | None:
     result = PropertyRange()
-    if m := line_regex.match(inputLine):
+    if m := line_regex.prefixmatch(inputLine):
         lower_str, upper_str, result.prop = m.group("lower", "upper", "prop")
         result.lower = int(lower_str, base=16)
         result.upper = result.lower
