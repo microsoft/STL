@@ -6525,7 +6525,7 @@ namespace ranges {
         constexpr bool _Is_sized             = sized_sentinel_for<_Se, _It>;
 
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && same_as<_Pj, identity>
-                      && (_Elements_are_1_byte    ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
+                      && (_Elements_are_1_byte    ? _Is_sized
                           : _Elements_are_2_bytes ? _Is_sized
                                                   : _Is_sized && _VECTORIZED_FIND)) {
             if (!_STD is_constant_evaluated()) {
