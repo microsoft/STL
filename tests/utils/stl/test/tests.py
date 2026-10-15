@@ -126,28 +126,28 @@ class STLTest(Test):
         filename = self.path_in_suite[-1]
 
         if filename.endswith('.fail.cpp'):
-            self.testType = self.testType | TestType.FAIL
+            self.testType |= TestType.FAIL
         elif filename.endswith('.pass.cpp'):
-            self.testType = self.testType | TestType.PASS
+            self.testType |= TestType.PASS
         else:
-            self.testType = self.testType | TestType.PASS
+            self.testType |= TestType.PASS
 
         shortenedFlags = [flag[1:] for flag in chain(self.flags, self.compileFlags, self.linkFlags)]
         if 'analyze:only' in shortenedFlags or 'c' in shortenedFlags or \
                 filename.endswith(('.compile.pass.cpp', '.compile.fail.cpp')):
-            self.testType = self.testType | TestType.COMPILE
+            self.testType |= TestType.COMPILE
         elif filename.endswith(('.link.pass.cpp', '.link.fail.cpp')):
-            self.testType = self.testType | TestType.LINK
+            self.testType |= TestType.LINK
         elif filename.endswith(('run.fail.cpp','run.pass.cpp')):
-            self.testType = self.testType | TestType.RUN
+            self.testType |= TestType.RUN
         elif filename.endswith('.fail.cpp'):
-            self.testType = self.testType | TestType.COMPILE
+            self.testType |= TestType.COMPILE
         elif filename.endswith('.pass.cpp'):
-            self.testType = self.testType | TestType.RUN
+            self.testType |= TestType.RUN
         else:
-            self.testType = self.testType | TestType.RUN
+            self.testType |= TestType.RUN
 
-        self.testType = self.testType & ~TestType.UNKNOWN
+        self.testType &= ~TestType.UNKNOWN
 
     def getTestName(self):
         return f"{'/'.join(self.path_in_suite[:-1])}:{self.envNum}"
