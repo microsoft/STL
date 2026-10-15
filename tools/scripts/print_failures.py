@@ -29,7 +29,7 @@ if __name__ == "__main__":
         else:
             test_log = json.load(file)
             for result in test_log["tests"]:
-                if not result["code"] in ["PASS", "UNSUPPORTED", "XFAIL"]:
+                if result["code"] not in ["PASS", "UNSUPPORTED", "XFAIL"]:
                     print(f"code: {result['code']}")
                     # Ignore result["elapsed"].
                     print(f"name: {result['name']}")

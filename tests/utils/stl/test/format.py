@@ -172,7 +172,7 @@ class STLTestFormat:
         yield from []
 
     def getTestSteps(self, test, litConfig, shared):
-        if not TestType.RUN in test.testType:
+        if TestType.RUN not in test.testType:
             yield from []
             return
 
