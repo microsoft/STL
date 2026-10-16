@@ -6522,9 +6522,8 @@ namespace ranges {
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
         constexpr bool _Elements_are_1_byte  = sizeof(_Iter_value_t<_It>) == 1;
         constexpr bool _Elements_are_2_bytes = sizeof(_Iter_value_t<_It>) == 2;
-        constexpr bool _Is_sized             = sized_sentinel_for<_Se, _It>;
 
-        if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && same_as<_Pj, identity> && _Is_sized
+        if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && same_as<_Pj, identity> && sized_sentinel_for<_Se, _It>
                       && (_Elements_are_1_byte || _Elements_are_2_bytes || _VECTORIZED_FIND)) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
