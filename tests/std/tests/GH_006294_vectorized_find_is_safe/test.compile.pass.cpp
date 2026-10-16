@@ -45,10 +45,10 @@ struct DefaultComparisonTooLargeSize {
 
 #endif // _HAS_CXX20
 
-STATIC_ASSERT(
-    _Vector_alg_in_find_is_safe<int*, int>); // ints are trivially equality comparable and 4 bytes, so should be allowed
-STATIC_ASSERT(_Vector_alg_in_find_is_safe<long*,
-    long>); // long is an integral type with a supported element size (4 or 8 bytes), so should be allowed
+STATIC_ASSERT(_Vector_alg_in_find_is_safe<int8_t*, int8_t>);
+STATIC_ASSERT(_Vector_alg_in_find_is_safe<int16_t*, int16_t>);
+STATIC_ASSERT(_Vector_alg_in_find_is_safe<int32_t*, int32_t>);
+STATIC_ASSERT(_Vector_alg_in_find_is_safe<int64_t*, int64_t>);
 
 STATIC_ASSERT(_Vector_alg_in_find_is_safe<const int*, int>); // "Top level const should not change the answer"
 STATIC_ASSERT(!_Vector_alg_in_find_is_safe<float*, float>); // "Don't allow floating point"
