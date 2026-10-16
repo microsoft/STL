@@ -6868,7 +6868,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
         _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
-    if constexpr (_Allow_vectorization && _Is_vector_element_size<sizeof(_Elem)>) {
+    if constexpr (_Allow_vectorization && _Is_vector_element_size<_Nx>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
