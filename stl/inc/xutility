@@ -6536,36 +6536,33 @@ namespace ranges {
 
                 _Ptr_t _Result;
 #if _VECTORIZED_FIND
-                if constexpr (_Is_sized) {
-                    // Prefer this over memchr()/wmemchr() below for performance
-                    const auto _Last_ptr = _STD _To_address(_First + (_Last - _First));
-                    _Result              = _STD _Find_vectorized(_First_ptr, _Last_ptr, _Val);
-                } else
-#endif // ^^^ _VECTORIZED_FIND ^^^
-                {
-                    if constexpr (_Elements_are_2_bytes) {
-                        const auto _Wchar_ptr    = reinterpret_cast<const wchar_t*>(_First_ptr);
-                        const auto _Wchar_val    = _STD _Find_arg_cast<wchar_t>(_Val);
-                        const auto _Dist         = static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last));
-                        const auto _Const_result = _CSTD wmemchr(_Wchar_ptr, _Wchar_val, _Dist);
-                        _Result                  = reinterpret_cast<_Ptr_t>(const_cast<wchar_t*>(_Const_result));
-                    } else {
-                        _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_byte);
-                        size_t _Count;
-                        _Count = static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last));
+                // Prefer this over memchr()/wmemchr() below for performance
+                const auto _Last_ptr = _STD _To_address(_First + (_Last - _First));
+                _Result              = _STD _Find_vectorized(_First_ptr, _Last_ptr, _Val);
+#else // ^^^ _VECTORIZED_FIND / !_VECTORIZED_FIND vvv
+                if constexpr (_Elements_are_2_bytes) {
+                    const auto _Wchar_ptr    = reinterpret_cast<const wchar_t*>(_First_ptr);
+                    const auto _Wchar_val    = _STD _Find_arg_cast<wchar_t>(_Val);
+                    const auto _Dist         = static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last));
+                    const auto _Const_result = _CSTD wmemchr(_Wchar_ptr, _Wchar_val, _Dist);
+                    _Result                  = reinterpret_cast<_Ptr_t>(const_cast<wchar_t*>(_Const_result));
+                } else {
+                    _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_byte);
+                    size_t _Count;
+                    _Count = static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last));
 
-                        // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
-                        // it reads the characters sequentially and stops as soon as a matching character is found."
-                        // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording,
-                        // so we don't use wmemchr(), avoiding issues with unreachable_sentinel_t.
-                        _Result = static_cast<_Ptr_t>(
-                            _CSTD memchr(_First_ptr, _STD _Find_arg_cast<unsigned char>(_Val), _Count));
-                    }
-
-                    if (_Result == nullptr) {
-                        return _RANGES next(_STD move(_First), _Last);
-                    }
+                    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
+                    // it reads the characters sequentially and stops as soon as a matching character is found."
+                    // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording,
+                    // so we don't use wmemchr(), avoiding issues with unreachable_sentinel_t.
+                    _Result =
+                        static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, _STD _Find_arg_cast<unsigned char>(_Val), _Count));
                 }
+
+                if (_Result == nullptr) {
+                    return _RANGES next(_STD move(_First), _Last);
+                }
+#endif // ^^^ !_VECTORIZED_FIND ^^^
 
                 if constexpr (is_pointer_v<_It>) {
                     return _Result;
