@@ -50,9 +50,9 @@ STATIC_ASSERT(_Vector_alg_in_find_is_safe<int16_t*, int16_t>);
 STATIC_ASSERT(_Vector_alg_in_find_is_safe<int32_t*, int32_t>);
 STATIC_ASSERT(_Vector_alg_in_find_is_safe<int64_t*, int64_t>);
 
-STATIC_ASSERT(_Vector_alg_in_find_is_safe<const int*, int>); // "Top level const should not change the answer"
-STATIC_ASSERT(!_Vector_alg_in_find_is_safe<float*, float>); // "Don't allow floating point"
-STATIC_ASSERT(!_Vector_alg_in_find_is_safe<volatile int*, int>); // "Don't allow volatile"
+STATIC_ASSERT(_Vector_alg_in_find_is_safe<const int*, int>); // Allow const
+STATIC_ASSERT(!_Vector_alg_in_find_is_safe<float*, float>); // Don't allow floating-point
+STATIC_ASSERT(!_Vector_alg_in_find_is_safe<volatile int*, int>); // Don't allow volatile
 
 #if _HAS_CXX20
 STATIC_ASSERT(_Vector_alg_in_find_is_safe<DefaultComparison*, DefaultComparison> == vectorized_trivial_comparison);
