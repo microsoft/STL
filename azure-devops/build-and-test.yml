@@ -48,17 +48,14 @@ jobs:
     parameters:
       enabled: ${{ parameters.configureTesting }}
       path: 'llvm-project'
-      url: 'https://github.com/llvm/llvm-project.git'
   - template: checkout-submodule.yml
     parameters:
       enabled: true
       path: 'boost-math'
-      url: 'https://github.com/boostorg/math.git'
   - template: checkout-submodule.yml
     parameters:
       enabled: ${{ parameters.buildBenchmarks }}
       path: 'benchmarks/google-benchmark'
-      url: 'https://github.com/google/benchmark.git'
   - template: cmake-configure-build.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
