@@ -25,7 +25,7 @@ void test_gh_3617() {
 }
 
 int main() {
-    run_tests_with_different_isa_levels([] { test_gh_3617(); });
+    run_tests_with_different_isa_levels([](IsaLevel) { test_gh_3617(); });
 }
 #else // ^^^ x64 / other architectures vvv
 int main() {}

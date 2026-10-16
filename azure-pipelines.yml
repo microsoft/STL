@@ -15,11 +15,11 @@ stages:
     dependsOn: []
     displayName: 'Code Format'
     pool:
-      name: ${{ variables.x64MediumPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/format-validation.yml
@@ -28,15 +28,16 @@ stages:
     dependsOn: []
     displayName: 'Build x64'
     pool:
-      name: ${{ variables.x64MediumPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 6
           hostArch: x64
           targetArch: x64
           targetPlatform: x64
@@ -50,15 +51,16 @@ stages:
     dependsOn: []
     displayName: 'Build x86'
     pool:
-      name: ${{ variables.x64MediumPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 6
           hostArch: x86
           targetArch: x86
           targetPlatform: x86
@@ -81,6 +83,7 @@ stages:
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 9
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64
@@ -103,6 +106,7 @@ stages:
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 9
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64ec
@@ -116,15 +120,16 @@ stages:
     dependsOn: []
     displayName: 'Configure Tests'
     pool:
-      name: ${{ variables.x64MediumPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 5
           hostArch: x64
           targetArch: x64
           targetPlatform: x64
@@ -143,15 +148,16 @@ stages:
       - Configure_Tests
     displayName: 'Test x64'
     pool:
-      name: ${{ variables.x64FastPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64FastPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 15
           hostArch: x64
           targetArch: x64
           targetPlatform: x64
@@ -175,6 +181,7 @@ stages:
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 20
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64
@@ -186,15 +193,16 @@ stages:
       - Test_ARM64
     displayName: 'Test x86'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64SlowPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 15
           hostArch: x86
           targetArch: x86
           targetPlatform: x86
@@ -214,6 +222,7 @@ stages:
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 20
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64ec

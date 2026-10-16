@@ -38,6 +38,11 @@ class STLTest(Test):
         Test.__init__(self, suite, pathInSuite, testConfig, None)
 
     def configureTest(self, litConfig):
+        # The TestingConfig is shared by all tests in a directory (and by all tests in a batch that lit sends to a
+        # worker process), so we need a private copy before _addCustomFeature() adds per-test features.
+        self.config = copy.copy(self.config)
+        self.config.available_features = set(self.config.available_features)
+
         self.compileFlags = []
         self.cxx = None
         self.env = {}

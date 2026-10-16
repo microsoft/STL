@@ -311,15 +311,31 @@ namespace chrono {
     }
 
     _EXPORT_STD _NODISCARD constexpr month operator+(const month& _Left, const months& _Right) noexcept {
-        const auto _Mo  = static_cast<long long>(static_cast<unsigned int>(_Left)) + (_Right.count() - 1);
-        const auto _Div = (_Mo >= 0 ? _Mo : _Mo - 11) / 12;
-        return month{static_cast<unsigned int>(_Mo - _Div * 12 + 1)};
+#ifdef _WIN64
+        const auto _Mo =
+            static_cast<unsigned int>(_Left) + (0x8000'0003ull + static_cast<unsigned long long>(_Right.count()));
+        return month{static_cast<unsigned int>(_Mo % 12u) + 1u};
+#else // ^^^ 64-bit / 32-bit vvv
+        const auto _Before_modulo =
+            static_cast<unsigned int>(_Left)
+            + ((_Right.count() < 0 ? 0x8000'0003u : 11u) + static_cast<unsigned int>(_Right.count()));
+        return month{_Before_modulo % 12u + 1u};
+#endif // ^^^ 32-bit ^^^
     }
     _EXPORT_STD _NODISCARD constexpr month operator+(const months& _Left, const month& _Right) noexcept {
         return _Right + _Left;
     }
     _EXPORT_STD _NODISCARD constexpr month operator-(const month& _Left, const months& _Right) noexcept {
-        return _Left + -_Right;
+#ifdef _WIN64
+        const auto _Mo =
+            static_cast<unsigned int>(_Left) + (0x8000'0003ull - static_cast<unsigned long long>(_Right.count()));
+        return month{static_cast<unsigned int>(_Mo % 12u) + 1u};
+#else // ^^^ 64-bit / 32-bit vvv
+        const auto _Before_modulo =
+            static_cast<unsigned int>(_Left)
+            + ((_Right.count() < 0 ? 11u : 0x8000'0003u) - static_cast<unsigned int>(_Right.count()));
+        return month{_Before_modulo % 12u + 1u};
+#endif // ^^^ 32-bit ^^^
     }
     _EXPORT_STD _NODISCARD constexpr months operator-(const month& _Left, const month& _Right) noexcept {
         const auto _Mo = static_cast<unsigned int>(_Left) - static_cast<unsigned int>(_Right);
@@ -478,7 +494,7 @@ namespace chrono {
         _NODISCARD static constexpr unsigned int _Weekday_from_days(int _Tp) noexcept {
             _STL_INTERNAL_STATIC_ASSERT(~0u % 7u == 3u); // offset for `_Tp < 0` needs to change
             const auto _Before_modulo = static_cast<unsigned int>(_Tp) + (_Tp >= 0 ? 4u : 0u);
-            return _Before_modulo % 7u; // separate expression for MSVC codegen, see GH-5153
+            return _Before_modulo % 7u; // TRANSITION, DevCom-11158605, use separate expression for MSVC codegen
         }
     };
 
@@ -487,15 +503,17 @@ namespace chrono {
     }
 
     _EXPORT_STD _NODISCARD constexpr weekday operator+(const weekday& _Left, const days& _Right) noexcept {
-        const auto _Wd  = static_cast<long long>(_Left.c_encoding()) + _Right.count();
-        const auto _Div = (_Wd >= 0 ? _Wd : _Wd - 6) / 7;
-        return weekday{static_cast<unsigned int>(_Wd - _Div * 7)};
+        const auto _Before_modulo =
+            _Left.c_encoding() + ((_Right.count() < 0 ? 0x8000'0005u : 0u) + static_cast<unsigned int>(_Right.count()));
+        return weekday{_Before_modulo % 7u}; // TRANSITION, DevCom-11158605, use separate expression for MSVC codegen
     }
     _EXPORT_STD _NODISCARD constexpr weekday operator+(const days& _Left, const weekday& _Right) noexcept {
         return _Right + _Left;
     }
     _EXPORT_STD _NODISCARD constexpr weekday operator-(const weekday& _Left, const days& _Right) noexcept {
-        return _Left + -_Right;
+        const auto _Before_modulo =
+            _Left.c_encoding() + ((_Right.count() < 0 ? 0u : 0x8000'0005u) - static_cast<unsigned int>(_Right.count()));
+        return weekday{_Before_modulo % 7u}; // TRANSITION, DevCom-11158605, use separate expression for MSVC codegen
     }
     _EXPORT_STD _NODISCARD constexpr days operator-(const weekday& _Left, const weekday& _Right) noexcept {
         const auto _Wd = _Left.c_encoding() - _Right.c_encoding();
@@ -727,9 +745,16 @@ namespace chrono {
 
     _EXPORT_STD template <int = 0>
     _NODISCARD constexpr year_month operator+(const year_month& _Left, const months& _Right) noexcept {
-        const auto _Mo  = static_cast<long long>(static_cast<unsigned int>(_Left.month())) + (_Right.count() - 1);
-        const auto _Div = (_Mo >= 0 ? _Mo : _Mo - 11) / 12;
-        return year_month{_Left.year() + years{_Div}, month{static_cast<unsigned int>(_Mo - _Div * 12 + 1)}};
+        const auto _Mo = static_cast<unsigned int>(_Left.month())
+                       + (0x8000'0003ull + static_cast<unsigned long long>(_Right.count()));
+#ifdef _WIN64
+        const auto _Div = _Mo / 12u;
+#else // ^^^ 64-bit / 32-bit vvv
+        const auto _Div4 = static_cast<unsigned int>(_Mo / 4u); // TRANSITION, DevCom-11158605, use
+        const auto _Div  = static_cast<unsigned long long>(_Div4 / 3u); // separate expression for MSVC codegen
+#endif // ^^^ 32-bit ^^^
+        return year_month{_Left.year() + years{static_cast<int>(_Div) - 0x0AAA'AAAB},
+            month{static_cast<unsigned int>(_Mo - _Div * 12u) + 1}};
     }
     _EXPORT_STD template <int = 0>
     _NODISCARD constexpr year_month operator+(const months& _Left, const year_month& _Right) noexcept {
@@ -738,7 +763,16 @@ namespace chrono {
 
     _EXPORT_STD template <int = 0>
     _NODISCARD constexpr year_month operator-(const year_month& _Left, const months& _Right) noexcept {
-        return _Left + -_Right;
+        const auto _Mo = static_cast<unsigned int>(_Left.month())
+                       + (0x8000'0003ull - static_cast<unsigned long long>(_Right.count()));
+#ifdef _WIN64
+        const auto _Div = _Mo / 12u;
+#else // ^^^ 64-bit / 32-bit vvv
+        const auto _Div4 = static_cast<unsigned int>(_Mo / 4u); // TRANSITION, DevCom-11158605, use
+        const auto _Div  = static_cast<unsigned long long>(_Div4 / 3u); // separate expression for MSVC codegen
+#endif // ^^^ 32-bit ^^^
+        return year_month{_Left.year() + years{static_cast<int>(_Div) - 0x0AAA'AAAB},
+            month{static_cast<unsigned int>(_Mo - _Div * 12u) + 1}};
     }
 
     _EXPORT_STD _NODISCARD constexpr months operator-(const year_month& _Left, const year_month& _Right) noexcept {
