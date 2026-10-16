@@ -6542,8 +6542,8 @@ namespace ranges {
                 const auto _Count = static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last));
 
                 if constexpr (_Elements_are_1_byte) {
-                    _Result =
-                        static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, _STD _Find_arg_cast<unsigned char>(_Val), _Count));
+                    const auto _Uchar_val = _STD _Find_arg_cast<unsigned char>(_Val);
+                    _Result               = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, _Uchar_val, _Count));
                 } else {
                     _STL_INTERNAL_STATIC_ASSERT(_Elements_are_2_bytes);
                     const auto _Wchar_ptr    = reinterpret_cast<const wchar_t*>(_First_ptr);
