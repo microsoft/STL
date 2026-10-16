@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <iterator>
 
 using namespace std;
 
@@ -84,4 +85,20 @@ STATIC_ASSERT(!_Vector_alg_in_find_is_safe<PaddedToEight*, PaddedToEight>); // p
 STATIC_ASSERT(_Vector_alg_in_find_is_safe<EightBytes*, EightBytes> == vectorized_trivial_comparison);
 STATIC_ASSERT(!_Vector_alg_in_find_is_safe<SixteenBytes*, SixteenBytes>); // too large
 STATIC_ASSERT(!_Vector_alg_in_find_is_safe<NonTrivial*, NonTrivial>); // exactly what it says on the tin
+
+template <class T>
+void test_find() {
+    T arr[3]{};
+    (void) find(begin(arr), end(arr), T{});
+    (void) ranges::find(arr, T{});
+}
+
+void test() {
+    test_find<ThreeBytes>();
+    test_find<FourBytes>();
+    test_find<PaddedToEight>();
+    test_find<EightBytes>();
+    test_find<SixteenBytes>();
+    test_find<NonTrivial>();
+}
 #endif // _HAS_CXX20
