@@ -10,12 +10,6 @@ using namespace std;
 
 #if _HAS_CXX20
 
-#ifdef __clang__
-constexpr bool vectorized_trivial_comparison = true;
-#else
-constexpr bool vectorized_trivial_comparison = false;
-#endif
-
 struct ThreeBytes {
     int8_t i;
     int8_t j;
@@ -67,7 +61,10 @@ STATIC_ASSERT(!__is_trivially_equality_comparable(PaddedToEight)); // padding is
 STATIC_ASSERT(__is_trivially_equality_comparable(EightBytes));
 STATIC_ASSERT(__is_trivially_equality_comparable(SixteenBytes));
 STATIC_ASSERT(!__is_trivially_equality_comparable(NonTrivial)); // exactly what it says on the tin
-#endif // ^^^ defined(__clang__) ^^^
+constexpr bool vectorized_trivial_comparison = true;
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+constexpr bool vectorized_trivial_comparison = false;
+#endif // ^^^ !defined(__clang__) ^^^
 
 #endif // _HAS_CXX20
 
