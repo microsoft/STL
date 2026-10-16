@@ -50,9 +50,9 @@ STATIC_ASSERT(
 STATIC_ASSERT(_Vector_alg_in_find_is_safe<long*,
     long>); // long is an integral type with a supported element size (4 or 8 bytes), so should be allowed
 
-STATIC_ASSERT(_Vector_alg_in_find_is_safe<int const*, int>); // "Top level const should not change the answer"
+STATIC_ASSERT(_Vector_alg_in_find_is_safe<const int*, int>); // "Top level const should not change the answer"
 STATIC_ASSERT(!_Vector_alg_in_find_is_safe<float*, float>); // "Don't allow floating point"
-STATIC_ASSERT(!_Vector_alg_in_find_is_safe<int volatile*, int>); // "Don't allow volatile"
+STATIC_ASSERT(!_Vector_alg_in_find_is_safe<volatile int*, int>); // "Don't allow volatile"
 
 #if _HAS_CXX20
 STATIC_ASSERT(_Vector_alg_in_find_is_safe<DefaultComparison*, DefaultComparison> == vectorized_trivial_comparison);
