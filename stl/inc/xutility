@@ -6377,8 +6377,7 @@ constexpr bool _Vector_alg_in_find_is_safe_elem =
 #ifdef __cpp_lib_byte
             // We're finding a std::byte in a range of std::byte.
             conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>,
-#endif // defined(__cpp_lib_byte)
-
+#endif
             // We're finding an integer in a range of integers.
             // This case is the one that requires careful runtime handling in _Could_compare_equal_to_value_type.
             conjunction<is_integral<_Ty>, is_integral<_Elem>>,
