@@ -46,7 +46,6 @@ $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.Preview.ARM64',
   'Microsoft.VisualStudio.Component.VC.Preview.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64',
-  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', # TRANSITION, DevCom-11142709
   'Microsoft.VisualStudio.Component.Windows11SDK.28000'
 )
 
@@ -63,23 +62,23 @@ foreach ($workload in $VisualStudioWorkloads) {
 
 # https://github.com/PowerShell/PowerShell/releases/latest
 if ($Provisioning_x64) {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.6/PowerShell-7.6.6-win-x64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.7/PowerShell-7.6.7-win-x64.msi'
 } else {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.6/PowerShell-7.6.6-win-arm64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.7/PowerShell-7.6.7-win-arm64.msi'
 }
 $PowerShellArgs = @('/quiet', '/norestart')
 
 # https://www.python.org
 if ($Provisioning_x64) {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-amd64.zip'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.15.0/python-3.15.0-embed-amd64.zip'
 } else {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-arm64.zip'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.15.0/python-3.15.0-embed-arm64.zip'
 }
 $PythonPath = [uri]::new($PythonUrl).Segments[-1] -ireplace '(python-\d+\.\d+\.\d+)-embed-\w+\.zip', 'C:\$1'
 
 # https://developer.nvidia.com/cuda-toolkit
 if ($Provisioning_x64) {
-  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.4.2/local_installers/cuda_13.4.2_windows_x86_64.exe'
+  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.4.3/local_installers/cuda_13.4.3_windows_x86_64.exe'
 } else {
   $CudaUrl = 'CUDA supports ARM64, but is not yet installed here'
 }

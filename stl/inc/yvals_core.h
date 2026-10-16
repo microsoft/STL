@@ -713,18 +713,6 @@
 #define _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES _NO_SPECIALIZATIONS_CITING("N5014 [namespace.std]/4.3")
 #define _NO_SPECIALIZATIONS_OF_TYPE_TRAITS            _NO_SPECIALIZATIONS_CITING("N5014 [meta.rqmts]/4")
 
-#if _HAS_CXX23 // TRANSITION, ABI, should just use [[no_unique_address]] when _HAS_CXX20.
-// Should we enable use of [[msvc::no_unique_address]] or [[no_unique_address]] to allow potentially-overlapping member
-// subobjects?
-#if _HAS_MSVC_ATTRIBUTE(no_unique_address)
-#define _MSVC_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
-#elif __has_cpp_attribute(no_unique_address) // TRANSITION, DevCom-10747012, EDG recognizes [[no_unique_address]].
-#define _MSVC_NO_UNIQUE_ADDRESS [[no_unique_address]]
-#else
-#error Either [[msvc::no_unique_address]] or [[no_unique_address]] must be supported because this is ABI-critical.
-#endif
-#endif // _HAS_CXX23
-
 #undef _HAS_MSVC_ATTRIBUTE
 #pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
@@ -1806,7 +1794,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_spanstream                        202106L
 #define __cpp_lib_stacktrace                        202011L
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and VSO-2846756
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and EDG-275
 #define __cpp_lib_start_lifetime_as 202207L
 #endif // ^^^ no workaround ^^^
 

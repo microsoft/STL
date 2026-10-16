@@ -104,26 +104,6 @@ class STLTestFormat:
                                         litConfig, localConfig, envEntry,
                                         formatString.format(envNum))
 
-    def getIsenseRspFileSteps(self, test, litConfig, shared):
-        if litConfig.edg_drop is not None and test.isenseRspPath is not None:
-            with open(test.isenseRspPath) as f:
-                cmd = [line.strip() for line in f]
-            cmd[0] = litConfig.edg_drop
-
-            # cpfecl translates /Fo into --import_dir, but that is not
-            # used in the same way by upstream EDG.
-            if '--import_dir' in cmd:
-                index = cmd.index('--import_dir')
-                cmd.pop(index)
-                cmd.pop(index)
-
-            # --print_diagnostics is not recognized by upstream EDG.
-            if '--print_diagnostics' in cmd:
-                index = cmd.index('--print_diagnostics')
-                cmd.pop(index)
-
-            yield TestStep(cmd, shared.execDir, shared.env, False)
-
     def runStep(self, testStep, litConfig):
         if str(testStep.workDir) == '.':
             testStep.workDir = os.getcwd()
@@ -151,7 +131,6 @@ class STLTestFormat:
         return [
             ('Build setup', self.getBuildSetupSteps(test, litConfig, shared), True),
             ('Build', self.getBuildSteps(test, litConfig, shared), True),
-            ('Intellisense response file', self.getIsenseRspFileSteps(test, litConfig, shared), False),
             ('Test setup', self.getTestSetupSteps(test, litConfig, shared), False),
             ('Test', self.getTestSteps(test, litConfig, shared), False),
             ('Clean', self.getCleanSteps(test, litConfig, shared), True)]

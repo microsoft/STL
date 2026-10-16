@@ -12,7 +12,7 @@ import re
 class PropertyRange:
     lower: int = -1
     upper: int = -1
-    prop: str = None
+    prop: str | None = None
 
 
 @dataclass
@@ -269,7 +269,7 @@ def generate_cpp_data(filename: str, timestamp: str, prop_name: str, ranges: lis
     return result.getvalue()
 
 
-def read_file(filename: str, line_regex: re.Pattern[str] = LINE_REGEX) -> list[PropertyRange]:
+def read_file(filename: str, line_regex: re.Pattern[str] = LINE_REGEX) -> tuple[str, str, list[PropertyRange]]:
     data_path = Path(__file__).absolute().with_name(filename)
     with data_path.open(encoding='utf-8') as f:
         filename = f.readline().replace("#", "//").rstrip()
