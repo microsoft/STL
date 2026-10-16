@@ -6528,12 +6528,7 @@ namespace ranges {
                       && (_Elements_are_1_byte || _Elements_are_2_bytes || _VECTORIZED_FIND)) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
-                    if constexpr (_Is_sized) {
-                        return _RANGES next(_STD move(_First), _Last);
-                    } else {
-                        _STL_ASSERT(false, "Tried to find a value in a range with unreachable sentinel "
-                                           "that cannot be represented by the range's value type");
-                    }
+                    return _RANGES next(_STD move(_First), _Last);
                 }
 
                 using _Ptr_t          = remove_reference_t<_Iter_ref_t<_It>>*;
@@ -6549,7 +6544,6 @@ namespace ranges {
 #endif // ^^^ _VECTORIZED_FIND ^^^
                 {
                     if constexpr (_Elements_are_2_bytes) {
-                        _STL_INTERNAL_STATIC_ASSERT(_Is_sized);
                         const auto _Wchar_ptr    = reinterpret_cast<const wchar_t*>(_First_ptr);
                         const auto _Wchar_val    = _STD _Find_arg_cast<wchar_t>(_Val);
                         const auto _Dist         = static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last));
@@ -6558,11 +6552,7 @@ namespace ranges {
                     } else {
                         _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_byte);
                         size_t _Count;
-                        if constexpr (_Is_sized) {
-                            _Count = static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last));
-                        } else {
-                            _Count = SIZE_MAX;
-                        }
+                        _Count = static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last));
 
                         // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
                         // it reads the characters sequentially and stops as soon as a matching character is found."
@@ -6572,10 +6562,8 @@ namespace ranges {
                             _CSTD memchr(_First_ptr, _STD _Find_arg_cast<unsigned char>(_Val), _Count));
                     }
 
-                    if constexpr (_Is_sized) {
-                        if (_Result == nullptr) {
-                            return _RANGES next(_STD move(_First), _Last);
-                        }
+                    if (_Result == nullptr) {
+                        return _RANGES next(_STD move(_First), _Last);
                     }
                 }
 
