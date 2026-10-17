@@ -18,29 +18,25 @@
 
 #pragma comment(lib, "ntdll.lib")
 
-extern "C" {
-
 // Exported by ntdll.lib and can most efficiently query whether a HANDLE references a console.
 // Since the user mode header isn't provided, all needed declarations are declared manually.
-NTSYSAPI NTSTATUS NTAPI NtQueryVolumeInformationFile(
+extern "C" NTSYSAPI NTSTATUS NTAPI NtQueryVolumeInformationFile(
     HANDLE handle, PIO_STATUS_BLOCK ioStatus, PVOID information, ULONG length, ULONG informationClass);
-
-} // extern "C"
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_fs_device_information
 typedef struct _FILE_FS_DEVICE_INFORMATION {
     DEVICE_TYPE DeviceType;
     ULONG Characteristics;
-} FILE_FS_DEVICE_INFORMATION, *PFILE_FS_DEVICE_INFORMATION;
+};
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_fsinfoclass
 #define FileFsDeviceInformation 4
 
-static bool _Is_console_handle(HANDLE handle) {
-    IO_STATUS_BLOCK iosb;
-    FILE_FS_DEVICE_INFORMATION info;
-    const auto status = NtQueryVolumeInformationFile(handle, &iosb, &info, sizeof(info), FileFsDeviceInformation);
-    return (status >= 0) && (info.DeviceType == FILE_DEVICE_CONSOLE);
+static bool _Is_console_handle(HANDLE _Handle) {
+    IO_STATUS_BLOCK _Iosb;
+    FILE_FS_DEVICE_INFORMATION _Info;
+    const auto _Status = NtQueryVolumeInformationFile(_Handle, &_Iosb, &_Info, sizeof(_Info), FileFsDeviceInformation);
+    return (_Status >= 0) && (_Info.DeviceType == FILE_DEVICE_CONSOLE);
 }
 
 extern "C" {
@@ -283,9 +279,9 @@ namespace {
 
 extern "C" {
 
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_print_to_unicode_console(
-    _In_ const __std_unicode_console_handle _Console_handle, _In_reads_(_Str_size) const char* const _Str,
-    _In_ const size_t _Str_size) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_print_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle,
+        _In_reads_(_Str_size) const char* const _Str, _In_ const size_t _Str_size) noexcept {
     if (_Console_handle == __std_unicode_console_handle::_Invalid || _Str == nullptr) {
         return __std_win_error::_Invalid_parameter;
     }
@@ -325,8 +321,9 @@ extern "C" {
     }
 }
 
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
-    __std_print_newline_only_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_print_newline_only_to_unicode_console(
+        _In_ const __std_unicode_console_handle _Console_handle) noexcept {
     if (_Console_handle == __std_unicode_console_handle::_Invalid) {
         return __std_win_error::_Invalid_parameter;
     }
