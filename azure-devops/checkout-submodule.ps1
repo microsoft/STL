@@ -9,8 +9,7 @@ Param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 
-$rawStatus = git submodule status --cached $submodule
-$sha = $rawStatus -creplace '^[ \-+]([0-9a-f]+) .*$', '$1'
+$sha = git rev-parse ":$submodule"
 cd $submodule
 git init
 if ((git remote) -eq $null) {
