@@ -24,7 +24,7 @@ extern "C" NTSYSAPI NTSTATUS NTAPI NtQueryVolumeInformationFile(
     HANDLE handle, PIO_STATUS_BLOCK ioStatus, PVOID information, ULONG length, ULONG informationClass);
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_fs_device_information
-typedef struct _FILE_FS_DEVICE_INFORMATION {
+struct FILE_FS_DEVICE_INFORMATION {
     DEVICE_TYPE DeviceType;
     ULONG Characteristics;
 };
