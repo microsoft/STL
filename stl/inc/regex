@@ -535,6 +535,10 @@ public:
     }
 };
 
+template <class _RxTraits>
+constexpr bool _Is_implementation_handled_regex_traits =
+    _Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>;
+
 _EXPORT_STD class _NODISCARD regex_error : public runtime_error { // type of all regular expression exceptions
 public:
     explicit regex_error(regex_constants::error_type _Ex) : runtime_error(_Stringify(_Ex)), _Err(_Ex) {}
@@ -1282,11 +1286,13 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_begin_needs_d     = 0x00400,
     _Fl_rep_branchless    = 0x01000,
     _Fl_rep_str           = 0x02000, // 1 << 13
-    _Fl_rep_char          = 0x04000, // 2 << 13
-    _Fl_rep_dot_ecma      = 0x06000, // 3 << 13
-    _Fl_rep_dot_posix     = 0x08000, // 4 << 13
-    // values 5 << 13 through 15 << 13 inclusive are reserved for new special cases to optimize
-    _Fl_rep_known_subtype = 0x08000, // 4 << 13, increase to be equal to the newest special case
+    _Fl_rep_char_icase    = 0x04000, // 2 << 13
+    _Fl_rep_char_collate  = 0x06000, // 3 << 13
+    _Fl_rep_char_default  = 0x08000, // 4 << 13
+    _Fl_rep_dot_ecma      = 0x0A000, // 5 << 13
+    _Fl_rep_dot_posix     = 0x0C000, // 6 << 13
+    // values 7 << 13 through 15 << 13 inclusive are reserved for new special cases to optimize
+    _Fl_rep_known_subtype = 0x0C000, // 6 << 13, increase to be equal to the newest special case
     _Fl_rep_subtype_mask  = 0x1E000, // 15 << 13, don't change
 };
 
@@ -3984,7 +3990,7 @@ _BidIt1 _Compare_translate_both(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     // compare character ranges, translating characters in both ranges according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, _Cmp_icase<_RxTraits>{_Traits});
-    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+    } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, _Cmp_collate<_RxTraits>{_Traits});
@@ -3999,7 +4005,7 @@ _BidIt1 _Compare_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     // compare character ranges, translating characters in the left range according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, _Cmp_icase_translateleft<_RxTraits>{_Traits});
-    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+    } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(
@@ -4016,7 +4022,7 @@ _BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, 
     // after translating characters in the left sequence according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
-    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+    } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
@@ -4279,6 +4285,36 @@ _FwdIt _Find_next_ecmascript_line_terminator(_FwdIt _First, _FwdIt _Last) {
     }
 }
 
+template <class _InIt, class _Ty>
+_NODISCARD _CONSTEXPR20 _InIt _Find_not_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
+    // find first non-matching _Val
+    // activate optimization for contiguous iterators to most scalar types (possibly const-qualified)
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
+        if (!_STD _Could_compare_equal_to_value_type<_InIt>(_Val)) {
+            return _First;
+        }
+
+        const auto _First_ptr = _STD _To_address(_First);
+        const auto _Result    = _STD _Find_not_ch_vectorized(_First_ptr, _STD _To_address(_Last), _Val);
+        if constexpr (is_pointer_v<_InIt>) {
+            return _Result;
+        } else {
+            return _First + static_cast<_Iter_diff_t<_InIt>>(_Result - _First_ptr);
+        }
+    } else
+#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
+    {
+        for (; _First != _Last; ++_First) {
+            if (*_First != _Val) {
+                break;
+            }
+        }
+
+        return _First;
+    }
+}
+
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
     bool _Failed = false;
@@ -4530,7 +4566,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                         _It _Prev = _Tgt_state._Cur;
                         _It _Cur  = _Tgt_state._Cur;
 
-                        if (_Rep_subtype == _Fl_rep_char || _Rep_subtype == _Fl_rep_str) {
+                        if (_Rep_subtype == _Fl_rep_str) {
                             const auto _Nstr      = static_cast<const _Node_str<_Elem>*>(_Next);
                             const auto _Str_first = _Nstr->_Data._Str();
                             const auto _Size      = _Nstr->_Data._Size();
@@ -4561,6 +4597,25 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                             }
 
                             switch (static_cast<int>(_Rep_subtype)) {
+                            case _Fl_rep_char_icase:
+                                _Cur = _STD find_if_not(_Cur, _Last,
+                                    [&_Traits = this->_Traits,
+                                        _Val  = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str()](
+                                        const _Elem& _Ch) { return _Traits.translate_nocase(_Ch) == _Val; });
+                                break;
+                            case _Fl_rep_char_collate:
+                                if constexpr (!_Is_implementation_handled_regex_traits<_RxTraits>) {
+                                    _Cur = _STD find_if_not(_Cur, _Last,
+                                        [&_Traits = this->_Traits,
+                                            _Val  = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str()](
+                                            const _Elem& _Ch) { return _Traits.translate(_Ch) == _Val; });
+                                    break;
+                                }
+                                _FALLTHROUGH;
+                            case _Fl_rep_char_default:
+                                _Cur = _STD _Find_not_unchecked(
+                                    _Cur, _Last, *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str());
+                                break;
                             case _Fl_rep_dot_ecma:
                                 _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
                                 break;
@@ -6182,7 +6237,13 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                     switch (_Outer_rep->_Next->_Kind) {
                     case _N_str:
                         if (static_cast<const _Node_str<_Elem>*>(_First_inner)->_Data._Size() == 1U) {
-                            _Outer_rep->_Flags |= _Fl_rep_char;
+                            if ((_Flags & regex_constants::icase) != 0) {
+                                _Outer_rep->_Flags |= _Fl_rep_char_icase;
+                            } else if ((_Flags & regex_constants::collate) != 0) {
+                                _Outer_rep->_Flags |= _Fl_rep_char_collate;
+                            } else {
+                                _Outer_rep->_Flags |= _Fl_rep_char_default;
+                            }
                         } else {
                             _Outer_rep->_Flags |= _Fl_rep_str;
                         }
