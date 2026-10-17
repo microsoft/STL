@@ -279,9 +279,9 @@ namespace {
 
 extern "C" {
 
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_print_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle,
-        _In_reads_(_Str_size) const char* const _Str, _In_ const size_t _Str_size) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_print_to_unicode_console(
+    _In_ const __std_unicode_console_handle _Console_handle, _In_reads_(_Str_size) const char* const _Str,
+    _In_ const size_t _Str_size) noexcept {
     if (_Console_handle == __std_unicode_console_handle::_Invalid || _Str == nullptr) {
         return __std_win_error::_Invalid_parameter;
     }
@@ -321,9 +321,8 @@ extern "C" {
     }
 }
 
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_print_newline_only_to_unicode_console(
-        _In_ const __std_unicode_console_handle _Console_handle) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
+    __std_print_newline_only_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle) noexcept {
     if (_Console_handle == __std_unicode_console_handle::_Invalid) {
         return __std_win_error::_Invalid_parameter;
     }
