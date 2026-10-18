@@ -1249,7 +1249,10 @@ public:
 
     packaged_task(packaged_task&&) noexcept = default;
 
-    packaged_task& operator=(packaged_task&&) noexcept = default;
+    packaged_task& operator=(packaged_task&& _Other) noexcept {
+        packaged_task(_STD move(_Other)).swap(*this);
+        return *this;
+    }
 
     template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     explicit packaged_task(allocator_arg_t, const _Alloc& _Al, _Fty2&& _Fnarg)
