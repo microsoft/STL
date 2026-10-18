@@ -539,10 +539,6 @@ std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.
 
 
 # *** C1XX COMPILER BUGS ***
-# DevCom-1436243 VSO-1335743 constexpr new initialized array
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:1 FAIL
-
 # DevCom-1626139 VSO-1456427 "compile-time NaN comparison"
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp:0 FAIL
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp:1 FAIL
@@ -611,6 +607,10 @@ std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
 # DevCom-10892055 VSO-2453093 ADL fails to consider the namespace associated with the base class under a specific scenario
 std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
+
+# VSO-3077974 constexpr error when a unique_ptr resets itself
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:1 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
@@ -753,6 +753,7 @@ std/re/re.traits/lookup_classname.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
 std/thread/thread.jthread/detach.pass.cpp SKIPPED
+std/thread/thread.threads/thread.thread.class/thread.thread.member/detach.pass.cpp SKIPPED
 
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL

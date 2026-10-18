@@ -829,6 +829,9 @@ namespace mergeable_test {
         // 0: not input_iterator
         void operator++(int)
             requires (RS != readable_status::not_input_iter);
+        void operator++(int)
+            requires (RS == readable_status::not_input_iter)
+        = delete;
     };
 
     enum class writable_status { not_weakly_incrementable, not_ind_copy_int, not_ind_copy_long, good };
@@ -842,6 +845,9 @@ namespace mergeable_test {
 
         writable_archetype operator++(int)
             requires (WS != writable_status::not_weakly_incrementable);
+        writable_archetype operator++(int)
+            requires (WS == writable_status::not_weakly_incrementable)
+        = delete;
 
         // 1: not indirectly_copyable<const int*, writable_archetype>
         void operator=(int)
@@ -871,47 +877,35 @@ namespace mergeable_test {
 
         {
             using Bad_I1 = readable_archetype<int, readable_status::not_input_iter>;
-#ifndef _M_CEE // TRANSITION, VSO-1665670
             static_assert(!input_iterator<Bad_I1>);
-#endif // ^^^ no workaround ^^^
             static_assert(input_iterator<I2>);
             static_assert(weakly_incrementable<O>);
             static_assert(indirectly_copyable<Bad_I1, O>);
             static_assert(indirectly_copyable<I2, O>);
             static_assert(indirect_strict_weak_order<Pr, projected<Bad_I1, Pj1>, projected<I2, Pj2>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665670
             static_assert(!mergeable<Bad_I1, I2, O, Pr, Pj1, Pj2>);
-#endif // ^^^ no workaround ^^^
         }
 
         {
             using Bad_I2 = readable_archetype<long, readable_status::not_input_iter>;
             static_assert(input_iterator<I1>);
-#ifndef _M_CEE // TRANSITION, VSO-1665670
             static_assert(!input_iterator<Bad_I2>);
-#endif // ^^^ no workaround ^^^
             static_assert(weakly_incrementable<O>);
             static_assert(indirectly_copyable<I1, O>);
             static_assert(indirectly_copyable<Bad_I2, O>);
             static_assert(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<Bad_I2, Pj2>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665670
             static_assert(!mergeable<I1, Bad_I2, O, Pr, Pj1, Pj2>);
-#endif // ^^^ no workaround ^^^
         }
 
         {
             using Bad_O = writable_archetype<writable_status::not_weakly_incrementable>;
             static_assert(input_iterator<I1>);
             static_assert(input_iterator<I2>);
-#ifndef _M_CEE // TRANSITION, VSO-1665670
             static_assert(!weakly_incrementable<Bad_O>);
-#endif // ^^^ no workaround ^^^
             static_assert(indirectly_copyable<I1, Bad_O>);
             static_assert(indirectly_copyable<I2, Bad_O>);
             static_assert(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665670
             static_assert(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
-#endif // ^^^ no workaround ^^^
         }
 
         {
