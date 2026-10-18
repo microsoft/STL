@@ -1285,14 +1285,16 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_begin_needs_s     = 0x00200,
     _Fl_begin_needs_d     = 0x00400,
     _Fl_rep_branchless    = 0x01000,
-    _Fl_rep_str           = 0x02000, // 1 << 13
-    _Fl_rep_char_icase    = 0x04000, // 2 << 13
-    _Fl_rep_char_collate  = 0x06000, // 3 << 13
-    _Fl_rep_char_default  = 0x08000, // 4 << 13
-    _Fl_rep_dot_ecma      = 0x0A000, // 5 << 13
-    _Fl_rep_dot_posix     = 0x0C000, // 6 << 13
-    // values 7 << 13 through 15 << 13 inclusive are reserved for new special cases to optimize
-    _Fl_rep_known_subtype = 0x0C000, // 6 << 13, increase to be equal to the newest special case
+    _Fl_rep_str_icase     = 0x02000, // 1 << 13
+    _Fl_rep_str_collate   = 0x04000, // 2 << 13
+    _Fl_rep_str_default   = 0x06000, // 3 << 13
+    _Fl_rep_char_icase    = 0x08000, // 4 << 13
+    _Fl_rep_char_collate  = 0x0A000, // 5 << 13
+    _Fl_rep_char_default  = 0x0C000, // 6 << 13
+    _Fl_rep_dot_ecma      = 0x0E000, // 7 << 13
+    _Fl_rep_dot_posix     = 0x10000, // 8 << 13
+    // values 9 << 13 through 15 << 13 inclusive are reserved for new special cases to optimize
+    _Fl_rep_known_subtype = 0x10000, // 8 << 13, increase to be equal to the newest special case
     _Fl_rep_subtype_mask  = 0x1E000, // 15 << 13, don't change
 };
 
@@ -2059,7 +2061,8 @@ private:
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
 class _Matcher3 { // provides ways to match a regular expression to a text sequence
 private:
-    using _Loop_vals_type   = _Loop_vals_v3_t<_Iter_diff_t<_It>>;
+    using _Diff_type        = _Iter_diff_t<_It>;
+    using _Loop_vals_type   = _Loop_vals_v3_t<_Diff_type>;
     using _Tgt_state_type   = _Tgt_state_v2_t<_It, allocator<_It>>;
     using _State_frame_type = _Rx_state_frame_t<_It>;
 
@@ -2083,9 +2086,9 @@ public:
             _Char_class_d = _Lookup_char_class(static_cast<_Elem>('D'));
         }
 
-        _Iter_diff_t<_It> _Input_length = _STD distance(_Pfirst, _Plast);
-        _Frames_limit                   = _Calculate_frames_limit(_Input_length);
-        _Complexity_limit               = _Calculate_complexity_limit(_Input_length);
+        const _Diff_type _Input_length = _STD distance(_Pfirst, _Plast);
+        _Frames_limit                  = _Calculate_frames_limit(_Input_length);
+        _Complexity_limit              = _Calculate_complexity_limit(_Input_length);
 
         // TRANSITION, ABI, GH-6025:
         // The first two nodes are of types _N_begin and _N_capture with capturing group 0.
@@ -2164,9 +2167,9 @@ private:
 
     size_t _Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node);
 
-    size_t _Calculate_frames_limit(_Iter_diff_t<_It> _Input_length);
-    long long _Calculate_complexity_limit(_Iter_diff_t<_It> _Input_length);
-    void _Increase_complexity_count(_Iter_diff_t<_It> _Count);
+    size_t _Calculate_frames_limit(_Diff_type _Input_length);
+    long long _Calculate_complexity_limit(_Diff_type _Input_length);
+    void _Increase_complexity_count(_Diff_type _Count);
 
     void _Prepare_rep(_Node_rep*);
     bool _Find_first_inner_capture_group(_Node_base*, _Loop_vals_type*);
@@ -3826,10 +3829,10 @@ size_t _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_ops _Cod
 }
 
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
-size_t _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Iter_diff_t<_It> _Input_length) {
+size_t _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Diff_type _Input_length) {
     constexpr size_t _Fixed_part  = 10000000U / sizeof(_State_frame_type);
     constexpr size_t _Divisor     = sizeof(_State_frame_type) / 10U;
-    const auto _Variable_part     = _Input_length / static_cast<_Iter_diff_t<_It>>(_Divisor);
+    const auto _Variable_part     = _Input_length / static_cast<_Diff_type>(_Divisor);
     const size_t _Max_frames_size = _Frames._Max_size();
 
     if (PTRDIFF_MAX < _Variable_part) {
@@ -3840,7 +3843,7 @@ size_t _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Iter_d
 }
 
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
-long long _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_complexity_limit(_Iter_diff_t<_It> _Input_length) {
+long long _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_complexity_limit(_Diff_type _Input_length) {
     constexpr long long _Intercept = 300000LL;
     constexpr long long _Gradient  = 256LL;
     if ((LLONG_MAX - _Intercept) / _Gradient < _Input_length) {
@@ -3850,7 +3853,7 @@ long long _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_complexity_limit(
 }
 
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
-void _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Increase_complexity_count(_Iter_diff_t<_It> _Count) {
+void _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Increase_complexity_count(_Diff_type _Count) {
     if (_Complexity_limit < _Count) {
         _Xregex_error(regex_constants::error_complexity);
     } else {
@@ -3980,6 +3983,25 @@ _BidIt1 _Cmp_chrange(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _E
         }
     }
     return _Begin2 == _End2 ? _Begin1 : _Res;
+}
+
+template <class _FwdIt1, class _FwdIt2, class _Count_type, class _Pr>
+_FwdIt1 _Find_longest_repeating_prefix(_FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
+    const _FwdIt2 _Last2, _Count_type& _Failed_work_counter, _Pr _Pred) {
+    for (;;) {
+        const _FwdIt1 _Res = _First1;
+        _FwdIt2 _Cur       = _First2;
+        for (; _First1 != _Last1 && _Cur != _Last2; (void) ++_First1, (void) ++_Cur) {
+            if (!_Pred(*_First1, *_Cur)) {
+                _Failed_work_counter = static_cast<_Count_type>(_STD distance(_First2, _Cur));
+                return _Res;
+            }
+        }
+
+        if (_Cur != _Last2) {
+            return _Res;
+        }
+    }
 }
 
 template <class _BidIt1, class _BidIt2, class _RxTraits, class _Counter>
@@ -4319,7 +4341,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
 
     while (_Nx) {
         do { // match current node
-            _Increase_complexity_count(_Iter_diff_t<_It>{1}); // one state transition
+            _Increase_complexity_count(_Diff_type{1}); // one state transition
             _Node_base* _Next = _Nx->_Next;
             switch (_Nx->_Kind) { // handle current node's type
             case _N_nop:
@@ -4373,7 +4395,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                 { // check for string match
                     _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
                     _It _Res0;
-                    _Iter_diff_t<_It> _Count{};
+                    _Diff_type _Count{};
                     if ((_Res0 = _STD _Compare_translate_left(_Tgt_state._Cur, _End, _Node->_Data._Str(),
                              _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags, _Count))
                         != _Tgt_state._Cur) {
@@ -4383,7 +4405,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     }
 
                     // divide by 64 because character comparisons are cheaper than state transitions
-                    _Increase_complexity_count(static_cast<_Iter_diff_t<_It>>(_Count / 64));
+                    _Increase_complexity_count(static_cast<_Diff_type>(_Count / 64));
 
                     break;
                 }
@@ -4516,7 +4538,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                         _It _Res0 = _Tgt_state._Cur;
                         _It _Bx   = _Tgt_state._Grps[_Idx]._Begin;
                         _It _Ex   = _Tgt_state._Grps[_Idx]._End;
-                        _Iter_diff_t<_It> _Count{};
+                        _Diff_type _Count{};
                         if (_Bx != _Ex // _Bx == _Ex for zero-length match
                             && (_Res0 = _STD _Compare_translate_both(
                                     _Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags, _Count))
@@ -4527,7 +4549,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                         }
 
                         // divide by 64 because character comparisons are cheaper than state transitions
-                        _Increase_complexity_count(static_cast<_Iter_diff_t<_It>>(_Count / 64));
+                        _Increase_complexity_count(static_cast<_Diff_type>(_Count / 64));
                     } else if (_Sflags & (regex_constants::basic | regex_constants::grep)) {
                         _Failed = true;
                     }
@@ -4557,86 +4579,96 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     if constexpr (_Is_cpp17_random_iter_v<_It>) {
                         const auto _Rep_subtype = _Node->_Flags & _Fl_rep_subtype_mask;
                         if (_Greedy && _Rep_subtype != 0 && _Rep_subtype <= _Fl_rep_known_subtype) {
-                            _It _Min_pos = _Tgt_state._Cur;
+                            _It _Cur = _Tgt_state._Cur;
+                            if (_Rep_subtype <= _Fl_rep_str_default) {
+                                const auto _Nstr             = static_cast<const _Node_str<_Elem>*>(_Next);
+                                const unsigned int _Str_size = _Nstr->_Data._Size();
+                                _Sav._Loop_length            = static_cast<_Diff_type>(_Str_size);
 
-                            _Iter_diff_t<_It> _Count{};
-                            int _Loop_idx = 0;
-
-                            _It _Prev = _Tgt_state._Cur;
-                            _It _Cur  = _Tgt_state._Cur;
-
-                            if (_Rep_subtype == _Fl_rep_str) {
-                                const auto _Nstr      = static_cast<const _Node_str<_Elem>*>(_Next);
-                                const auto _Str_first = _Nstr->_Data._Str();
-                                const auto _Size      = _Nstr->_Data._Size();
-                                const auto _Str_last  = _Str_first + _Size;
-                                _Sav._Loop_length     = static_cast<_Iter_diff_t<_It>>(_Size);
-                                _It _Res0;
-                                while (_Loop_idx != _Node->_Max
-                                       && (_Res0 = _STD _Compare_translate_left(
-                                               _Cur, _End, _Str_first, _Str_last, _Traits, _Sflags, _Count))
-                                              != _Cur) {
-                                    _Prev = _Cur;
-                                    _Cur  = _Res0;
-                                    if (_Loop_idx < INT_MAX) {
-                                        if (++_Loop_idx == _Node->_Min) {
-                                            _Min_pos = _Prev;
-                                        }
-                                    }
+                                // corner case: difference type smaller than unsigned int
+                                if (_Sav._Loop_length < _Diff_type{}
+                                    && static_cast<unsigned int>(_Sav._Loop_length) != _Str_size) {
+                                    // pattern cannot match because it has more characters than input can be long
+                                    // -> try tail only
+                                    _Next   = _Node->_End_rep->_Next;
+                                    _Failed = _Node->_Min > 0;
+                                    break; // finish processing node
                                 }
                             } else {
-                                _Sav._Loop_length = static_cast<_Iter_diff_t<_It>>(1);
-                                _It _Last         = _End;
-                                if (_Node->_Max != -1) {
-                                    const auto _Dist = _STD distance(_Cur, _Last);
-                                    if (_Dist > _Node->_Max) {
-                                        _Last = _Cur;
-                                        _STD advance(_Last, static_cast<_Iter_diff_t<_It>>(_Node->_Max));
-                                    }
-                                }
+                                _Sav._Loop_length = static_cast<_Diff_type>(1);
+                            }
 
-                                if (_Rep_subtype == _Fl_rep_dot_ecma) {
-                                    _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
-                                } else if (_Rep_subtype == _Fl_rep_dot_posix) {
-                                    _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem{});
-                                } else {
-                                    const _Elem _Val = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str();
-                                    if (_Rep_subtype == _Fl_rep_char_icase) {
-                                        auto _Pred = [this, _Val](const _Elem& _Ch) {
-                                            return _Traits.translate_nocase(_Ch) == _Val;
-                                        };
-                                        _Cur = _STD find_if_not(_Cur, _Last, _Pred);
-                                    } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
-                                        _Cur = _STD _Find_not_unchecked(_Cur, _Last, _Val);
-                                    } else if (_Rep_subtype == _Fl_rep_char_default) {
-                                        _Cur = _STD _Find_not_unchecked(_Cur, _Last, _Val);
-                                    } else {
-                                        _STL_INTERNAL_CHECK(_Rep_subtype == _Fl_rep_char_collate);
-                                        auto _Pred = [this, _Val](const _Elem& _Ch) { //
-                                            return _Traits.translate(_Ch) == _Val;
-                                        };
-                                        _Cur = _STD find_if_not(_Cur, _Last, _Pred);
-                                    }
-                                }
-
-                                _Count    = _STD distance(_Tgt_state._Cur, _Cur);
-                                _Loop_idx = _Count >= INT_MAX ? INT_MAX : static_cast<int>(_Count);
-                                if (_Loop_idx >= _Node->_Min && _Node->_Min != 0) {
-                                    _STD advance(_Min_pos, static_cast<_Iter_diff_t<_It>>(_Node->_Min - 1));
-                                }
-
-                                if (_Loop_idx != 0) {
-                                    _Prev = _Cur;
-                                    --_Prev;
+                            _It _Last = _End;
+                            if (_Node->_Max != -1) {
+                                const auto _Dist = (_Last - _Cur) / _Sav._Loop_length;
+                                if (_Dist > _Node->_Max) {
+                                    _Last = _Cur;
+                                    _STD advance(_Last, static_cast<_Diff_type>(_Node->_Max) * _Sav._Loop_length);
                                 }
                             }
 
-                            _Increase_complexity_count(_Count);
+                            _Diff_type _Failed_work_count{};
 
-                            _Next           = _Node->_End_rep->_Next;
-                            _Failed         = _Node->_Min > _Loop_idx;
-                            _Tgt_state._Cur = _Cur;
+                            if (_Rep_subtype <= _Fl_rep_str_default) {
+                                const auto _Nstr      = static_cast<const _Node_str<_Elem>*>(_Next);
+                                const auto _Str_first = _Nstr->_Data._Str();
+                                const auto _Str_last  = _Str_first + _Nstr->_Data._Size();
+
+                                if (_Rep_subtype == _Fl_rep_str_icase) {
+                                    _Cur = _STD _Find_longest_repeating_prefix(_Cur, _Last, _Str_first, _Str_last,
+                                        _Failed_work_count, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+                                } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
+                                    _Cur = _STD _Find_longest_repeating_prefix(
+                                        _Cur, _Last, _Str_first, _Str_last, _Failed_work_count, equal_to<_Elem>{});
+                                } else if (_Rep_subtype == _Fl_rep_str_default) {
+                                    _Cur = _STD _Find_longest_repeating_prefix(
+                                        _Cur, _Last, _Str_first, _Str_last, _Failed_work_count, equal_to<_Elem>{});
+                                } else {
+                                    _STL_INTERNAL_CHECK(_Rep_subtype == _Fl_rep_str_collate);
+                                    _Cur = _STD _Find_longest_repeating_prefix(_Cur, _Last, _Str_first, _Str_last,
+                                        _Failed_work_count, _Cmp_collate_translateleft<_RxTraits>{_Traits});
+                                }
+                            } else if (_Rep_subtype == _Fl_rep_dot_ecma) {
+                                _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
+                            } else if (_Rep_subtype == _Fl_rep_dot_posix) {
+                                _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem{});
+                            } else {
+                                const _Elem _Val = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str();
+                                if (_Rep_subtype == _Fl_rep_char_icase) {
+                                    auto _Pred = [this, _Val](const _Elem& _Ch) {
+                                        return _Traits.translate_nocase(_Ch) == _Val;
+                                    };
+                                    _Cur = _STD find_if_not(_Cur, _Last, _Pred);
+                                } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
+                                    _Cur = _STD _Find_not_unchecked(_Cur, _Last, _Val);
+                                } else if (_Rep_subtype == _Fl_rep_char_default) {
+                                    _Cur = _STD _Find_not_unchecked(_Cur, _Last, _Val);
+                                } else {
+                                    _STL_INTERNAL_CHECK(_Rep_subtype == _Fl_rep_char_collate);
+                                    auto _Pred = [this, _Val](const _Elem& _Ch) { //
+                                        return _Traits.translate(_Ch) == _Val;
+                                    };
+                                    _Cur = _STD find_if_not(_Cur, _Last, _Pred);
+                                }
+                            }
+
+                            const auto _Count    = _STD distance(_Tgt_state._Cur, _Cur);
+                            const auto _Num_reps = _Count / _Sav._Loop_length;
+                            const int _Loop_idx  = _Num_reps >= INT_MAX ? INT_MAX : static_cast<int>(_Num_reps);
+                            _It _Min_pos         = _Tgt_state._Cur;
+                            if (_Loop_idx >= _Node->_Min && _Node->_Min != 0) {
+                                _STD advance(_Min_pos, static_cast<_Diff_type>(_Node->_Min - 1) * _Sav._Loop_length);
+                            }
+
+                            // Divide by 64 because accelerated loops are cheaper than state transitions.
+                            // We must account for all potential work during the last failed repetition attempt as well.
+                            _Increase_complexity_count(static_cast<_Diff_type>((_Count + _Failed_work_count) / 64));
+
+                            _Next   = _Node->_End_rep->_Next;
+                            _Failed = _Node->_Min > _Loop_idx;
                             if (!_Failed && _Loop_idx != 0) {
+                                _Tgt_state._Cur = _Cur;
+
                                 // Usually, the loop variables _Loop_frame_idx and _Loop_idx
                                 // must be restored if a loop is not simple.
                                 // But here, we do not have to bother restoring their values
@@ -4652,6 +4684,9 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                                 const _Rx_unwind_ops _Code = _Node->_Min == 0
                                                                ? _Rx_unwind_ops::_Loop_simple_greedy_firstrep
                                                                : _Rx_unwind_ops::_Do_nothing;
+
+                                _It _Prev = _Tgt_state._Cur;
+                                _STD advance(_Prev, -_Sav._Loop_length);
 
                                 const bool _Second_frame_required = _Prev != _Min_pos;
                                 size_t _First_frame_idx{};
@@ -4731,7 +4766,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                             auto& _Base_frame = _Frames[_Sav._Loop_frame_idx];
                             _Sav._Loop_length = _STD distance(_Base_frame._Pos, _Tgt_state._Cur);
 
-                            if (_Sav._Loop_length == _Iter_diff_t<_It>{}) { // initial match empty
+                            if (_Sav._Loop_length == _Diff_type{}) { // initial match empty
                                 // loop is branchless, so it will only ever match empty strings
                                 // -> we only try tail for POSIX or if minimum number of reps is non-zero
                                 // _Next is already assigned correctly for matching tail
@@ -6238,7 +6273,13 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                                 _Outer_rep->_Flags |= _Fl_rep_char_default;
                             }
                         } else {
-                            _Outer_rep->_Flags |= _Fl_rep_str;
+                            if ((_Flags & regex_constants::icase) != 0) {
+                                _Outer_rep->_Flags |= _Fl_rep_str_icase;
+                            } else if ((_Flags & regex_constants::collate) != 0) {
+                                _Outer_rep->_Flags |= _Fl_rep_str_collate;
+                            } else {
+                                _Outer_rep->_Flags |= _Fl_rep_str_default;
+                            }
                         }
                         break;
 

@@ -56,6 +56,8 @@ BENCHMARK_CAPTURE(bm_match_sequence_of_as, "A*" icase, "A*", icase)->Apply(large
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*?", "a*?")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:a)*", "(?:a)*")->Apply(large_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:aa)*", "(?:aa)*")->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:aa)*" collate, "(?:aa)*")->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:Aa)*" icase, "(?:Aa)*", icase)->Apply(large_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)*", "(a)*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)*?", "(a)*?")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:b|a)*", "(?:b|a)*")->Apply(common_args);

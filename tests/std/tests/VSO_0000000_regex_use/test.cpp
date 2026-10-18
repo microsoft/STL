@@ -3061,54 +3061,57 @@ void test_gh_6499() {
     // for greedy multi-character loops as a result,
     // so add additional test coverage for multi-character loops.
     // Also add coverage for single-character loops in icase mode.
-    g_regexTester.should_not_match("", "(?:aa)+");
-    g_regexTester.should_not_match("a", "(?:aa)+");
-    g_regexTester.should_match("aa", "(?:aa)+");
-    g_regexTester.should_match("c", "(?:aa){0}c");
-    g_regexTester.should_match("aaaaaa", "(?:aa)*");
-    g_regexTester.should_not_match("aaaaa", "(?:aa)*");
-    g_regexTester.should_not_match("aaaaaaac", "(?:aa)*");
-    g_regexTester.should_not_match("aaaaaaaac", "(?:aa)*");
+    for (const auto options : {ECMAScript, regex_constants::collate}) {
+        g_regexTester.should_not_match("", "(?:aa)+", options);
+        g_regexTester.should_not_match("a", "(?:aa)+", options);
+        g_regexTester.should_match("aa", "(?:aa)+", options);
+        g_regexTester.should_match("c", "(?:aa){0}c", options);
+        g_regexTester.should_match("aaaaaa", "(?:aa)*", options);
+        g_regexTester.should_not_match("aaaaa", "(?:aa)*", options);
+        g_regexTester.should_not_match("aaaaaaac", "(?:aa)*", options);
+        g_regexTester.should_not_match("aaaaaaaac", "(?:aa)*", options);
 
-    g_regexTester.should_not_match("aac", "(?:aa){0}c");
-    g_regexTester.should_match("aac", "(?:aa){0,1}c");
-    g_regexTester.should_not_match("aaaac", "(?:aa){0,1}c");
-    g_regexTester.should_match("aaaac", "(?:aa){0,2}c");
-    g_regexTester.should_match("aaaac", "(?:aa){1,2}c");
-    g_regexTester.should_not_match("aaaac", "(?:aa){1}c");
-    g_regexTester.should_not_match("aaaaac", "(?:aa){1,2}c");
-    g_regexTester.should_match("aaaaaac", "(?:aa){1,3}c");
-    g_regexTester.should_not_match("aac", "(?:aa){2,}c");
-    g_regexTester.should_not_match("aaac", "(?:aa){2,}c");
-    g_regexTester.should_match("aaaac", "(?:aa){2,}c");
-    g_regexTester.should_not_match("aaaaac", "(?:aa){2,}c");
-    g_regexTester.should_match("aaaaaac", "(?:aa){2,}c");
+        g_regexTester.should_not_match("aac", "(?:aa){0}c", options);
+        g_regexTester.should_match("aac", "(?:aa){0,1}c", options);
+        g_regexTester.should_not_match("aaaac", "(?:aa){0,1}c", options);
+        g_regexTester.should_match("aaaac", "(?:aa){0,2}c", options);
+        g_regexTester.should_match("aaaac", "(?:aa){1,2}c", options);
+        g_regexTester.should_not_match("aaaac", "(?:aa){1}c", options);
+        g_regexTester.should_not_match("aaaaac", "(?:aa){1,2}c", options);
+        g_regexTester.should_match("aaaaaac", "(?:aa){1,3}c", options);
+        g_regexTester.should_not_match("aac", "(?:aa){2,}c", options);
+        g_regexTester.should_not_match("aaac", "(?:aa){2,}c", options);
+        g_regexTester.should_match("aaaac", "(?:aa){2,}c", options);
+        g_regexTester.should_not_match("aaaaac", "(?:aa){2,}c", options);
+        g_regexTester.should_match("aaaaaac", "(?:aa){2,}c", options);
 
-    g_regexTester.should_not_match("", "(?:ab)+");
-    g_regexTester.should_not_match("a", "(?:ab)+");
-    g_regexTester.should_match("ab", "(?:ab)+");
-    g_regexTester.should_match("c", "(?:ab){0}c");
-    g_regexTester.should_match("ababab", "(?:ab)*");
-    g_regexTester.should_not_match("ababa", "(?:ab)*");
-    g_regexTester.should_not_match("ababaa", "(?:ab)*");
-    g_regexTester.should_not_match("abababac", "(?:ab)*");
-    g_regexTester.should_not_match("ababababc", "(?:ab)*");
+        g_regexTester.should_not_match("", "(?:ab)+", options);
+        g_regexTester.should_not_match("a", "(?:ab)+", options);
+        g_regexTester.should_match("ab", "(?:ab)+", options);
+        g_regexTester.should_match("c", "(?:ab){0}c", options);
+        g_regexTester.should_match("ababab", "(?:ab)*", options);
+        g_regexTester.should_not_match("ababa", "(?:ab)*", options);
+        g_regexTester.should_not_match("ababaa", "(?:ab)*", options);
+        g_regexTester.should_not_match("abababac", "(?:ab)*", options);
+        g_regexTester.should_not_match("ababababc", "(?:ab)*", options);
 
-    g_regexTester.should_not_match("abc", "(?:ab){0}c");
-    g_regexTester.should_match("abc", "(?:ab){0,1}c");
-    g_regexTester.should_not_match("ababc", "(?:ab){0,1}c");
-    g_regexTester.should_match("ababc", "(?:ab){0,2}c");
-    g_regexTester.should_match("ababc", "(?:ab){1,2}c");
-    g_regexTester.should_not_match("ababc", "(?:ab){1}c");
-    g_regexTester.should_not_match("ababac", "(?:ab){1,2}c");
-    g_regexTester.should_match("abababc", "(?:ab){1,3}c");
-    g_regexTester.should_not_match("abc", "(?:ab){2,}c");
-    g_regexTester.should_not_match("abac", "(?:ab){2,}c");
-    g_regexTester.should_match("ababc", "(?:ab){2,}c");
-    g_regexTester.should_not_match("ababac", "(?:ab){2,}c");
-    g_regexTester.should_match("abababc", "(?:ab){2,}c");
+        g_regexTester.should_not_match("abc", "(?:ab){0}c", options);
+        g_regexTester.should_match("abc", "(?:ab){0,1}c", options);
+        g_regexTester.should_not_match("ababc", "(?:ab){0,1}c", options);
+        g_regexTester.should_match("ababc", "(?:ab){0,2}c", options);
+        g_regexTester.should_match("ababc", "(?:ab){1,2}c", options);
+        g_regexTester.should_not_match("ababc", "(?:ab){1}c", options);
+        g_regexTester.should_not_match("ababac", "(?:ab){1,2}c", options);
+        g_regexTester.should_match("abababc", "(?:ab){1,3}c", options);
+        g_regexTester.should_not_match("abc", "(?:ab){2,}c", options);
+        g_regexTester.should_not_match("abac", "(?:ab){2,}c", options);
+        g_regexTester.should_match("ababc", "(?:ab){2,}c", options);
+        g_regexTester.should_not_match("ababac", "(?:ab){2,}c", options);
+        g_regexTester.should_match("abababc", "(?:ab){2,}c", options);
+    }
 
-    for (syntax_option_type options : {ECMAScript | nosubs, extended | nosubs}) {
+    for (const syntax_option_type options :
+        {ECMAScript | nosubs, extended | nosubs, regex_constants::collate | nosubs}) {
         {
             test_regex greedy_aa_star(&g_regexTester, "(aa)*", options);
             greedy_aa_star.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
@@ -3233,6 +3236,64 @@ void test_gh_6499() {
     }
 }
 
+void test_gh_6506() {
+    // GH-6506: Accelerate greedy multi-character loops
+    //
+    // Test correct case-insensitive matching.
+    for (const string pattern : {"(?:aa)+", "(?:aA)+", "(?:Aa)+", "(?:AA)+"}) {
+        g_regexTester.should_not_match("", pattern, icase);
+        g_regexTester.should_not_match("a", pattern, icase);
+        g_regexTester.should_not_match("A", pattern, icase);
+        g_regexTester.should_match("aa", pattern, icase);
+        g_regexTester.should_match("aA", pattern, icase);
+        g_regexTester.should_match("AA", pattern, icase);
+        g_regexTester.should_match("Aa", pattern, icase);
+        g_regexTester.should_match("aAaaAAAa", pattern, icase);
+        g_regexTester.should_not_match("aAaaAAAaa", pattern, icase);
+        g_regexTester.should_not_match("aABa", pattern, icase);
+        g_regexTester.should_not_match("aAba", pattern, icase);
+        g_regexTester.should_not_match("aAab", pattern, icase);
+        g_regexTester.should_not_match("aAaB", pattern, icase);
+
+        {
+            test_regex greedy_aa_star(&g_regexTester, pattern, icase);
+            greedy_aa_star.should_search_match("aaAaaAAAaA", "aaAaaAAAaA");
+            greedy_aa_star.should_search_match("aaAaaAAAa", "aaAaaAAA");
+        }
+    }
+
+    for (const string pattern : {"(?:ab)+", "(?:aB)+", "(?:Ab)+", "(?:AB)+"}) {
+        g_regexTester.should_not_match("", pattern, icase);
+        g_regexTester.should_not_match("a", pattern, icase);
+        g_regexTester.should_not_match("A", pattern, icase);
+        g_regexTester.should_not_match("b", pattern, icase);
+        g_regexTester.should_not_match("B", pattern, icase);
+        g_regexTester.should_match("ab", pattern, icase);
+        g_regexTester.should_match("aB", pattern, icase);
+        g_regexTester.should_match("Ab", pattern, icase);
+        g_regexTester.should_match("AB", pattern, icase);
+        g_regexTester.should_not_match("ba", pattern, icase);
+        g_regexTester.should_not_match("bA", pattern, icase);
+        g_regexTester.should_not_match("Ba", pattern, icase);
+        g_regexTester.should_not_match("BA", pattern, icase);
+        g_regexTester.should_match("aBABAbab", pattern, icase);
+        g_regexTester.should_not_match("aBABAbaba", pattern, icase);
+        g_regexTester.should_not_match("aABa", pattern, icase);
+        g_regexTester.should_not_match("aAba", pattern, icase);
+        g_regexTester.should_not_match("aAac", pattern, icase);
+        g_regexTester.should_not_match("aAaC", pattern, icase);
+
+        {
+            test_regex greedy_ab_plus(&g_regexTester, pattern, icase);
+            greedy_ab_plus.should_search_match("abAbaBABaB", "abAbaBABaB");
+            greedy_ab_plus.should_search_match("abAbaBABa", "abAbaBAB");
+            greedy_ab_plus.should_search_match("bAbaBABabA", "AbaBABab");
+            greedy_ab_plus.should_search_match("aAbABabAB", "AbABabAB");
+            greedy_ab_plus.should_search_match("cbABabAbaBad", "ABabAbaB");
+        }
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -3310,6 +3371,7 @@ int main() {
     test_gh_6475();
     test_gh_6480();
     test_gh_6499();
+    test_gh_6506();
 
     return g_regexTester.result();
 }
