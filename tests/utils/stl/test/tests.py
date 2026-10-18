@@ -48,7 +48,6 @@ class STLTest(Test):
         self.env = {}
         self.fileDependencies = []
         self.flags = []
-        self.isenseRspPath = None
         self.linkFlags = []
         self.testType = None
 
@@ -80,14 +79,6 @@ class STLTest(Test):
 
         if 'test-only-edg' in self.config.available_features and 'edg' not in self.requires:
             return Result(UNSUPPORTED, 'We run only /BE tests with the test-only-edg flag')
-
-        if 'edg_drop' in self.config.available_features:
-            if 'edg' not in self.requires:
-                return Result(UNSUPPORTED, 'We run only /BE tests with the edg drop')
-
-            _, tmpBase = self.getTempPaths()
-            self.isenseRspPath = tmpBase + '.isense.rsp'
-            self.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + self.isenseRspPath])
 
         # TRANSITION, google/sanitizers#328: clang-cl does not support /MDd or /MTd with ASan
         if ('clang' in self.config.available_features and 'asan' in self.config.available_features and

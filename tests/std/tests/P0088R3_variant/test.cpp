@@ -3012,7 +3012,7 @@ constexpr void test_T_assignment_sfinae() {
     struct X {
       operator void*();
     };
-#ifndef __EDG__ // TRANSITION, VSO-1327220
+#ifndef __EDG__ // TRANSITION, EDG-273
     static_assert(!std::is_assignable<V, X>::value, "no boolean conversion in operator=");
 #endif // ^^^ no workaround ^^^
     static_assert(std::is_assignable<V, std::false_type>::value, "converted to bool in operator=");
@@ -4696,7 +4696,7 @@ void test_T_ctor_sfinae() {
     struct X {
       operator void*();
     };
-#ifndef __EDG__ // TRANSITION, VSO-1327220
+#ifndef __EDG__ // TRANSITION, EDG-273
     static_assert(!std::is_constructible<V, X>::value, "no boolean conversion in constructor");
 #endif // ^^^ no workaround ^^^
     static_assert(std::is_constructible<V, std::false_type>::value, "converted to bool in constructor");
