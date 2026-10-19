@@ -2776,50 +2776,6 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
-        template <class _Ty>
-        const void* _Min_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (*_Ptr < _Cur) {
-                    _Res = _Ptr;
-                    _Cur = *_Ptr;
-                }
-            }
-
-            return _Res;
-        }
-
-        template <class _Ty>
-        const void* _Max_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (_Cur < *_Ptr) {
-                    _Res = _Ptr;
-                    _Cur = *_Ptr;
-                }
-            }
-
-            return _Res;
-        }
-
-        template <class _Ty>
-        _Min_max_element_t _Both_tail(const void* const _First, const void* const _Last, _Min_max_element_t& _Res,
-            _Ty _Cur_min, _Ty _Cur_max) noexcept {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (*_Ptr < _Cur_min) {
-                    _Res._Min = _Ptr;
-                    _Cur_min  = *_Ptr;
-                }
-                // Not else!
-                // * Needed for correctness if start with maximum, as we don't handle specially the first element.
-                // * Promote branchless code generation.
-                if (_Cur_max <= *_Ptr) {
-                    _Res._Max = _Ptr;
-                    _Cur_max  = *_Ptr;
-                }
-            }
-
-            return _Res;
-        }
-
         template <class _Traits, bool _Use_signed_type, class _Ty>
         auto _H_min_wrap(const _Ty _Vals) noexcept {
             if constexpr (_Use_signed_type) {
@@ -2841,19 +2797,21 @@ namespace {
         template <_Min_max_mode _Mode, class _Traits, bool _Is_signed>
         auto _Minmax_element_impl(const void* _First, const void* const _Last) noexcept {
             constexpr bool _Use_signed_type = _Is_signed || !_Traits::_Has_unsigned_cmp;
-            using _Ty =
+            using _Ty = std::conditional_t<_Is_signed, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
+            using _TyCor =
                 std::conditional_t<_Use_signed_type, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
-            _Min_max_element_t _Res = {_First, _First};
-            _Ty _Cur_min_val;
-            _Ty _Cur_max_val;
+            const void* _Res_min = _First;
+            const void* _Res_max = _First;
+            _TyCor _Cur_min_val;
+            _TyCor _Cur_max_val;
 
-            if constexpr (std::is_floating_point_v<_Ty>) {
-                _Cur_min_val = std::numeric_limits<_Ty>::infinity();
-                _Cur_max_val = -std::numeric_limits<_Ty>::infinity();
+            if constexpr (std::is_floating_point_v<_TyCor>) {
+                _Cur_min_val = std::numeric_limits<_TyCor>::infinity();
+                _Cur_max_val = -std::numeric_limits<_TyCor>::infinity();
             } else {
-                _Cur_min_val = std::numeric_limits<_Ty>::max();
-                _Cur_max_val = std::numeric_limits<_Ty>::min();
+                _Cur_min_val = std::numeric_limits<_TyCor>::max();
+                _Cur_max_val = std::numeric_limits<_TyCor>::min();
             }
 
             if constexpr (_Traits::_Vectorized) {
@@ -2910,7 +2868,7 @@ namespace {
                     }
                 };
                 const auto _Less_wrap = [](const auto _Lhs, const auto _Rhs) noexcept {
-                    return static_cast<_Ty>(_Lhs) < static_cast<_Ty>(_Rhs);
+                    return static_cast<_TyCor>(_Lhs) < static_cast<_TyCor>(_Rhs);
                 };
 
                 const auto _Update_min_max = [&](const auto _Cur_vals, [[maybe_unused]] const auto _Blend_idx_0,
@@ -3027,7 +2985,7 @@ namespace {
                                 // Extract its vertical index
                                 const auto _V_pos = _Traits::_Get_v_pos(_Idx_min);
                                 // Finally, compute the pointer
-                                _Res._Min = _Base + static_cast<size_t>(_V_pos) * _Traits::_Vec_size + _H_pos;
+                                _Res_min = _Base + static_cast<size_t>(_V_pos) * _Traits::_Vec_size + _H_pos;
                             }
                         }
 
@@ -3081,7 +3039,7 @@ namespace {
                                 }
 
                                 // Finally, compute the pointer
-                                _Res._Max = _Base + _V_pos * _Traits::_Vec_size + _H_pos;
+                                _Res_max = _Base + _V_pos * _Traits::_Vec_size + _H_pos;
                             }
                         }
                         // Horizontal part done, results are saved, now need to see if there is another portion.
@@ -3125,27 +3083,48 @@ namespace {
                 _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
             }
 
-            if constexpr (_Is_signed) {
-                if constexpr (_Mode == _Mode_min) {
-                    return _Min_tail(_First, _Last, _Res._Min, _Cur_min_val);
-                } else if constexpr (_Mode == _Mode_max) {
-                    return _Max_tail(_First, _Last, _Res._Max, _Cur_max_val);
+            const auto _Apply_correction = [](const _TyCor _Val) noexcept {
+                if constexpr (_Is_signed || _Traits::_Has_unsigned_cmp) {
+                    return _Val;
                 } else {
-                    return _Both_tail(_First, _Last, _Res, _Cur_min_val, _Cur_max_val);
+                    constexpr _Ty _Correction = _Ty{1} << (sizeof(_Ty) * 8 - 1);
+                    return static_cast<_Ty>(_Val + _Correction);
                 }
+            };
+
+            _Ty _Cur_min = _Apply_correction(_Cur_min_val);
+            _Ty _Cur_max = _Apply_correction(_Cur_max_val);
+
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if constexpr ((_Mode & _Mode_min) != 0) {
+                    if (*_Ptr < _Cur_min) {
+                        _Res_min = _Ptr;
+                        _Cur_min = *_Ptr;
+                    }
+                }
+
+                if constexpr (_Mode == _Mode_max) {
+                    if (_Cur_max < *_Ptr) {
+                        _Res_max = _Ptr;
+                        _Cur_max = *_Ptr;
+                    }
+                } else if constexpr (_Mode == _Mode_both) {
+                    // Not using else after the _Cur_min part for _Mode_both!
+                    // * Needed for correctness if start with max, as we don't handle specially the first element.
+                    // * Promote branchless code generation.
+                    if (_Cur_max <= *_Ptr) {
+                        _Res_max = _Ptr;
+                        _Cur_max = *_Ptr;
+                    }
+                }
+            }
+
+            if constexpr (_Mode == _Mode_min) {
+                return _Res_min;
+            } else if constexpr (_Mode == _Mode_max) {
+                return _Res_max;
             } else {
-                using _UTy = _Traits::_Unsigned_t;
-
-                constexpr _UTy _Correction = _Traits::_Has_unsigned_cmp ? 0 : _UTy{1} << (sizeof(_UTy) * 8 - 1);
-
-                if constexpr (_Mode == _Mode_min) {
-                    return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min_val + _Correction));
-                } else if constexpr (_Mode == _Mode_max) {
-                    return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max_val + _Correction));
-                } else {
-                    return _Both_tail(_First, _Last, _Res, static_cast<_UTy>(_Cur_min_val + _Correction),
-                        static_cast<_UTy>(_Cur_max_val + _Correction));
-                }
+                return _Min_max_element_t{_Res_min, _Res_max};
             }
         }
 
