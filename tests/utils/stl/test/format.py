@@ -8,12 +8,9 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
-import itertools
 import os
 import re
 import shutil
-import sys
 
 import lit
 
@@ -24,9 +21,9 @@ import stl.util
 
 @dataclass
 class TestStep:
-    cmd: List[str] = field(default_factory=list)
+    cmd: list[str] = field(default_factory=list)
     workDir: os.PathLike = field(default=Path('.'))
-    env: Dict[str, str] = field(default_factory=dict)
+    env: dict[str, str] = field(default_factory=dict)
     shouldFail: bool = field(default=False)
 
 def _mergeEnvironments(currentEnv, otherEnv):
@@ -85,24 +82,25 @@ class STLTestFormat:
         envEntries = None
         if envlstPath is not None:
             envEntries = stl.test.file_parsing.parse_env_lst_file(envlstPath)
-            formatString = '{:0' + str(len(str(len(envEntries)))) + 'd}'
+            envNumWidth = len(str(len(envEntries)))
 
         sourcePath = testSuite.getSourcePath(pathInSuite)
-        for filename in os.listdir(sourcePath):
-            # Ignore dot files and excluded tests.
-            if filename.startswith('.') or filename in localConfig.excludes:
-                continue
+        with os.scandir(sourcePath) as entries:
+            for entry in entries:
+                filename = entry.name
+                # Ignore dot files and excluded tests.
+                if filename.startswith('.') or filename in localConfig.excludes:
+                    continue
 
-            filepath = os.path.join(sourcePath, filename)
-            if not os.path.isdir(filepath):
-                if any([re.search(ext, filename) for ext in localConfig.suffixes]):
-                    if envEntries is None:
-                        litConfig.fatal("Could not find an env.lst file.")
+                if not entry.is_dir():
+                    if any(re.search(ext, filename) for ext in localConfig.suffixes):
+                        if envEntries is None:
+                            litConfig.fatal("Could not find an env.lst file.")
 
-                    for envEntry, envNum in zip(envEntries, itertools.count()):
-                        yield testClass(testSuite, pathInSuite + (filename,),
-                                        litConfig, localConfig, envEntry,
-                                        formatString.format(envNum))
+                        for envNum, envEntry in enumerate(envEntries):
+                            yield testClass(testSuite, pathInSuite + (filename,),
+                                            litConfig, localConfig, envEntry,
+                                            f'{envNum:0{envNumWidth}d}')
 
     def runStep(self, testStep, litConfig):
         if str(testStep.workDir) == '.':
@@ -117,9 +115,9 @@ class STLTestFormat:
     def getStages(self, test, litConfig):
         @dataclass
         class SharedState:
-            execFile: Optional[os.PathLike] = field(default=None)
+            execFile: os.PathLike | None = field(default=None)
             execDir: os.PathLike = field(default_factory=Path)
-            env: Dict[str, str] = field(default_factory=dict)
+            env: dict[str, str] = field(default_factory=dict)
 
         execDir, _ = test.getTempPaths()
         shared = SharedState(None, execDir, _mergeEnvironments(litConfig.test_env, test.env))
@@ -151,17 +149,17 @@ class STLTestFormat:
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.LINK in test.testType or \
                 ('clang' in test.config.available_features and 'asan' in test.config.available_features):
-            objFile = tmpBase + '.o'
-            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags, '-Fo' + objFile]
+            objFile = f'{tmpBase}.o'
+            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags, f'-Fo{objFile}']
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
-            shared.execFile = tmpBase + '.exe'
-            cmd = ['link.exe', objFile, *test.flags, '-out:' + shared.execFile, *test.linkFlags]
+            shared.execFile = f'{tmpBase}.exe'
+            cmd = ['link.exe', objFile, *test.flags, f'-out:{shared.execFile}', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.RUN in test.testType:
-            shared.execFile = tmpBase + '.exe'
+            shared.execFile = f'{tmpBase}.exe'
             cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
-                   '-Fe' + shared.execFile, '-link', *test.linkFlags]
+                   f'-Fe{shared.execFile}', '-link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
     def getTestSetupSteps(self, test, litConfig, shared):
@@ -174,7 +172,7 @@ class STLTestFormat:
         yield from []
 
     def getTestSteps(self, test, litConfig, shared):
-        if not TestType.RUN in test.testType:
+        if TestType.RUN not in test.testType:
             yield from []
             return
 
@@ -203,14 +201,14 @@ class STLTestFormat:
                 if not isBuildStep and litConfig.build_only:
                     continue
 
-                report += stageName + ' steps:\n'
+                report += f'{stageName} steps:\n'
                 for step in steps:
                     cmd, out, err, rc = self.runStep(step, litConfig)
 
                     if step.shouldFail and rc == 0:
-                        report += stageName + ' step succeeded unexpectedly.\n'
+                        report += f'{stageName} step succeeded unexpectedly.\n'
                     elif rc != 0:
-                        report += stageName + ' step failed unexpectedly.\n'
+                        report += f'{stageName} step failed unexpectedly.\n'
 
                     report += stl.util.makeReport(cmd, out, err, rc)
                     if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
@@ -221,10 +219,10 @@ class STLTestFormat:
             return (lit.Test.PASS, '')
 
         except Exception as e:
-            _, _, exception_traceback = sys.exc_info()
+            exception_traceback = e.__traceback__
             filename = exception_traceback.tb_frame.f_code.co_filename
             line_number = exception_traceback.tb_lineno
-            message = repr(e) + ' at ' + filename + ':' + str(line_number)
+            message = f'{e!r} at {filename}:{line_number}'
             litConfig.error(message)
             return (lit.Test.UNRESOLVED, message)
 
