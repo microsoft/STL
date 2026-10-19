@@ -31,7 +31,9 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 _EXPORT_STD struct nullopt_t { // no-value state indicator
-    struct _Tag {};
+    struct _Tag {
+        explicit _Tag() = default;
+    };
     constexpr explicit nullopt_t(_Tag) {}
 #if _HAS_CXX20
     _NODISCARD friend constexpr auto operator<=>(nullopt_t, nullopt_t) noexcept /* strengthened */ = default;

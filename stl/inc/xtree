@@ -1177,7 +1177,7 @@ public:
     }
 
     _Default_sentinel _Unchecked_end() const noexcept {
-        return {};
+        return _Default_sentinel{};
     }
 
     _Unchecked_const_iterator _Unchecked_end_iter() const noexcept {

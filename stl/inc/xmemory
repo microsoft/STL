@@ -1190,7 +1190,9 @@ struct _Alloc_construct_ptr { // pointer used to help construct 1 _Alloc::value_
     _Alloc_construct_ptr& operator=(const _Alloc_construct_ptr&) = delete;
 };
 
-struct _Fake_allocator {};
+struct _Fake_allocator {
+    explicit _Fake_allocator() = default;
+};
 
 struct _Container_base0 {
     _CONSTEXPR20 void _Orphan_all() noexcept {}
@@ -1514,7 +1516,7 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
 #if _ITERATOR_DEBUG_LEVEL == 0
 template <class _Alloc>
 _CONSTEXPR20 _Fake_allocator _Get_proxy_allocator(const _Alloc&) noexcept {
-    return {};
+    return _Fake_allocator{};
 }
 
 template <class _Alloc>

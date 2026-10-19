@@ -1624,8 +1624,10 @@ template <class _Iter>
 using _Unwrapped_unverified_t = _Remove_cvref_t<decltype(_Get_unwrapped_unverified(_STD declval<_Iter>()))>;
 
 struct _Distance_unknown {
+    explicit _Distance_unknown() = default;
+
     constexpr _Distance_unknown operator-() const noexcept {
-        return {};
+        return _Distance_unknown{};
     }
 };
 
@@ -4372,7 +4374,9 @@ namespace ranges {
 struct _Container_proxy;
 struct _Iterator_base12;
 
-struct _Default_sentinel {}; // empty struct to serve as the end of a range
+struct _Default_sentinel { // empty struct to serve as the end of a range
+    explicit _Default_sentinel() = default;
+};
 
 #if _HAS_CXX20
 _EXPORT_STD template <semiregular>
@@ -4756,8 +4760,10 @@ _EXPORT_STD inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 
 namespace ranges {
     struct _Distance_unbounded {
+        explicit _Distance_unbounded() = default;
+
         _NODISCARD constexpr _Distance_unbounded operator-() const noexcept {
-            return {};
+            return _Distance_unbounded{};
         }
     };
 
