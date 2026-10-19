@@ -376,34 +376,41 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_compound : bool_constant<!is_fundam
 _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
+// _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) - Always FUNC(__cdecl, ...)
 #define _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) FUNC(__cdecl, OPT1, OPT2, OPT3)
 
+// _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) - FUNC(__clrcall, ...) if _M_CEE
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
-#else // ^^^ __clrcall supported / __clrcall not supported vvv
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ __clrcall not supported ^^^
+#endif // ^^^ !defined(_M_CEE) ^^^
 
+// _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) - FUNC(__fastcall, ...) on x86, non-CEE
 #if defined(_M_IX86) && !defined(_M_CEE)
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)
-#else // ^^^ __fastcall supported / __fastcall not supported vvv
+#else // ^^^ defined(_M_IX86) && !defined(_M_CEE) / !(defined(_M_IX86) && !defined(_M_CEE)) vvv
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ __fastcall not supported ^^^
+#endif // ^^^ !(defined(_M_IX86) && !defined(_M_CEE)) ^^^
 
+// _EMIT_STDCALL / _EMIT_THISCALL - FUNC(__stdcall, ...) / FUNC(__thiscall, ...) on x86
 #ifdef _M_IX86
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
-#else // ^^^ __stdcall and __thiscall supported / __stdcall and __thiscall not supported vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ __stdcall and __thiscall not supported ^^^
+#endif // ^^^ !defined(_M_IX86) ^^^
 
+// _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) - FUNC(__vectorcall, ...) if supported
 #if ((defined(_M_IX86) && _M_IX86_FP >= 2) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE)
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
 #else // ^^^ __vectorcall supported / __vectorcall not supported vvv
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // ^^^ __vectorcall not supported ^^^
 
+// Non-member calling convention family
+// These macros emit FUNC for non-member function types with every supported calling convention.
 #define _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)          \
     _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
@@ -411,17 +418,21 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
     _EMIT_STDCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
     _EMIT_VECTORCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
 
+// Like _NON_MEMBER_CALL but over cv-qualifiers: (none), const, volatile, const volatile
 #define _NON_MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)    \
     _NON_MEMBER_CALL(FUNC, , REF_OPT, NOEXCEPT_OPT)         \
     _NON_MEMBER_CALL(FUNC, const, REF_OPT, NOEXCEPT_OPT)    \
     _NON_MEMBER_CALL(FUNC, volatile, REF_OPT, NOEXCEPT_OPT) \
     _NON_MEMBER_CALL(FUNC, const volatile, REF_OPT, NOEXCEPT_OPT)
 
+// Like _NON_MEMBER_CALL_CV but over ref-qualifiers: (none), &, &&
 #define _NON_MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT) \
     _NON_MEMBER_CALL_CV(FUNC, , NOEXCEPT_OPT)       \
     _NON_MEMBER_CALL_CV(FUNC, &, NOEXCEPT_OPT)      \
     _NON_MEMBER_CALL_CV(FUNC, &&, NOEXCEPT_OPT)
 
+// _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) - 12 or 24 cv-ref-noexcept combinations
+// per enabled calling convention. Used by _Function_args.
 #ifdef __cpp_noexcept_function_type
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _NON_MEMBER_CALL_CV_REF(FUNC, )            \
@@ -430,6 +441,8 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _NON_MEMBER_CALL_CV_REF(FUNC, )
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
+// Member calling convention family
+// Same as _NON_MEMBER_CALL but also emits __thiscall on x86.
 #define _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)      \
     _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)    \
@@ -457,6 +470,9 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _MEMBER_CALL_CV_REF(FUNC, )
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
+// _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) - Flat list of 12 or 24 cv-ref-noexcept
+// combinations. Used for ellipsis function type traits. Retained for legacy
+// specializations; new components should avoid this macro.
 #ifdef __cpp_noexcept_function_type
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
     CLASS(_EMPTY_ARGUMENT)                   \
