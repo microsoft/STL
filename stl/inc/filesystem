@@ -183,51 +183,42 @@ namespace filesystem {
     template <class _Elem, class _Traits>
     constexpr bool _Is_Source<basic_string_view<_Elem, _Traits>> = _Is_EcharT<_Elem>;
 
-    struct _Normal_conversion {};
-
-    struct _Utf8_conversion {};
+    enum class _Conversion { _Normal, _Utf8 };
 
     // A "stringoid" is basic_string_view<_EcharT> or basic_string<_EcharT>.
 
-    template <class _Conversion>
-    _NODISCARD wstring _Convert_stringoid_to_wide(const string_view _Input, _Conversion) {
-        _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Conversion, _Normal_conversion, _Utf8_conversion>);
-
-        if constexpr (is_same_v<_Conversion, _Normal_conversion>) {
+    template <_Conversion _Kind>
+    _NODISCARD wstring _Convert_stringoid_to_wide(const string_view _Input) {
+        if constexpr (_Kind == _Conversion::_Normal) {
             return _Convert_narrow_to_wide(__std_fs_code_page(), _Input);
         } else {
             return _Convert_narrow_to_wide(__std_code_page::_Utf8, _Input);
         }
     }
 
-    template <class _Conversion>
-    _NODISCARD wstring _Convert_stringoid_to_wide(const wstring_view _Input, _Conversion) {
-        static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4950 [depr.fs.path.factory]/1");
+    template <_Conversion _Kind>
+    _NODISCARD wstring _Convert_stringoid_to_wide(const wstring_view _Input) {
+        static_assert(_Kind == _Conversion::_Normal, "invalid value_type, see N4950 [depr.fs.path.factory]/1");
         return wstring{_Input};
     }
 
 #ifdef __cpp_char8_t
-    template <class _Conversion>
-    _NODISCARD wstring _Convert_stringoid_to_wide(const basic_string_view<char8_t> _Input, _Conversion) {
-        _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Conversion, _Normal_conversion, _Utf8_conversion>);
-
+    template <_Conversion>
+    _NODISCARD wstring _Convert_stringoid_to_wide(const basic_string_view<char8_t> _Input) {
         const string_view _Input_as_char{reinterpret_cast<const char*>(_Input.data()), _Input.size()};
         return _Convert_narrow_to_wide(__std_code_page::_Utf8, _Input_as_char);
     }
 #endif // defined(__cpp_char8_t)
 
-    template <class _Conversion>
-    _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input, _Conversion) {
-        static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4950 [depr.fs.path.factory]/1");
+    template <_Conversion _Kind>
+    _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input) {
+        static_assert(_Kind == _Conversion::_Normal, "invalid value_type, see N4950 [depr.fs.path.factory]/1");
         return wstring{_Input.data(), _Input.data() + _Input.size()};
     }
 
-    template <class _Conversion>
-    _NODISCARD wstring _Convert_stringoid_to_wide(const u32string_view _Input, _Conversion) {
-        static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4950 [depr.fs.path.factory]/1");
+    template <_Conversion _Kind>
+    _NODISCARD wstring _Convert_stringoid_to_wide(const u32string_view _Input) {
+        static_assert(_Kind == _Conversion::_Normal, "invalid value_type, see N4950 [depr.fs.path.factory]/1");
         return _Convert_utf32_to_wide(_Input);
     }
 
@@ -276,9 +267,9 @@ namespace filesystem {
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-    template <class _Src, class _Conversion = _Normal_conversion>
-    _NODISCARD wstring _Convert_Source_to_wide(const _Src& _Source, _Conversion _Tag = {}) {
-        return _Convert_stringoid_to_wide(_Stringoid_from_Source(_Source), _Tag);
+    template <_Conversion _Kind, class _Src>
+    _NODISCARD wstring _Convert_Source_to_wide(const _Src& _Source) {
+        return _Convert_stringoid_to_wide<_Kind>(_Stringoid_from_Source(_Source));
     }
 
     template <class _InIt>
@@ -294,9 +285,9 @@ namespace filesystem {
         }
     }
 
-    template <class _InIt, class _Conversion = _Normal_conversion>
-    _NODISCARD wstring _Convert_range_to_wide(_InIt _First, _InIt _Last, _Conversion _Tag = {}) {
-        return _Convert_stringoid_to_wide(_Stringoid_from_range(_First, _Last), _Tag);
+    template <_Conversion _Kind, class _InIt>
+    _NODISCARD wstring _Convert_range_to_wide(_InIt _First, _InIt _Last) {
+        return _Convert_stringoid_to_wide<_Kind>(_Stringoid_from_range(_First, _Last));
     }
 
     _NODISCARD inline wstring _Convert_stringoid_with_locale_to_wide(const string_view _Input, const locale& _Loc) {
@@ -645,12 +636,14 @@ namespace filesystem {
         }
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
-        path(const _Src& _Source, format = auto_format) : _Text(_Convert_Source_to_wide(_Source)) {
+        path(const _Src& _Source, format = auto_format)
+            : _Text(_Convert_Source_to_wide<_Conversion::_Normal>(_Source)) {
             // format has no meaning for this implementation, as the generic grammar is acceptable as a native path
         }
 
         template <class _InIt>
-        path(_InIt _First, _InIt _Last, format = auto_format) : _Text(_Convert_range_to_wide(_First, _Last)) {
+        path(_InIt _First, _InIt _Last, format = auto_format)
+            : _Text(_Convert_range_to_wide<_Conversion::_Normal>(_First, _Last)) {
             // format has no meaning for this implementation, as the generic grammar is acceptable as a native path
             static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4950 [fs.req]/3");
         }
@@ -685,20 +678,20 @@ namespace filesystem {
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& operator=(const _Src& _Source) { // set native() to _Source
-            _Text = _Convert_Source_to_wide(_Source);
+            _Text = _Convert_Source_to_wide<_Conversion::_Normal>(_Source);
             return *this;
         }
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& assign(const _Src& _Source) { // set native() to _Source
-            _Text = _Convert_Source_to_wide(_Source);
+            _Text = _Convert_Source_to_wide<_Conversion::_Normal>(_Source);
             return *this;
         }
 
         template <class _InIt>
         path& assign(_InIt _First, _InIt _Last) { // set native() to [_First, _Last)
             static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4950 [fs.req]/3");
-            _Text = _Convert_range_to_wide(_First, _Last);
+            _Text = _Convert_range_to_wide<_Conversion::_Normal>(_First, _Last);
             return *this;
         }
 
@@ -1408,14 +1401,14 @@ namespace filesystem {
 
     _EXPORT_STD template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
     _CXX20_DEPRECATE_U8PATH _NODISCARD path u8path(const _Src& _Source) { // construct a path from UTF-8 _Source
-        return path{_Convert_Source_to_wide(_Source, _Utf8_conversion{})};
+        return path{_Convert_Source_to_wide<_Conversion::_Utf8>(_Source)};
     }
 
     _EXPORT_STD template <class _InIt>
     _CXX20_DEPRECATE_U8PATH _NODISCARD path u8path(_InIt _First, _InIt _Last) {
         // construct a path from UTF-8 [_First, _Last)
         static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4950 [fs.req]/3");
-        return path{_Convert_range_to_wide(_First, _Last, _Utf8_conversion{})};
+        return path{_Convert_range_to_wide<_Conversion::_Utf8>(_First, _Last)};
     }
 
     template <class _Base_iter>
