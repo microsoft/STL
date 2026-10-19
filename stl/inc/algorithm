@@ -3031,7 +3031,9 @@ namespace ranges {
         }
 
     private:
-        struct _Not_a_difference {};
+        struct _Not_a_difference {
+            explicit _Not_a_difference() = default;
+        };
 
         template <class _It, class _Se>
         _NODISCARD static constexpr auto _Distance_helper(const _It& _First, const _Se& _Last) {
@@ -6841,7 +6843,9 @@ namespace ranges {
         }
 
     private:
-        struct _Unsized {};
+        struct _Unsized {
+            explicit _Unsized() = default;
+        };
 
         template <range _Rng>
         _NODISCARD static constexpr auto _Size_helper(_Rng&& _Range) {
