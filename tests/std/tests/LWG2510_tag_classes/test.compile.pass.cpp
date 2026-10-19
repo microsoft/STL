@@ -32,6 +32,7 @@
 
 #if _HAS_CXX23
 #include <expected>
+#include <flat_set>
 #include <generator>
 #include <mdspan>
 #include <optional>
@@ -157,10 +158,11 @@ void check_standard_tags() {
 #if _HAS_CXX23
     check_tag_class<from_range_t>();
     check_tag_class<unexpect_t>();
-    // TODO: Cover sorted_equivalent_t and sorted_unique_t once flat_meow are implemented.
+    check_tag_class<sorted_equivalent_t>();
+    check_tag_class<sorted_unique_t>();
 #endif // _HAS_CXX23
 
-    // TODO: Update to cover newly introduced tag class types.
+    // Update to cover newly introduced tag class types in C++26 and beyond.
 }
 
 // We intentionally implement internal disambiguation tag types like standard ones.
