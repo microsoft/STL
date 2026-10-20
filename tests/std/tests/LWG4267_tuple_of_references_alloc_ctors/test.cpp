@@ -62,9 +62,6 @@ _CONSTEXPR20 bool test_tuple_of_references() {
     const T& cref = obj;
 
     { // tuple(allocator_arg_t, const Alloc&, UTypes&&...)
-        tuple<T&> lref{allocator_arg, al, obj};
-        assert(&get<0>(lref) == &obj);
-
         tuple<const T&> clref{allocator_arg, al, obj};
         assert(&get<0>(clref) == &obj);
 
@@ -76,7 +73,12 @@ _CONSTEXPR20 bool test_tuple_of_references() {
         assert(&get<1>(mixed) == &obj);
     }
 
-    { // tuple(allocator_arg_t, const Alloc&, const Types&...), chosen because {} can't deduce UTypes
+    { // tuple(allocator_arg_t, const Alloc&, const Types&...)
+        // const Types&... is T& here, which is more specialized than UTypes&&... for an lvalue
+        tuple<T&> lref{allocator_arg, al, obj};
+        assert(&get<0>(lref) == &obj);
+
+        // {} can't deduce UTypes
         tuple<T, const T&> mixed{allocator_arg, al, {}, cref};
         assert(get<0>(mixed).got_alloc);
         assert(&get<1>(mixed) == &obj);
