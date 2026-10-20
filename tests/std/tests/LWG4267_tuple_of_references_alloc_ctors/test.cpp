@@ -84,8 +84,9 @@ _CONSTEXPR20 bool test_tuple_of_references() {
 
     { // allocator-extended copy and move constructors
         tuple<T, T&> src{obj, obj};
+        const auto& csrc = src;
 
-        tuple<T, T&> copied{allocator_arg, al, src};
+        tuple<T, T&> copied{allocator_arg, al, csrc};
         assert(get<0>(copied).got_alloc);
         assert(&get<1>(copied) == &obj);
 
