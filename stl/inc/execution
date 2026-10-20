@@ -1352,7 +1352,7 @@ struct _Static_partitioned_find3 {
 template <class _ExPo, class _FwdIt, class _Find_fx>
 _FwdIt _Find_parallel_unchecked(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, const _Find_fx _Fx) {
     // find first matching _Val, potentially in parallel
-    if (remove_reference_t<_ExPo>::_Parallelize) {
+    if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
             const auto _Count = _STD distance(_First, _Last);

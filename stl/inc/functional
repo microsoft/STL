@@ -3147,7 +3147,7 @@ struct _Single_delta1_type_boyer_moore_traits {
         size_t _Buf_size     = 0;
         _Add_alloc_size<_Atomic_counter_t>(_Buf_size);
         _Add_alloc_size<_Delta1_t>(_Buf_size);
-        if (_Build_delta2) {
+        if constexpr (_Build_delta2) {
             _Add_alloc_size<_Diff>(_Buf_size, _Pat_size);
         }
 
@@ -3155,7 +3155,7 @@ struct _Single_delta1_type_boyer_moore_traits {
         void* _Buf                                      = _Buf_bytes._Get();
         *_Decode_aligned_block<_Atomic_counter_t>(_Buf) = 1;
         void* const _Delta1                             = _Decode_aligned_block<_Delta1_t>(_Buf);
-        if (_Build_delta2) {
+        if constexpr (_Build_delta2) {
             _STD _Build_boyer_moore_delta_2_table(
                 _Decode_aligned_block<_Diff>(_Buf, _Pat_size), _UFirst, _Pat_size_raw, _Eq);
         }
@@ -3241,7 +3241,7 @@ struct _Boyer_moore_traits_wchar_t_mode {
             _Add_alloc_size<_Small_table_t>(_Buf_size);
         }
 
-        if (_Build_delta2) {
+        if constexpr (_Build_delta2) {
             _Add_alloc_size<_Diff>(_Buf_size, _Pat_size);
         }
 
@@ -3259,7 +3259,7 @@ struct _Boyer_moore_traits_wchar_t_mode {
                 _Delta1_t(_First, _UFirst, _Pat_size_raw, {}, {});
         }
 
-        if (_Build_delta2) {
+        if constexpr (_Build_delta2) {
             equal_to<> _Eq;
             _STD _Build_boyer_moore_delta_2_table(
                 _Decode_aligned_block<_Diff>(_Buf, _Pat_size), _UFirst, _Pat_size_raw, _Eq);
