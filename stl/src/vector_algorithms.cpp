@@ -2803,15 +2803,15 @@ namespace {
 
             const void* _Res_min = _First;
             const void* _Res_max = _First;
-            _TyCor _Cur_min_val;
-            _TyCor _Cur_max_val;
+            _Ty _Cur_min_val;
+            _Ty _Cur_max_val;
 
             if constexpr (std::is_floating_point_v<_TyCor>) {
                 _Cur_min_val = std::numeric_limits<_TyCor>::infinity();
                 _Cur_max_val = -std::numeric_limits<_TyCor>::infinity();
             } else {
-                _Cur_min_val = std::numeric_limits<_TyCor>::max();
-                _Cur_max_val = std::numeric_limits<_TyCor>::min();
+                _Cur_min_val = static_cast<_Ty>(std::numeric_limits<_TyCor>::max());
+                _Cur_max_val = static_cast<_Ty>(std::numeric_limits<_TyCor>::min());
             }
 
             if constexpr (_Traits::_Vectorized) {
@@ -3083,38 +3083,38 @@ namespace {
                 _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
             }
 
-            const auto _Apply_correction = [](const _TyCor _Val) noexcept {
-                if constexpr (_Is_signed || _Traits::_Has_unsigned_cmp) {
-                    return _Val;
-                } else {
-                    constexpr _Ty _Correction = _Ty{1} << (sizeof(_Ty) * 8 - 1);
-                    return static_cast<_Ty>(_Val + _Correction);
-                }
-            };
+            if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
+                constexpr _Ty _Correction = _Ty{1} << (sizeof(_Ty) * 8 - 1);
 
-            _Ty _Cur_min = _Apply_correction(_Cur_min_val);
-            _Ty _Cur_max = _Apply_correction(_Cur_max_val);
+                if constexpr ((_Mode & _Mode_min) != 0) {
+                    _Cur_min_val += _Correction;
+                }
+
+                if constexpr ((_Mode & _Mode_max) != 0) {
+                    _Cur_max_val += _Correction;
+                }
+            }
 
             for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
                 if constexpr ((_Mode & _Mode_min) != 0) {
-                    if (*_Ptr < _Cur_min) {
-                        _Res_min = _Ptr;
-                        _Cur_min = *_Ptr;
+                    if (*_Ptr < _Cur_min_val) {
+                        _Res_min     = _Ptr;
+                        _Cur_min_val = *_Ptr;
                     }
                 }
 
                 if constexpr (_Mode == _Mode_max) {
-                    if (_Cur_max < *_Ptr) {
-                        _Res_max = _Ptr;
-                        _Cur_max = *_Ptr;
+                    if (_Cur_max_val < *_Ptr) {
+                        _Res_max     = _Ptr;
+                        _Cur_max_val = *_Ptr;
                     }
                 } else if constexpr (_Mode == _Mode_both) {
                     // Not using else after the _Cur_min part for _Mode_both!
                     // * Needed for correctness if start with max, as we don't handle specially the first element.
                     // * Promote branchless code generation.
-                    if (_Cur_max <= *_Ptr) {
-                        _Res_max = _Ptr;
-                        _Cur_max = *_Ptr;
+                    if (_Cur_max_val <= *_Ptr) {
+                        _Res_max     = _Ptr;
+                        _Cur_max_val = *_Ptr;
                     }
                 }
             }
