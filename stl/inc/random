@@ -1272,11 +1272,11 @@ private:
             --_Yx1;
         }
 
-        size_t _Nx0; // number of smaller packing words
-        size_t _Nx; // total number of packing words
-        size_t _Wx0; // bits per smaller packing word
-        _Eres _Yx0; // max value for smaller packing word
-        _Eres _Yx1; // max value for larger packing word
+        size_t _Nx0{}; // number of smaller packing words
+        size_t _Nx{}; // total number of packing words
+        size_t _Wx0{}; // bits per smaller packing word
+        _Eres _Yx0{}; // max value for smaller packing word
+        _Eres _Yx1{}; // max value for larger packing word
     };
 
     static constexpr _Computed_values _Computed{};
