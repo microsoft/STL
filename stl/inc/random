@@ -1240,11 +1240,11 @@ public:
 
 private:
     void _Init() { // compute values for operator()
-        size_t _Mx = 0;
-        _Eres _Rx  = (_Engine::max) () - (_Engine::min) () + 1;
+        size_t _Mx          = 0;
+        constexpr _Eres _Rx = (_Engine::max) () - (_Engine::min) () + 1;
 
         _Eres _Tmp = _Rx;
-        if (_Tmp == 0) { // all bits used, make _Rx finite
+        if (_Tmp == 0) { // all bits used, make _Mx finite
             _Mx = 1;
             --_Tmp;
         }
