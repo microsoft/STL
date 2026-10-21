@@ -199,6 +199,19 @@ namespace test {
     private:
         HANDLE m_handle;
     };
+
+    class counting_stringbuf : public stringbuf {
+    public:
+        size_t xsputn_calls = 0;
+        string xsputn_input;
+
+    protected:
+        streamsize xsputn(const char* const _Str, const streamsize _Count) override {
+            ++xsputn_calls;
+            xsputn_input.append(_Str, static_cast<size_t>(_Count));
+            return stringbuf::xsputn(_Str, _Count);
+        }
+    };
 } // namespace test
 
 const locale& get_utf8_locale() {
@@ -321,6 +334,45 @@ void test_print_optimizations() {
         println("{}\xF0\x9F\x90\x88", str);
     }
     **********/
+}
+
+void test_noformat_console_ostream() {
+    if constexpr (_Is_ordinary_literal_encoding_utf8()) {
+        constexpr string_view empty_view{};
+        constexpr string_view nonempty_view{"ostream println"};
+        test::win_console test_console{};
+        FILE* const console_file_stream = test_console.get_file_stream();
+        filebuf console_file_buffer{console_file_stream};
+        ostream console_output{&console_file_buffer};
+
+        print(console_output, empty_view);
+        const bool print_set_badbit = console_output.bad();
+        console_output.clear();
+
+        println(console_output, empty_view);
+        const bool println_set_badbit = console_output.bad();
+        console_output.clear();
+
+        println(console_output, nonempty_view);
+        const bool nonempty_println_set_badbit = console_output.bad();
+        console_output.clear();
+
+        print(console_output, "ostream marker");
+
+        assert(!print_set_badbit && !println_set_badbit && !nonempty_println_set_badbit
+               && test_console.get_console_line(0).empty() && test_console.get_console_line(1) == L"ostream println"
+               && test_console.get_console_line(2) == L"ostream marker");
+    }
+}
+
+void test_ostream_println_single_write() {
+    test::counting_stringbuf test_buffer{};
+    ostream test_stream{&test_buffer};
+
+    println(test_stream, "Hello world");
+
+    assert(test_stream.good() && test_buffer.str() == "Hello world\n" && test_buffer.xsputn_calls == 1
+           && test_buffer.xsputn_input == "Hello world\n");
 }
 
 void test_invalid_code_points_console() {
@@ -658,7 +710,9 @@ void test_empty_strings_and_newlines() {
 }
 
 void all_tests() {
+    test_ostream_println_single_write();
     test_print_optimizations();
+    test_noformat_console_ostream();
 
     test_invalid_code_points_console();
     test_invalid_code_points_file();
