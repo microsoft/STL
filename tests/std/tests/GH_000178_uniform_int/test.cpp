@@ -4,7 +4,9 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <limits>
 #include <random>
+#include <sstream>
 
 using namespace std;
 
@@ -63,6 +65,39 @@ bool test_modulus_bias() {
     return chi_squared <= threshold;
 }
 
+template <class IntType>
+bool test_8bit_distribution() {
+    mt19937 gen(1337);
+
+    constexpr IntType min_val = (numeric_limits<IntType>::min)();
+    constexpr IntType max_val = (numeric_limits<IntType>::max)();
+
+    uniform_int_distribution<IntType> dist_full(min_val, max_val);
+    assert(dist_full.a() == min_val);
+    assert(dist_full.b() == max_val);
+
+    for (int i = 0; i < 100; ++i) {
+        const IntType val = dist_full(gen);
+        assert(val >= min_val && val <= max_val);
+    }
+
+    stringstream ss;
+    ss << dist_full;
+
+    uniform_int_distribution<IntType> dist_io(0, 0);
+    ss >> dist_io;
+    assert(dist_full == dist_io);
+
+    return true;
+}
+
+bool test_p4037r1_char_types() {
+    assert(test_8bit_distribution<signed char>());
+    assert(test_8bit_distribution<unsigned char>());
+
+    return true;
+}
+
 int main() {
     // Four cases tested below:
     // (1) URBG provides enough bits to completely fill the underlying type
@@ -75,6 +110,8 @@ int main() {
     assert((basic_test<independent_bits_engine<mt19937, 25, uint32_t>>()));
 
     assert(test_modulus_bias());
+
+    assert(test_p4037r1_char_types());
 
     return 0;
 }

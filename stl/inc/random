@@ -25,27 +25,27 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-#define _RNG_PROHIBIT_CHAR(_CheckedType)               \
-    static_assert(!_Is_character<_CheckedType>::value, \
-        "note: char, signed char, unsigned char, char8_t, int8_t, and uint8_t are not allowed")
+#define _RNG_PROHIBIT_CHAR(_CheckedType)                                                                         \
+    static_assert(!_Is_character<_CheckedType>::value || _Is_any_of_v<_CheckedType, signed char, unsigned char>, \
+        "note: char, wchar_t, char8_t, char16_t, and char32_t are not allowed")
 
 #define _RNG_REQUIRE_REALTYPE(_RandType, _CheckedType)                    \
     static_assert(_Is_any_of_v<_CheckedType, float, double, long double>, \
         "invalid template argument for " #_RandType                       \
-        ": N4950 [rand.req.genl]/1.4 requires one of float, double, or long double")
+        ": N5054 [rand.req.genl]/1.5 requires one of float, double, or long double")
 
-#define _RNG_REQUIRE_INTTYPE(_RandType, _CheckedType)                                                                  \
-    static_assert(_Is_any_of_v<_CheckedType, short, int, long, long long, unsigned short, unsigned int, unsigned long, \
-                      unsigned long long>,                                                                             \
-        "invalid template argument for " #_RandType                                                                    \
-        ": N4950 [rand.req.genl]/1.5 requires one of short, int, long, long long, unsigned short, unsigned int, "      \
-        "unsigned long, or unsigned long long");                                                                       \
+#define _RNG_REQUIRE_INTTYPE(_RandType, _CheckedType)                                                                 \
+    static_assert(_Is_any_of_v<_CheckedType, signed char, short, int, long, long long, unsigned char, unsigned short, \
+                      unsigned int, unsigned long, unsigned long long>,                                               \
+        "invalid template argument for " #_RandType                                                                   \
+        ": N5054 [rand.req.genl]/1.6 requires one of signed char, short, int, long, long long, unsigned char, "       \
+        "unsigned short, unsigned int, unsigned long, or unsigned long long");                                        \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
-#define _RNG_REQUIRE_UINTTYPE(_RandType, _CheckedType)                                                             \
-    static_assert(_Is_any_of_v<_CheckedType, unsigned short, unsigned int, unsigned long, unsigned long long>,     \
-        "invalid template argument for " #_RandType ": N4950 [rand.req.genl]/1.6 requires one of unsigned short, " \
-        "unsigned int, unsigned long, or unsigned long long");                                                     \
+#define _RNG_REQUIRE_UINTTYPE(_RandType, _CheckedType)                                                         \
+    static_assert(_Is_any_of_v<_CheckedType, unsigned short, unsigned int, unsigned long, unsigned long long>, \
+        "invalid template argument for " #_RandType ": N5054 [rand.req.genl]/1.7 requires one of "             \
+        "unsigned short, unsigned int, unsigned long, or unsigned long long");                                 \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
 template <class _Seed_seq, class _Self, class _Engine = _Self>
@@ -1500,17 +1500,20 @@ public:
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(
         basic_istream<_Elem, _Traits>& _Istr, uniform_int_distribution& _Dist) {
-        uniform_int_distribution::result_type _Min0;
-        uniform_int_distribution::result_type _Max0;
+        using _Read_ty = decltype(+result_type{});
+
+        _Read_ty _Min0;
+        _Read_ty _Max0;
+
         _Istr >> _Min0 >> _Max0;
-        _Dist._Par._Init(_Min0, _Max0);
+        _Dist._Par._Init(static_cast<result_type>(_Min0), static_cast<result_type>(_Max0));
         return _Istr;
     }
 
     template <class _Elem, class _Traits>
     friend basic_ostream<_Elem, _Traits>& operator<<(
         basic_ostream<_Elem, _Traits>& _Ostr, const uniform_int_distribution& _Dist) {
-        return _Ostr << _Dist._Par._Min << ' ' << _Dist._Par._Max;
+        return _Ostr << +_Dist._Par._Min << ' ' << +_Dist._Par._Max;
     }
 
     _NODISCARD friend bool operator==(

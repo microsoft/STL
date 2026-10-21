@@ -395,13 +395,13 @@ void test_case_randomized_cases() {
     string haystack(MaxHaystackLength, '?');
     const auto haystack_first = haystack.c_str();
 
-    for (int max_char = 'b'; max_char <= 'f'; ++max_char) {
-        uniform_int_distribution<int> characters('a', max_char);
+    for (char max_char = 'b'; max_char <= 'f'; ++max_char) {
+        uniform_int_distribution<signed char> characters('a', max_char);
 
         for (int n = 0; n < Needles; ++n) {
             needle.resize(needle_length(mt));
             for (auto& ch : needle) {
-                ch = static_cast<char>(characters(mt));
+                ch = characters(mt);
             }
             const auto needle_last = needle_first + needle.size();
 
@@ -412,7 +412,7 @@ void test_case_randomized_cases() {
             for (int h = 0; h < Haystacks; ++h) {
                 haystack.resize(haystack_length(mt));
                 for (auto& ch : haystack) {
-                    ch = static_cast<char>(characters(mt));
+                    ch = characters(mt);
                 }
                 const auto haystack_last = haystack_first + haystack.size();
 
