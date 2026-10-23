@@ -36,13 +36,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _MSVC_STL_DOOM_FUNCTION(mesg) _CSTD abort()
 #elif defined(__clang__) // Use the Clang intrinsic:
 #define _MSVC_STL_DOOM_FUNCTION(mesg) __builtin_verbose_trap("MSVC STL error", mesg)
-#elif defined(_M_CEE) // TRANSITION, VSO-2457624 (/clr silent bad codegen for __fastfail); /clr:pure lacks __fastfail
+#elif defined(_M_CEE) // Avoid /clr managed-to-native transitions for __fastfail; /clr:pure lacks __fastfail:
 #define _MSVC_STL_DOOM_FUNCTION(mesg) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
 #else // Use the MSVC __fastfail intrinsic:
 extern "C" __declspec(noreturn) void __fastfail(unsigned int); // declared by <intrin.h>
-#define _MSVC_STL_DOOM_FUNCTION(mesg)                                                  \
-    __fastfail(5); /* __fastfail(FAST_FAIL_INVALID_ARG), value defined by <winnt.h> */ \
-    _STL_UNREACHABLE /* TRANSITION, DevCom-10914110 */
+#define _MSVC_STL_DOOM_FUNCTION(mesg) __fastfail(5); /* __fastfail(FAST_FAIL_INVALID_ARG), value in <winnt.h> */
 #endif // choose "doom function"
 #endif // ^^^ !defined(_MSVC_STL_DOOM_FUNCTION) ^^^
 
