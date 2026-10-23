@@ -16,9 +16,15 @@ set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
     "Location of the libcxx source tree")
 
 if(NOT DEFINED TESTS_CAN_RUN)
-    try_run(TESTS_RUN_RESULT TESTS_COMPILED
-        SOURCE_FROM_CONTENT test.cpp "int main() {}"
-        NO_CACHE)
+    block(SCOPE_FOR VARIABLES PROPAGATE TESTS_RUN_RESULT TESTS_COMPILED)
+        if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
+            string(APPEND CMAKE_CXX_FLAGS " /arm64EC")
+        endif()
+        try_run(TESTS_RUN_RESULT TESTS_COMPILED
+            SOURCE_FROM_CONTENT test.cpp "int main() {}"
+            LINK_OPTIONS ${VCLIBS_EXPLICIT_MACHINE}
+            NO_CACHE)
+    endblock()
 
     set(TESTS_CAN_RUN OFF)
     if(TESTS_COMPILED AND "${TESTS_RUN_RESULT}" STREQUAL "0")
