@@ -38,12 +38,16 @@ class STLTest(Test):
         Test.__init__(self, suite, pathInSuite, testConfig, None)
 
     def configureTest(self, litConfig):
+        # The TestingConfig is shared by all tests in a directory (and by all tests in a batch that lit sends to a
+        # worker process), so we need a private copy before _addCustomFeature() adds per-test features.
+        self.config = copy.copy(self.config)
+        self.config.available_features = set(self.config.available_features)
+
         self.compileFlags = []
         self.cxx = None
         self.env = {}
         self.fileDependencies = []
         self.flags = []
-        self.isenseRspPath = None
         self.linkFlags = []
         self.testType = None
 
@@ -75,14 +79,6 @@ class STLTest(Test):
 
         if 'test-only-edg' in self.config.available_features and 'edg' not in self.requires:
             return Result(UNSUPPORTED, 'We run only /BE tests with the test-only-edg flag')
-
-        if 'edg_drop' in self.config.available_features:
-            if 'edg' not in self.requires:
-                return Result(UNSUPPORTED, 'We run only /BE tests with the edg drop')
-
-            _, tmpBase = self.getTempPaths()
-            self.isenseRspPath = tmpBase + '.isense.rsp'
-            self.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + self.isenseRspPath])
 
         # TRANSITION, google/sanitizers#328: clang-cl does not support /MDd or /MTd with ASan
         if ('clang' in self.config.available_features and 'asan' in self.config.available_features and

@@ -221,6 +221,12 @@ STATIC_ASSERT(__cpp_lib_constexpr_charconv == 202207L);
 #error __cpp_lib_constexpr_charconv is defined
 #endif
 
+#if _HAS_CXX23 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-6412, Clang and EDG lack support for constexpr <cmath>.
+STATIC_ASSERT(__cpp_lib_constexpr_cmath == 202202L);
+#elif defined(__cpp_lib_constexpr_cmath)
+#error __cpp_lib_constexpr_cmath is defined
+#endif
+
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #elif defined(__cpp_lib_constexpr_complex)
@@ -945,7 +951,7 @@ STATIC_ASSERT(__cpp_lib_stacktrace == 202011L);
 #error __cpp_lib_stacktrace is defined
 #endif
 
-#if _HAS_CXX23 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and VSO-2846756
+#if _HAS_CXX23 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and EDG-275
 STATIC_ASSERT(__cpp_lib_start_lifetime_as == 202207L);
 #elif defined(__cpp_lib_start_lifetime_as)
 #error __cpp_lib_start_lifetime_as is defined

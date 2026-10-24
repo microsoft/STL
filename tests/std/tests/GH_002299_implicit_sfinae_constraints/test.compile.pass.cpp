@@ -76,7 +76,7 @@ template <class T, class... Us>
 constexpr bool can_make_optional_usual = can_make_optional_impl<void, T, Us...>;
 
 STATIC_ASSERT(can_make_optional_decay<unique_ptr<int>>);
-STATIC_ASSERT(!can_make_optional_decay<const unique_ptr<int>&>); // LWG-3627
+STATIC_ASSERT(!can_make_optional_decay<const unique_ptr<int>&>);
 STATIC_ASSERT(can_make_optional_usual<int, int>);
 STATIC_ASSERT(!can_make_optional_usual<int, int, int>);
 STATIC_ASSERT(!can_make_optional_usual<int, initializer_list<int>&>);

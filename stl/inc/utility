@@ -236,13 +236,6 @@ concept _Tuple_like = _Tuple_like_non_subrange<_Ty> || _Is_subrange_v<remove_cvr
 
 template <class _Ty>
 concept _Pair_like_non_subrange = _Tuple_like_non_subrange<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
-
-#ifdef __EDG__ // TRANSITION, VSO-1900279
-template <class _PairLike, class _Ty1, class _Ty2>
-concept _Can_construct_from_pair_like =
-    _Pair_like_non_subrange<_PairLike> && is_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_PairLike>()))>
-    && is_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_PairLike>()))>;
-#endif // ^^^ workaround ^^^
 #endif // _HAS_CXX23
 #endif // _HAS_CXX20
 
@@ -277,14 +270,12 @@ struct pair { // store a pair of values
         : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {
     }
 #if _HAS_CXX23
-#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1 = _Ty1, class _Other2 = _Ty2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
         requires reference_constructs_from_temporary_v<_Ty1, _Other1&&>
                   || reference_constructs_from_temporary_v<_Ty2, _Other2&&>
     explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(_Other1&&, _Other2&&) = delete;
-#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX23
 
     pair(const pair&) = default;
@@ -297,14 +288,12 @@ struct pair { // store a pair of values
         pair(pair<_Other1, _Other2>& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1&> && is_nothrow_constructible_v<_Ty2, _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
-#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1, class _Other2>
         requires is_constructible_v<_Ty1, _Other1&> && is_constructible_v<_Ty2, _Other2&>
                   && (reference_constructs_from_temporary_v<_Ty1, _Other1&>
                       || reference_constructs_from_temporary_v<_Ty2, _Other2&>)
     explicit(!conjunction_v<is_convertible<_Other1&, _Ty1>, is_convertible<_Other2&, _Ty2>>)
         pair(pair<_Other1, _Other2>&) = delete;
-#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX23
 
     template <class _Other1, class _Other2,
@@ -316,7 +305,6 @@ struct pair { // store a pair of values
                      && is_nothrow_constructible_v<_Ty2, const _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
 #if _HAS_CXX23
-#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1&>, is_constructible<_Ty2, const _Other2&>>,
             int> = 0>
@@ -324,7 +312,6 @@ struct pair { // store a pair of values
                   || reference_constructs_from_temporary_v<_Ty2, const _Other2&>
     explicit(!conjunction_v<is_convertible<const _Other1&, _Ty1>, is_convertible<const _Other2&, _Ty2>>)
         pair(const pair<_Other1, _Other2>&) = delete;
-#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX23
 
     template <class _Other1, class _Other2,
@@ -334,14 +321,12 @@ struct pair { // store a pair of values
             is_nothrow_constructible_v<_Ty1, _Other1> && is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
 #if _HAS_CXX23
-#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
         requires reference_constructs_from_temporary_v<_Ty1, _Other1&&>
                   || reference_constructs_from_temporary_v<_Ty2, _Other2&&>
     explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(pair<_Other1, _Other2>&&) = delete;
-#endif // ^^^ no workaround ^^^
 
     template <class _Other1, class _Other2>
         requires is_constructible_v<_Ty1, const _Other1> && is_constructible_v<_Ty2, const _Other2>
@@ -350,29 +335,21 @@ struct pair { // store a pair of values
             noexcept(is_nothrow_constructible_v<_Ty1, const _Other1>
                      && is_nothrow_constructible_v<_Ty2, const _Other2>) // strengthened
         : first(_STD forward<const _Other1>(_Right.first)), second(_STD forward<const _Other2>(_Right.second)) {}
-#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1, class _Other2>
         requires is_constructible_v<_Ty1, const _Other1> && is_constructible_v<_Ty2, const _Other2>
                   && (reference_constructs_from_temporary_v<_Ty1, const _Other1 &&>
                       || reference_constructs_from_temporary_v<_Ty2, const _Other2 &&>)
     explicit(!conjunction_v<is_convertible<const _Other1, _Ty1>, is_convertible<const _Other2, _Ty2>>)
         pair(const pair<_Other1, _Other2>&&) = delete;
-#endif // ^^^ no workaround ^^^
 
-#ifdef __EDG__ // TRANSITION, VSO-1900279
-    template <class _Other, enable_if_t<_Can_construct_from_pair_like<_Other, _Ty1, _Ty2>, int> = 0>
-#else // ^^^ workaround / no workaround vvv
     template <_Pair_like_non_subrange _Other>
         requires conjunction_v<is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
                      is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
-#endif // ^^^ no workaround ^^^
     constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
         is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>) pair(_Other&& _Right)
         noexcept(is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>
                  && is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
-        : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {
-    }
-#ifdef __cpp_lib_reference_from_temporary // TRANSITION
+        : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {}
     template <_Pair_like_non_subrange _Other>
         requires conjunction_v<is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
                      is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
@@ -380,7 +357,6 @@ struct pair { // store a pair of values
                       || reference_constructs_from_temporary_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>)
     explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
         is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>) pair(_Other&&) = delete;
-#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX23
 
     template <class... _Types1, class... _Types2>

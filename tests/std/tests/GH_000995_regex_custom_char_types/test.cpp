@@ -493,8 +493,19 @@ void test_gh_5671() {
     test_gh_5671_character_ranges();
 }
 
+void test_gh_6475() {
+    // GH-6475: Accelerate greedy wildcard loops
+    for (wchar_t c{}; c < L'\u0100'; ++c) {
+        test_regex_on_custom_wchars(L".*", L"aaa" + wstring(1u, c), c != L'\r' && c != L'\n');
+    }
+
+    test_regex_on_custom_wchars(L".*", L"aaa\u2028", false); // U+2028 LINE SEPARATOR
+    test_regex_on_custom_wchars(L".*", L"aaa\u2029", false); // U+2029 PARAGRAPH SEPARATOR
+}
+
 int main() {
     test_gh_5592();
     test_gh_5671();
+    test_gh_6475();
     return 0;
 }

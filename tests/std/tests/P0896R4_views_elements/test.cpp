@@ -365,9 +365,6 @@ using test_range =
         test::ProxyRef::no>;
 
 constexpr void instantiation_test() {
-#ifdef TEST_EVERYTHING
-    test_in<instantiator, const P>();
-#else // ^^^ test all input range permutations / test only "interesting" permutations vvv
     // The view is sensitive to category, commonality, size, and differencing, but cannot handle proxies.
     using test::Common, test::Sized;
 
@@ -391,7 +388,6 @@ constexpr void instantiation_test() {
     instantiator::call<test_range<contiguous_iterator_tag, Sized::no, Common::yes>>();
     instantiator::call<test_range<contiguous_iterator_tag, Sized::yes, Common::no>>();
     instantiator::call<test_range<contiguous_iterator_tag, Sized::yes, Common::yes>>();
-#endif // TEST_EVERYTHING
 }
 
 // GH-3014 "<ranges>: list-initialization is misused"
@@ -413,6 +409,32 @@ void test_gh_3014() { // COMPILE-ONLY
     auto r                                           = FwdRange{} | views::elements<0>;
     [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
 }
+
+// LWG-3797 "elements_view insufficiently constrained"
+namespace lwg_3797 {
+    struct Constifier {
+        template <class T>
+        constexpr const T& operator()(const T& t) const noexcept {
+            return t;
+        }
+    };
+
+    struct Mover {
+        template <class T>
+        constexpr remove_reference_t<T>&& operator()(T&& t) const noexcept {
+            return static_cast<remove_reference_t<T>&&>(t);
+        }
+    };
+
+    using MoveOnlySubrange = ranges::subrange<test::iterator<test::input, int>, test::sentinel<int>>;
+    static_assert(!CanViewElements<vector<MoveOnlySubrange>>);
+    static_assert(!CanViewElements<decltype(vector<MoveOnlySubrange>{} | views::transform(Constifier{}))>);
+    static_assert(!CanViewElements<decltype(vector<MoveOnlySubrange>{} | views::transform(Mover{}))>);
+#if _HAS_CXX23
+    static_assert(!CanViewElements<decltype(vector<MoveOnlySubrange>{} | views::as_const)>);
+    static_assert(!CanViewElements<decltype(vector<MoveOnlySubrange>{} | views::as_rvalue)>);
+#endif // _HAS_CXX23
+} // namespace lwg_3797
 
 int main() {
     { // Validate copyable views

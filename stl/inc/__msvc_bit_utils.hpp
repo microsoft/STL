@@ -20,10 +20,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_STD_BEGIN
+#ifndef _M_ARM64
 extern "C" {
 extern int __isa_available;
 }
+#endif // ^^^ !defined(_M_ARM64) ^^^
+
+_STD_BEGIN
 
 _INLINE_VAR constexpr int _Stl_isa_available_sse42 = 2; // equal to __ISA_AVAILABLE_SSE42
 _INLINE_VAR constexpr int _Stl_isa_available_avx2  = 5; // equal to __ISA_AVAILABLE_AVX2
