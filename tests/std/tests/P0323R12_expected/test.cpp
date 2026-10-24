@@ -202,7 +202,7 @@ namespace test_expected {
 
     template <IsDefaultConstructible defaultConstructible>
     constexpr void test_default_constructors() {
-#ifndef __EDG__ // TRANSITION, VSO-1898929
+#ifndef __EDG__ // TRANSITION, EDG-264
         constexpr bool should_be_defaultable = IsYes(defaultConstructible);
 
         struct payload_default_constructor {
@@ -233,7 +233,7 @@ namespace test_expected {
     template <IsTriviallyCopyConstructible triviallyCopyConstructible,
         IsNothrowCopyConstructible nothrowCopyConstructible>
     constexpr void test_copy_constructors() {
-#ifndef __EDG__ // TRANSITION, VSO-1898929
+#ifndef __EDG__ // TRANSITION, EDG-264
         constexpr bool should_be_trivial  = IsYes(triviallyCopyConstructible);
         constexpr bool should_be_noexcept = should_be_trivial || IsYes(nothrowCopyConstructible);
 
@@ -320,7 +320,7 @@ namespace test_expected {
     template <IsTriviallyMoveConstructible triviallyMoveConstructible,
         IsNothrowMoveConstructible nothrowMoveConstructible>
     constexpr void test_move_constructors() {
-#ifndef __EDG__ // TRANSITION, VSO-1898929
+#ifndef __EDG__ // TRANSITION, EDG-264
         constexpr bool should_be_trivial  = IsYes(triviallyMoveConstructible);
         constexpr bool should_be_noexcept = should_be_trivial || IsYes(nothrowMoveConstructible);
 
@@ -1354,11 +1354,11 @@ namespace test_expected {
         test_triviality_of_assignment<TrivialityScenario1>();
         test_triviality_of_assignment<TrivialityScenario2>();
         test_triviality_of_assignment<TrivialityScenario3>();
-#ifndef __EDG__ // TRANSITION, VSO-1949451
+#ifndef __EDG__ // TRANSITION, EDG-276
         test_triviality_of_assignment<TrivialityScenario4>();
 #endif // ^^^ no workaround ^^^
         test_triviality_of_assignment<TrivialityScenario5>();
-#ifndef __EDG__ // TRANSITION, VSO-1949451
+#ifndef __EDG__ // TRANSITION, EDG-276
         test_triviality_of_assignment<TrivialityScenario6>();
 #endif // ^^^ no workaround ^^^
     }
@@ -2606,7 +2606,7 @@ static_assert(
 static_assert(
     !is_invocable_v<ambiguating_expected_copy_constructor_caller<void, move_only>, const expected<void, move_only>&>);
 
-#ifndef __EDG__ // TRANSITION, VSO-1601179
+#ifndef __EDG__ // TRANSITION, EDG-284
 static_assert(!is_assignable_v<expected<int, char>&, ambiguating_expected_assignment_source<int, char>>);
 static_assert(!is_assignable_v<expected<void, int>&, ambiguating_expected_assignment_source<void, int>>);
 static_assert(!is_assignable_v<expected<move_only, char>&, ambiguating_expected_assignment_source<move_only, char>>);
