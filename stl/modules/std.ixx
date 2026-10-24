@@ -168,6 +168,7 @@ export module std;
 #include <cwctype>
 
 #pragma warning(pop)
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // defined(__clang__)
