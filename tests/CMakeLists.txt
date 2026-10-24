@@ -15,7 +15,7 @@ set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
 set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
     "Location of the libcxx source tree")
 
-if(NOT DEFINED TESTS_BUILD_ONLY AND NOT DEFINED TESTS_CAN_RUN)
+if(NOT DEFINED TESTS_BUILD_ONLY)
     block(SCOPE_FOR VARIABLES PROPAGATE TESTS_RUN_RESULT TESTS_COMPILED)
         if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
             string(APPEND CMAKE_CXX_FLAGS " /arm64EC")
@@ -26,17 +26,10 @@ if(NOT DEFINED TESTS_BUILD_ONLY AND NOT DEFINED TESTS_CAN_RUN)
             NO_CACHE)
     endblock()
 
-    set(TESTS_CAN_RUN OFF)
-    if(TESTS_COMPILED AND "${TESTS_RUN_RESULT}" STREQUAL "0")
-        set(TESTS_CAN_RUN ON)
-    endif()
-    set(TESTS_CAN_RUN "${TESTS_CAN_RUN}" CACHE INTERNAL "Whether test executables can run on the build host")
-endif()
-
-if(TESTS_CAN_RUN)
-    set(TESTS_BUILD_ONLY_DEFAULT OFF)
-else()
     set(TESTS_BUILD_ONLY_DEFAULT ON)
+    if(TESTS_COMPILED AND "${TESTS_RUN_RESULT}" STREQUAL "0")
+        set(TESTS_BUILD_ONLY_DEFAULT OFF)
+    endif()
 endif()
 
 option(TESTS_BUILD_ONLY "Only run the build steps of tests" "${TESTS_BUILD_ONLY_DEFAULT}")
