@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// In a module-file, the optional `module;` must appear first; see [cpp.pre].
 module;
 
 #ifdef __clang__
