@@ -667,7 +667,7 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #error __cpp_lib_memory_resource is defined
 #endif
 
-#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG support for modules
 STATIC_ASSERT(__cpp_lib_modules == 202207L);
 #elif defined(__cpp_lib_modules)
 #error __cpp_lib_modules is defined
