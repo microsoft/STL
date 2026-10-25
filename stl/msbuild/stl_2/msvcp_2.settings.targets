@@ -12,6 +12,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <PropertyGroup>
         <FinalBinary>p_2</FinalBinary>
 
+        <DependsOnVCStartupLib>$(MsvcpFlavor)</DependsOnVCStartupLib>
+        <DependsOnVCRuntimeLib>$(MsvcpFlavor)</DependsOnVCRuntimeLib>
+
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
         <TargetNetFx Condition="'$(MsvcpFlavor)' == 'netfx'">true</TargetNetFx>
@@ -63,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Condition="'$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd'" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_base_$(CrtBuildModel)_$(MsvcpFlavor).vcxproj"/>
+        <ProjectReference Condition="'$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd'" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\$(MsvcpFlavor)\msvcp_base_$(CrtBuildModel)_$(MsvcpFlavor).vcxproj"/>
         <TargetLib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>

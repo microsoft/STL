@@ -2759,8 +2759,8 @@ namespace ranges {
     _EXPORT_STD template <range _Rng, class _Alloc>
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
     struct elements_of {
-        _MSVC_NO_UNIQUE_ADDRESS _Rng range;
-        _MSVC_NO_UNIQUE_ADDRESS _Alloc allocator{};
+        [[msvc::no_unique_address]] _Rng range;
+        [[msvc::no_unique_address]] _Alloc allocator{};
     };
 
 #if defined(__cpp_lib_byte)

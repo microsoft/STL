@@ -675,12 +675,60 @@ void test_gh_6191() {
     }
 }
 
+void test_gh_6441() {
+    // GH-6441: Perform insertions into character class NFA node buffers when parsing of the character class completes
+
+    // U+0100 LATIN CAPITAL LETTER A WITH MACRON, U+0120 LATIN CAPITAL LETTER G WITH DOT ABOVE
+    {
+        test_wregex re_two_classes_with_large_chars(&g_regexTester, L"^[\u0100][\u0120]$");
+        re_two_classes_with_large_chars.should_search_match(L"\u0100\u0120", L"\u0100\u0120");
+        re_two_classes_with_large_chars.should_search_fail(L"\u0100\u0100");
+        re_two_classes_with_large_chars.should_search_fail(L"\u0120\u0120");
+    }
+
+    // U+011F LATIN SMALL LETTER G WITH BREVE, U+013F LATIN CAPITAL LETTER L WITH MIDDLE DOT
+    {
+        test_wregex re_two_classes_with_large_char_ranges(&g_regexTester, L"^[\u0100-\u011F][\u0120-\u013F]$");
+        re_two_classes_with_large_char_ranges.should_search_match(L"\u0100\u0120", L"\u0100\u0120");
+        re_two_classes_with_large_char_ranges.should_search_fail(L"\u0100\u0100");
+        re_two_classes_with_large_char_ranges.should_search_fail(L"\u0120\u0120");
+    }
+
+    for (auto pattern : {LR"(^[\d[:alpha:]]$)", LR"(^[[:alpha:]\d]$)"}) {
+        test_wregex re_alphanumeric(&g_regexTester, pattern);
+        re_alphanumeric.should_search_match(L"a", L"a");
+        re_alphanumeric.should_search_match(L"0", L"0");
+        re_alphanumeric.should_search_fail(L" ");
+
+        re_alphanumeric.should_search_match(L"\u0100", L"\u0100"); // U+0100 LATIN CAPITAL LETTER A WITH MACRON
+        re_alphanumeric.should_search_match(L"\u0662", L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        re_alphanumeric.should_search_fail(L"\u202F"); // U+202F NARROW NO-BREAK SPACE
+    }
+
+    gh_994_verify_match("csa", "[[.cs.]][a]", true);
+    gh_994_verify_match("cscs", "[[.cs.]][a]", false);
+    gh_994_verify_match("cscs", "[a][[.cs.]]", false);
+    gh_994_verify_match("csdzs", "[[.cs.]][[.dzs.]]", true);
+    gh_994_verify_match("cscs", "[[.cs.]][[.dzs.]]", false);
+    gh_994_verify_match("cscs", "[[.dzs.]][[.cs.]]", false);
+
+#ifndef _M_CEE_PURE
+    g_regexTester.should_match("ab", "[[=a=]][b]");
+    g_regexTester.should_not_match("aa", "[[=a=]][b]");
+    g_regexTester.should_not_match("aa", "[b][[=a=]]");
+    g_regexTester.should_match("ab", "[[=a=]][[=b=]]");
+    g_regexTester.should_not_match("aa", "[[=a=]][[=b=]]");
+    g_regexTester.should_not_match("bb", "[[=a=]][[=b=]]");
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
+}
+
 int main() {
     test_collating_ranges_german();
     test_gh_994();
     test_gh_5435();
     test_gh_5437();
     test_gh_6191();
+    test_gh_6441();
 
     return g_regexTester.result();
 }

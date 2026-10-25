@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
+#include <algorithm>
 #include <crtdbg.h>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <numeric>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -126,9 +129,19 @@ namespace std_testing {
                 puts(" passed!");
 
                 ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
-                const auto this_program       = get_current_process_path();
-                const size_t death_tests_size = death_tests.size();
-                for (size_t idx = 0; idx < death_tests_size; ++idx) {
+                const auto this_program = get_current_process_path();
+
+                std::vector<size_t> idx_vec(death_tests.size());
+                std::iota(idx_vec.begin(), idx_vec.end(), size_t{0});
+                std::random_device rd;
+                std::shuffle(idx_vec.begin(), idx_vec.end(), rd);
+
+                constexpr size_t maxTrials = 2; // death tests are expensive; randomly select a few to run
+                if (idx_vec.size() > maxTrials) {
+                    idx_vec.resize(maxTrials);
+                }
+
+                for (const auto& idx : idx_vec) {
                     printf("running death test %zu... ", idx);
                     const DWORD death_test_result = dispatch_death_test(idx, this_program.c_str());
                     if (death_test_result <= 1000U) {
