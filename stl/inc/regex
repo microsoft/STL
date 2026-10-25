@@ -4556,85 +4556,87 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     auto& _Sav   = _Loop_vals[_Node->_Loop_number];
 
                     // optimize some common types of repetitions
-                    const auto _Rep_subtype = _Node->_Flags & _Fl_rep_subtype_mask;
-                    if (_Greedy && _Rep_subtype != 0 && _Rep_subtype <= _Fl_rep_known_subtype) {
-                        _It _Min_pos = _Tgt_state._Cur;
+                    if constexpr (_Is_cpp17_random_iter_v<_It>) {
+                        const auto _Rep_subtype = _Node->_Flags & _Fl_rep_subtype_mask;
+                        if (_Greedy && _Rep_subtype != 0 && _Rep_subtype <= _Fl_rep_known_subtype) {
+                            _It _Min_pos = _Tgt_state._Cur;
 
-                        _Iter_diff_t<_It> _Count{};
-                        int _Loop_idx = 0;
+                            _Iter_diff_t<_It> _Count{};
+                            int _Loop_idx = 0;
 
-                        _It _Prev = _Tgt_state._Cur;
-                        _It _Cur  = _Tgt_state._Cur;
+                            _It _Prev = _Tgt_state._Cur;
+                            _It _Cur  = _Tgt_state._Cur;
 
-                        if (_Rep_subtype == _Fl_rep_str) {
-                            const auto _Nstr      = static_cast<const _Node_str<_Elem>*>(_Next);
-                            const auto _Str_first = _Nstr->_Data._Str();
-                            const auto _Size      = _Nstr->_Data._Size();
-                            const auto _Str_last  = _Str_first + _Size;
-                            _Sav._Loop_length     = static_cast<_Iter_diff_t<_It>>(_Size);
-                            _It _Res0;
-                            while (_Loop_idx != _Node->_Max
-                                   && (_Res0 = _STD _Compare_translate_left(
-                                           _Cur, _End, _Str_first, _Str_last, _Traits, _Sflags, _Count))
-                                          != _Cur) {
-                                _Prev = _Cur;
-                                _Cur  = _Res0;
-                                if (_Loop_idx < INT_MAX) {
-                                    if (++_Loop_idx == _Node->_Min) {
-                                        _Min_pos = _Prev;
+                            if (_Rep_subtype == _Fl_rep_str) {
+                                const auto _Nstr      = static_cast<const _Node_str<_Elem>*>(_Next);
+                                const auto _Str_first = _Nstr->_Data._Str();
+                                const auto _Size      = _Nstr->_Data._Size();
+                                const auto _Str_last  = _Str_first + _Size;
+                                _Sav._Loop_length     = static_cast<_Iter_diff_t<_It>>(_Size);
+                                _It _Res0;
+                                while (_Loop_idx != _Node->_Max
+                                       && (_Res0 = _STD _Compare_translate_left(
+                                               _Cur, _End, _Str_first, _Str_last, _Traits, _Sflags, _Count))
+                                              != _Cur) {
+                                    _Prev = _Cur;
+                                    _Cur  = _Res0;
+                                    if (_Loop_idx < INT_MAX) {
+                                        if (++_Loop_idx == _Node->_Min) {
+                                            _Min_pos = _Prev;
+                                        }
                                     }
                                 }
-                            }
-                        } else {
-                            _Sav._Loop_length = static_cast<_Iter_diff_t<_It>>(1);
-                            _It _Last         = _End;
-                            if (_Node->_Max != -1) {
-                                const auto _Dist = _STD distance(_Cur, _Last);
-                                if (_Dist > _Node->_Max) {
-                                    _Last = _Cur;
-                                    _STD advance(_Last, static_cast<_Iter_diff_t<_It>>(_Node->_Max));
+                            } else {
+                                _Sav._Loop_length = static_cast<_Iter_diff_t<_It>>(1);
+                                _It _Last         = _End;
+                                if (_Node->_Max != -1) {
+                                    const auto _Dist = _STD distance(_Cur, _Last);
+                                    if (_Dist > _Node->_Max) {
+                                        _Last = _Cur;
+                                        _STD advance(_Last, static_cast<_Iter_diff_t<_It>>(_Node->_Max));
+                                    }
                                 }
-                            }
 
-                            switch (static_cast<int>(_Rep_subtype)) {
-                            case _Fl_rep_char_icase:
-                                _Cur = _STD find_if_not(_Cur, _Last,
-                                    [&_Traits = this->_Traits,
-                                        _Val  = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str()](
-                                        const _Elem& _Ch) { return _Traits.translate_nocase(_Ch) == _Val; });
-                                break;
-                            case _Fl_rep_char_collate:
-                                if constexpr (!_Is_implementation_handled_regex_traits<_RxTraits>) {
+                                switch (static_cast<int>(_Rep_subtype)) {
+                                case _Fl_rep_char_icase:
                                     _Cur = _STD find_if_not(_Cur, _Last,
                                         [&_Traits = this->_Traits,
                                             _Val  = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str()](
-                                            const _Elem& _Ch) { return _Traits.translate(_Ch) == _Val; });
+                                            const _Elem& _Ch) { return _Traits.translate_nocase(_Ch) == _Val; });
                                     break;
+                                case _Fl_rep_char_collate:
+                                    if constexpr (!_Is_implementation_handled_regex_traits<_RxTraits>) {
+                                        _Cur = _STD find_if_not(_Cur, _Last,
+                                            [&_Traits = this->_Traits,
+                                                _Val  = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str()](
+                                                const _Elem& _Ch) { return _Traits.translate(_Ch) == _Val; });
+                                        break;
+                                    }
+                                    _FALLTHROUGH;
+                                case _Fl_rep_char_default:
+                                    _Cur = _STD _Find_not_unchecked(
+                                        _Cur, _Last, *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str());
+                                    break;
+                                case _Fl_rep_dot_ecma:
+                                    _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
+                                    break;
+                                case _Fl_rep_dot_posix:
+                                    _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem{});
+                                    break;
+                                default:
+                                    _Xregex_error(regex_constants::error_complexity); // this should not happen
                                 }
-                                _FALLTHROUGH;
-                            case _Fl_rep_char_default:
-                                _Cur = _STD _Find_not_unchecked(
-                                    _Cur, _Last, *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str());
-                                break;
-                            case _Fl_rep_dot_ecma:
-                                _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
-                                break;
-                            case _Fl_rep_dot_posix:
-                                _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem{});
-                                break;
-                            default:
-                                _Xregex_error(regex_constants::error_complexity); // this should not happen
-                            }
 
-                            _Count    = _STD distance(_Tgt_state._Cur, _Cur);
-                            _Loop_idx = _Count >= INT_MAX ? INT_MAX : static_cast<int>(_Count);
-                            if (_Loop_idx >= _Node->_Min && _Node->_Min != 0) {
-                                _STD advance(_Min_pos, static_cast<_Iter_diff_t<_It>>(_Node->_Min - 1));
-                            }
+                                _Count    = _STD distance(_Tgt_state._Cur, _Cur);
+                                _Loop_idx = _Count >= INT_MAX ? INT_MAX : static_cast<int>(_Count);
+                                if (_Loop_idx >= _Node->_Min && _Node->_Min != 0) {
+                                    _STD advance(_Min_pos, static_cast<_Iter_diff_t<_It>>(_Node->_Min - 1));
+                                }
 
-                            if (_Loop_idx != 0) {
-                                _Prev = _Cur;
-                                --_Prev;
+                                if (_Loop_idx != 0) {
+                                    _Prev = _Cur;
+                                    --_Prev;
+                                }
                             }
                         }
 
