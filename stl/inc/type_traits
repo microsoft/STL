@@ -376,24 +376,24 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_compound : bool_constant<!is_fundam
 _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
-// _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) - Always FUNC(__cdecl, ...)
+// _EMIT_CDECL: __cdecl is always supported
 #define _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) FUNC(__cdecl, OPT1, OPT2, OPT3)
 
-// _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) - FUNC(__clrcall, ...) if _M_CEE
+// _EMIT_CLRCALL: __clrcall is supported for managed code
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
 #else // ^^^ __clrcall supported / __clrcall not supported vvv
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // ^^^ __clrcall not supported ^^^
 
-// _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) - FUNC(__fastcall, ...) on x86, non-CEE
+// _EMIT_FASTCALL: __fastcall is supported for native code on x86
 #if defined(_M_IX86) && !defined(_M_CEE)
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)
 #else // ^^^ __fastcall supported / __fastcall not supported vvv
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // ^^^ __fastcall not supported ^^^
 
-// _EMIT_STDCALL / _EMIT_THISCALL - FUNC(__stdcall, ...) / FUNC(__thiscall, ...) on x86
+// _EMIT_STDCALL and _EMIT_THISCALL: __stdcall and __thiscall are supported on x86
 #ifdef _M_IX86
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
@@ -402,7 +402,9 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // ^^^ __stdcall and __thiscall not supported ^^^
 
-// _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) - FUNC(__vectorcall, ...) if supported
+// _EMIT_VECTORCALL: __vectorcall is supported for native code on either:
+// * x86 with /arch:SSE2 (the default) or higher, or
+// * x64 (excluding ARM64EC)
 #if ((defined(_M_IX86) && _M_IX86_FP >= 2) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE)
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
 #else // ^^^ __vectorcall supported / __vectorcall not supported vvv
