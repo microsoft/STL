@@ -411,8 +411,7 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // ^^^ __vectorcall not supported ^^^
 
-// Non-member calling convention family
-// These macros emit FUNC for non-member function types with every supported calling convention.
+// _NON_MEMBER_CALL emits FUNC for every supported non-member function calling convention (i.e. excluding __thiscall)
 #define _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)          \
     _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
@@ -420,21 +419,20 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
     _EMIT_STDCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
     _EMIT_VECTORCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
 
-// Like _NON_MEMBER_CALL but over cv-qualifiers: (none), const, volatile, const volatile
+// _NON_MEMBER_CALL_CV additionally emits FUNC for every cv-qualifier: (none), const, volatile, const volatile
 #define _NON_MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)    \
     _NON_MEMBER_CALL(FUNC, , REF_OPT, NOEXCEPT_OPT)         \
     _NON_MEMBER_CALL(FUNC, const, REF_OPT, NOEXCEPT_OPT)    \
     _NON_MEMBER_CALL(FUNC, volatile, REF_OPT, NOEXCEPT_OPT) \
     _NON_MEMBER_CALL(FUNC, const volatile, REF_OPT, NOEXCEPT_OPT)
 
-// Like _NON_MEMBER_CALL_CV but over ref-qualifiers: (none), &, &&
+// _NON_MEMBER_CALL_CV_REF additionally emits FUNC for every ref-qualifier: (none), &, &&
 #define _NON_MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT) \
     _NON_MEMBER_CALL_CV(FUNC, , NOEXCEPT_OPT)       \
     _NON_MEMBER_CALL_CV(FUNC, &, NOEXCEPT_OPT)      \
     _NON_MEMBER_CALL_CV(FUNC, &&, NOEXCEPT_OPT)
 
-// _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) - 12 or 24 cv-ref-noexcept combinations
-// per enabled calling convention. Used by _Function_args.
+// _NON_MEMBER_CALL_CV_REF_NOEXCEPT additionally emits FUNC for every noexcept-specifier: (none), noexcept (if allowed)
 #ifdef __cpp_noexcept_function_type
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _NON_MEMBER_CALL_CV_REF(FUNC, )            \
@@ -443,8 +441,7 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _NON_MEMBER_CALL_CV_REF(FUNC, )
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
-// Member calling convention family
-// Same as _NON_MEMBER_CALL but also emits __thiscall on x86.
+// _MEMBER_CALL emits FUNC for every supported member function calling convention (i.e. including __thiscall on x86)
 #define _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)      \
     _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)    \
@@ -453,17 +450,20 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
     _EMIT_THISCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)   \
     _EMIT_VECTORCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
 
+// _MEMBER_CALL_CV additionally emits FUNC for every cv-qualifier: (none), const, volatile, const volatile
 #define _MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)    \
     _MEMBER_CALL(FUNC, , REF_OPT, NOEXCEPT_OPT)         \
     _MEMBER_CALL(FUNC, const, REF_OPT, NOEXCEPT_OPT)    \
     _MEMBER_CALL(FUNC, volatile, REF_OPT, NOEXCEPT_OPT) \
     _MEMBER_CALL(FUNC, const volatile, REF_OPT, NOEXCEPT_OPT)
 
+// _MEMBER_CALL_CV_REF additionally emits FUNC for every ref-qualifier: (none), &, &&
 #define _MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT) \
     _MEMBER_CALL_CV(FUNC, , NOEXCEPT_OPT)       \
     _MEMBER_CALL_CV(FUNC, &, NOEXCEPT_OPT)      \
     _MEMBER_CALL_CV(FUNC, &&, NOEXCEPT_OPT)
 
+// _MEMBER_CALL_CV_REF_NOEXCEPT additionally emits FUNC for every noexcept-specifier: (none), noexcept (if allowed)
 #ifdef __cpp_noexcept_function_type
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _MEMBER_CALL_CV_REF(FUNC, )            \
@@ -472,9 +472,7 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _MEMBER_CALL_CV_REF(FUNC, )
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
-// _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) - Flat list of 12 or 24 cv-ref-noexcept
-// combinations. Used for ellipsis function type traits. Retained for legacy
-// specializations; new components should avoid this macro.
+// _CLASS_DEFINE_CV_REF_NOEXCEPT emits CLASS for every combo of cv-qualifier, ref-qualifier, and noexcept-specifier
 #ifdef __cpp_noexcept_function_type
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
     CLASS(_EMPTY_ARGUMENT)                   \
