@@ -4289,7 +4289,7 @@ template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_not_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first non-matching _Val
     // activate optimization for contiguous iterators to most scalar types (possibly const-qualified)
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FIND
     if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
         if (!_STD _Could_compare_equal_to_value_type<_InIt>(_Val)) {
             return _First;
@@ -4303,7 +4303,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_not_unchecked(_InIt _First, const _InIt _Las
             return _First + static_cast<_Iter_diff_t<_InIt>>(_Result - _First_ptr);
         }
     } else
-#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ _VECTORIZED_FIND ^^^
     {
         for (; _First != _Last; ++_First) {
             if (*_First != _Val) {
