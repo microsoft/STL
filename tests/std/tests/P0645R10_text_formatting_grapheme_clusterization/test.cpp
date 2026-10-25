@@ -1189,6 +1189,7 @@ void run_unicode_test_data_utf32() {
             ++iter;
             ++i;
         }
+        assert(i + 1 == test_case.breaks.size());
     }
 }
 
