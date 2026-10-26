@@ -7380,8 +7380,8 @@ namespace ranges {
         private:
             friend zip_view;
 
-            template <bool _IteratorConst>
-            using _Difference_type = _Iterator<_IteratorConst>::difference_type;
+            template <bool _OtherConst>
+            using _Difference_type = _Iterator<_OtherConst>::difference_type;
 
             using _My_tuple = tuple<sentinel_t<_Maybe_const<_Const, _ViewTypes>>...>;
 
@@ -7391,9 +7391,8 @@ namespace ranges {
                 noexcept(is_nothrow_copy_constructible_v<_My_tuple>) // strengthened
                 : _End(_End_) {}
 
-            template <bool _IteratorConst>
-            _NODISCARD static constexpr const auto& _Get_iterator_tuple(
-                const _Iterator<_IteratorConst>& _Itr) noexcept {
+            template <bool _OtherConst>
+            _NODISCARD static constexpr const auto& _Get_iterator_tuple(const _Iterator<_OtherConst>& _Itr) noexcept {
                 // NOTE: This function is necessary because friend functions are never
                 // member functions, and friendship is not transitive.
                 return _Itr._Current;
@@ -7407,34 +7406,33 @@ namespace ranges {
                 requires (_Const && (convertible_to<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...))
                 : _End(_STD move(_Rhs._End)) {}
 
-            template <bool _IteratorConst>
+            template <bool _OtherConst>
                 requires (sentinel_for<sentinel_t<_Maybe_const<_Const, _ViewTypes>>,
-                              iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>
+                              iterator_t<_Maybe_const<_OtherConst, _ViewTypes>>>
                           && ...)
-            _NODISCARD friend constexpr bool operator==(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
+            _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Lhs, const _Sentinel& _Rhs)
                 noexcept(
                     noexcept(_Zip_iterator_sentinel_equal(_Get_iterator_tuple(_Lhs), _Rhs._End))) /* strengthened */ {
                 return _Zip_iterator_sentinel_equal(_Get_iterator_tuple(_Lhs), _Rhs._End);
             }
 
-            template <bool _IteratorConst>
+            template <bool _OtherConst>
                 requires (sized_sentinel_for<sentinel_t<_Maybe_const<_Const, _ViewTypes>>,
-                              iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>
+                              iterator_t<_Maybe_const<_OtherConst, _ViewTypes>>>
                           && ...)
-            _NODISCARD friend constexpr _Difference_type<_IteratorConst> operator-(
-                const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
-                noexcept(noexcept(_Zip_get_smallest_distance<_Difference_type<_IteratorConst>>(
+            _NODISCARD friend constexpr _Difference_type<_OtherConst> operator-(
+                const _Iterator<_OtherConst>& _Lhs, const _Sentinel& _Rhs)
+                noexcept(noexcept(_Zip_get_smallest_distance<_Difference_type<_OtherConst>>(
                     _Get_iterator_tuple(_Lhs), _Rhs._End))) /* strengthened */ {
-                return _Zip_get_smallest_distance<_Difference_type<_IteratorConst>>(
-                    _Get_iterator_tuple(_Lhs), _Rhs._End);
+                return _Zip_get_smallest_distance<_Difference_type<_OtherConst>>(_Get_iterator_tuple(_Lhs), _Rhs._End);
             }
 
-            template <bool _IteratorConst>
+            template <bool _OtherConst>
                 requires (sized_sentinel_for<sentinel_t<_Maybe_const<_Const, _ViewTypes>>,
-                              iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>
+                              iterator_t<_Maybe_const<_OtherConst, _ViewTypes>>>
                           && ...)
-            _NODISCARD friend constexpr _Difference_type<_IteratorConst> operator-(const _Sentinel& _Lhs,
-                const _Iterator<_IteratorConst>& _Rhs) noexcept(noexcept(-(_Rhs - _Lhs))) /* strengthened */ {
+            _NODISCARD friend constexpr _Difference_type<_OtherConst> operator-(const _Sentinel& _Lhs,
+                const _Iterator<_OtherConst>& _Rhs) noexcept(noexcept(-(_Rhs - _Lhs))) /* strengthened */ {
                 return -(_Rhs - _Lhs);
             }
         };
@@ -7764,8 +7762,8 @@ namespace ranges {
         private:
             friend zip_transform_view;
 
-            template <bool _IteratorConst>
-            using _Difference_type = _Iterator<_IteratorConst>::difference_type;
+            template <bool _OtherConst>
+            using _Difference_type = _Iterator<_OtherConst>::difference_type;
 
             /* [[no_unique_address]] */ _Zentinel<_Const> _Inner;
 
@@ -7773,9 +7771,8 @@ namespace ranges {
                 noexcept(is_nothrow_copy_constructible_v<_Zentinel<_Const>>) // strengthened
                 : _Inner(_Inner_) {}
 
-            template <bool _IteratorConst>
-            _NODISCARD static constexpr const auto& _Get_iterator_inner(
-                const _Iterator<_IteratorConst>& _Itr) noexcept {
+            template <bool _OtherConst>
+            _NODISCARD static constexpr const auto& _Get_iterator_inner(const _Iterator<_OtherConst>& _Itr) noexcept {
                 return _Itr._Inner;
             }
 
@@ -7787,25 +7784,24 @@ namespace ranges {
                 requires (_Const && convertible_to<_Zentinel<false>, _Zentinel<_Const>>)
                 : _Inner(_STD move(_Rhs._Inner)) {}
 
-            template <bool _IteratorConst>
-                requires sentinel_for<_Zentinel<_Const>, _Ziperator<_IteratorConst>>
-            _NODISCARD friend constexpr bool operator==(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
+            template <bool _OtherConst>
+                requires sentinel_for<_Zentinel<_Const>, _Ziperator<_OtherConst>>
+            _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Lhs, const _Sentinel& _Rhs)
                 noexcept(noexcept(_Get_iterator_inner(_Lhs) == _Rhs._Inner)) /* strengthened */ {
                 return _Get_iterator_inner(_Lhs) == _Rhs._Inner;
             }
 
-            template <bool _IteratorConst>
-                requires sized_sentinel_for<_Zentinel<_Const>, _Ziperator<_IteratorConst>>
-            _NODISCARD friend constexpr _Difference_type<_IteratorConst> operator-(
-                const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
-                noexcept(noexcept(_Get_iterator_inner(_Lhs) - _Rhs._Inner)) /* strengthened */ {
+            template <bool _OtherConst>
+                requires sized_sentinel_for<_Zentinel<_Const>, _Ziperator<_OtherConst>>
+            _NODISCARD friend constexpr _Difference_type<_OtherConst> operator-(const _Iterator<_OtherConst>& _Lhs,
+                const _Sentinel& _Rhs) noexcept(noexcept(_Get_iterator_inner(_Lhs) - _Rhs._Inner)) /* strengthened */ {
                 return _Get_iterator_inner(_Lhs) - _Rhs._Inner;
             }
 
-            template <bool _IteratorConst>
-                requires sized_sentinel_for<_Zentinel<_Const>, _Ziperator<_IteratorConst>>
-            _NODISCARD friend constexpr _Difference_type<_IteratorConst> operator-(
-                const _Sentinel& _Lhs, const _Iterator<_IteratorConst>& _Rhs)
+            template <bool _OtherConst>
+                requires sized_sentinel_for<_Zentinel<_Const>, _Ziperator<_OtherConst>>
+            _NODISCARD friend constexpr _Difference_type<_OtherConst> operator-(
+                const _Sentinel& _Lhs, const _Iterator<_OtherConst>& _Rhs)
                 noexcept(noexcept(_Lhs._Inner - _Get_iterator_inner(_Rhs))) /* strengthened */ {
                 return _Lhs._Inner - _Get_iterator_inner(_Rhs);
             }
