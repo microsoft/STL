@@ -7176,7 +7176,7 @@ namespace ranges {
 
             template <class _Func, class... _OtherViews>
                 requires _Zip_transform_constraints<_Func, _OtherViews...>
-            friend class zip_transform_view;
+            friend class _RANGES zip_transform_view;
 
             using _My_tuple = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
@@ -7994,7 +7994,7 @@ namespace ranges {
 
             template <class _Vw2, class _Fn, size_t _Nx2>
                 requires _Adjacent_transform_constraints<_Vw2, _Fn, _Nx2>
-            friend class adjacent_transform_view;
+            friend class _RANGES adjacent_transform_view;
 
             using _Base          = _Maybe_const<_Const, _Vw>;
             using _Base_iterator = iterator_t<_Base>;
