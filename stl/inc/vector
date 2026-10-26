@@ -514,11 +514,9 @@ private:
         _STL_INTERNAL_CHECK(_New_last_ != nullptr);
 
         if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
+            if (_STD _Is_constant_evaluated()) {
                 return;
             }
-#endif // _HAS_CXX20
 
             if (!_Asan_vector_should_annotate) {
                 return;

@@ -4966,11 +4966,9 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Se
                   && sized_sentinel_for<_Sent1, _Iter1>
 #endif // _HAS_CXX20
     ) {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
+        if (_STD _Is_constant_evaluated()) {
             return;
         }
-#endif // _HAS_CXX20
 
         const auto _Offset     = static_cast<ptrdiff_t>(_Last1 - _First1);
         const auto _Ptr1Offset = _Offset * sizeof(*_STD _To_address(_First1));
