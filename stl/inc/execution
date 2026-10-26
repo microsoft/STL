@@ -352,10 +352,10 @@ struct _Generalized_sum_drop { // drop off point for GENERALIZED_SUM intermediat
     size_t _Slots;
     atomic<size_t> _Frontier;
 
-    explicit _Generalized_sum_drop(const size_t _Slots)
+    explicit _Generalized_sum_drop(const size_t _Slots_)
         : _Data(static_cast<_Ty*>(
-              _Allocate<_New_alignof<_Ty>, _Parallelism_allocate_traits>(_Get_size_of_n<sizeof(_Ty)>(_Slots)))),
-          _Slots(_Slots), _Frontier(0) {}
+              _Allocate<_New_alignof<_Ty>, _Parallelism_allocate_traits>(_Get_size_of_n<sizeof(_Ty)>(_Slots_)))),
+          _Slots(_Slots_), _Frontier(0) {}
 
     ~_Generalized_sum_drop() noexcept {
         // pre: the caller has synchronized with all threads that modify _Data.
