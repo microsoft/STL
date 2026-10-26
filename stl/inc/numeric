@@ -173,11 +173,7 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
 #if _STD_VECTORIZE_WITH_FLOAT_CONTROL
     if constexpr (_Default_ops_transform_reduce_v<_Unwrapped_t<const _InIt1&>, _Unwrapped_t<const _InIt2&>, _Ty,
                       _BinOp1, _BinOp2>) {
-#if _HAS_CXX20
-        // TRANSITION, DevCom-878972
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) { // TRANSITION, DevCom-878972
             return _STD _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
         }
     }
