@@ -1343,10 +1343,7 @@ public:
         pointer& _Mylast  = _My_data._Mylast;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             const auto _Valptr = _STD addressof(_Val);
             _STL_VERIFY(!(_Unfancy(_Myfirst) <= _Valptr && _Valptr < _Unfancy(_Mylast)),
                 "assignment value cannot be a reference into the container");
@@ -1449,10 +1446,7 @@ private:
         if (_Newsize > _Oldsize) {
             bool _Copied = false;
             if constexpr (_Iter_copy_cat<_Iter, pointer>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-                if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-                {
+                if (!_STD _Is_constant_evaluated()) {
                     _Copy_memmove_n(_First, static_cast<size_t>(_Oldsize), _Myfirst);
                     _First += _Oldsize;
                     _Copied = true;

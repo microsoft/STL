@@ -1907,10 +1907,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
                               && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
 
     if constexpr (_Can_memcpy) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
                 _STD _Copy_memcpy(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
                 _Dest += _ULast - _UFirst;
@@ -1949,10 +1946,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
             _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>;
 
     if constexpr (_Can_memcpy) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             _STD _Copy_memcpy_n(_UFirst, _Count, _STD _Unfancy(_Dest));
             _Dest += _Count;
             return _Dest;
@@ -2011,10 +2005,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (conjunction_v<bool_constant<_Iter_move_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             _STD _Copy_memcpy(_UFirst, _ULast, _STD _Unfancy(_Dest));
             return _Dest + (_ULast - _UFirst);
         }
@@ -2034,18 +2025,12 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     // copy _Count copies of _Val to raw _First, using _Al
     using _Ty = typename _Alloc::value_type;
     if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             _Fill_memset(_Unfancy(_First), _Val, static_cast<size_t>(_Count));
             return _First + _Count;
         }
     } else if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             if (_Is_all_bits_zero(_Val)) {
                 _Fill_zero_memset(_Unfancy(_First), static_cast<size_t>(_Count));
                 return _First + _Count;
@@ -2105,10 +2090,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_value_construct_n(
     // value-initialize _Count objects to raw _First, using _Al
     using _Ptrty = typename _Alloc::value_type*;
     if constexpr (_Use_memset_value_construct_v<_Ptrty> && _Uses_default_construct<_Alloc, _Ptrty>::value) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             auto _PFirst = _Unfancy(_First);
             _Zero_range(_PFirst, _PFirst + _Count);
             return _First + _Count;
@@ -2350,10 +2332,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
     if (_UFirst != _ULast) {
 #if _VECTORIZED_REMOVE
         if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
+            if (!_STD _Is_constant_evaluated()) {
                 const auto _First_ptr = _STD _To_address(_UFirst);
                 const auto _Result    = _STD _Remove_vectorized(_First_ptr, _STD _To_address(_ULast), _Val);
 

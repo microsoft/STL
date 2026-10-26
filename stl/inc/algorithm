@@ -4480,10 +4480,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
 
 #if _VECTORIZED_REPLACE
     if constexpr (_Vector_alg_in_replace_is_safe<decltype(_UFirst), _Ty>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             if (_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Oldval)) {
                 _STD _Replace_vectorized(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Oldval, _Newval);
             }
@@ -5867,10 +5864,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     constexpr size_t _Nx                = sizeof(_Elem);
 
     if constexpr (_Allow_vectorization && _Is_vector_element_size<_Nx>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             const auto _Dest_dist = static_cast<_Iter_diff_t<decltype(_UDest)>>(_ULast - _UFirst);
             _STD _Contiguous_iter_verify(_UDest, _Dest_dist);
 

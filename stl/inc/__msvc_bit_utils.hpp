@@ -318,10 +318,7 @@ constexpr bool _Is_standard_unsigned_integer =
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR20 int _Countr_zero(const _Ty _Val) noexcept {
 #if _HAS_TZCNT_BSF_INTRINSICS
-#if _HAS_CXX20
-    if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-    {
+    if (!_STD _Is_constant_evaluated()) {
         return _Checked_x86_x64_countr_zero(_Val);
     }
 #endif // _HAS_TZCNT_BSF_INTRINSICS
@@ -367,10 +364,7 @@ _NODISCARD constexpr int _Countl_zero(const _Ty _Val) noexcept {
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 #if _HAS_POPCNT_INTRINSICS
-#if _HAS_CXX20
-    if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-    {
+    if (!_STD _Is_constant_evaluated()) {
         return _Checked_popcount(_Val);
     }
 #endif // ^^^ _HAS_POPCNT_INTRINSICS ^^^
@@ -381,10 +375,7 @@ template <class _Ty, class _Fn>
 _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
     // TRANSITION, DevCom-1527995: Lambdas in this function ensure inlining
 #if _HAS_POPCNT_INTRINSICS
-#if _HAS_CXX20
-    if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-    {
+    if (!_STD _Is_constant_evaluated()) {
 #if !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE
         const bool _Definitely_have_popcnt = __isa_available >= _Stl_isa_available_sse42;
         if (!_Definitely_have_popcnt) {
