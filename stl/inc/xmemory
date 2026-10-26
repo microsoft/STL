@@ -1246,9 +1246,10 @@ struct _Container_base12;
 //   `deque`, the linked list does not exist and `_Myfirstiter` is always null.
 //
 // Invariants:
-// - `this->_Mycont->_Myproxy` always points to `*this`.
-// - When `_ITERATOR_DEBUG_LEVEL == 2`, all iterators obtained from the container are linked together in the linked list
-// indicated by `this->_Myfirstiter`.
+// - For a proxy currently bound to a container, `this->_Mycont->_Myproxy` points to `*this`. For an initially unbound
+// proxy, `_Container_proxy_ptr12::_Bind` is called later make `this->_Mycont->_Myproxy` point to `*this`.
+// - When `_ITERATOR_DEBUG_LEVEL == 2`, all live iterators whose `_Myproxy` points to `this` are linked together in the
+// list headed by `this->_Myfirstiter`.
 //
 // TRANSITION, ABI: In vNext, dynamically allocated proxy objects, which block addition of `noexcept` to move
 // functions, must be eliminated.
@@ -1295,7 +1296,7 @@ public:
     // Called when a container is assigned from another and both allocators are not equal.
     // In this case, the allocator is replaced and reallocation needs to happen to ensure every proxy object to be
     // deallocated with deleted by a correct allocator.
-    // Proxy object of the destination container is destroyed, deallocated, and then re-created.
+    // A replacement proxy is allocated and constructed before the destination container's old proxy is destroyed.
     // Preconditions: No iterators refer to the existing proxy.
     template <class _Alloc>
     _CONSTEXPR20 void _Reload_proxy(_Alloc&& _Old_alloc, _Alloc&& _New_alloc) {
@@ -1329,14 +1330,19 @@ private:
     }
 };
 
-// The base class used in containers when `_ITERATOR_DEBUG_LEVEL > 0`.
-// - The `_Myproxy` member points to the parent container, or is null when the iterator is invalid.
+// The base class used in container iterators when `_ITERATOR_DEBUG_LEVEL > 0` (and, unfortunately, for `deque` in all
+// modes).
+// - The `_Myproxy` member points to the parent container's proxy, or is null when the iterator is orphaned.
 // - The `_Mynextiter` member maintains an intrusive linked list for all iterators obtained from the parent container
 // when `_ITERATOR_DEBUG_LEVEL == 2`,
 //   - When `_ITERATOR_DEBUG_LEVEL == 1` which is recommended *NOT* to use, or when `_ITERATOR_DEBUG_LEVEL == 0` for
 //   `deque`, the linked list does not exist and `_Mynextiter` is always null.
 //
-// Invariants: `this->_Myproxy` is null if and only if the iterator is invalid.
+// Invariants: When `_ITERATOR_DEBUG_LEVEL == 2`, `this->_Myproxy == nullptr` if and only if the iterator is invalidated
+// and not associated with a container.
+//
+// Remarks: When `_ITERATOR_DEBUG_LEVEL < 2`, a non-null `_Myproxy` does not guarantee iterator validity because
+// `_Myproxy` is not set to `nullptr` when the iterator is invalidated.
 struct _Iterator_base12 {
 public:
     _CONSTEXPR20 _Iterator_base12() noexcept = default; // construct invalid iterator
@@ -1384,11 +1390,13 @@ public:
 
     // Called when obtaining the iterator from the parent container.
     // When `_ITERATOR_DEBUG_LEVEL == 2`,
-    // - sets `_Myproxy` to point to the container pointed-to by `_Parent` and
-    // - adds the iterator to linked list formed for the parent container, which needs *locking*.
+    // - if `_Parent` is non-null, adopts `_Parent->_Myproxy`, joining its iterator list if necessary;
+    // - otherwise, invalidates the iterator, removing it from its current list.
     //
-    // When `_ITERATOR_DEBUG_LEVEL == 1` which is recommended *NOT* to use, the linked list does not exist so no locking
-    // happens.
+    // Updating the iterator list at runtime requires *locking*.
+    //
+    // When `_ITERATOR_DEBUG_LEVEL == 1` which is recommended *NOT* to use, or for `deque` when
+    // `_ITERATOR_DEBUG_LEVEL == 0`, the linked list does not exist so no locking happens.
     _CONSTEXPR20 void _Adopt(const _Container_base12* _Parent) noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
 #if _HAS_CXX20
@@ -1453,9 +1461,9 @@ private:
 
     // During constant evaluation, the implementation cannot hold the lock, so there is a separated unlocked version for
     // convenience.
-    // Sets the parent container to that pointed-to by `_Parent` and appends the iterator to the linked list if `_Right`
-    // is non-null. Otherwise, invalidates the iterator and removes it from its belonging linked list, if the iterator
-    // is not previously invalidated.
+    // Adopts `_Parent` when non-null, prepending to its iterator list if changing parentage.
+    // Otherwise, invidates the iterator (if it is not previously invalidated) and removes it from its current list, if
+    // any.
     _CONSTEXPR20 void _Adopt_unlocked(const _Container_base12* _Parent) noexcept {
         if (!_Parent) {
             _Orphan_me_unlocked_v3();
@@ -1474,9 +1482,9 @@ private:
     }
 
     // During runtime, *locking* is necessary for concurrent modification of the iterator linked list.
-    // Sets the parent container to that pointed-to by `_Parent` and appends the iterator to the linked list if `_Right`
-    // is non-null. Otherwise, invalidates the iterator and removes it from its belonging linked list, if the iterator
-    // is not previously invalidated.
+    // Adopts `_Parent` when non-null, prepending to its iterator list if changing parentage.
+    // Otherwise, invidates the iterator (if it is not previously invalidated) and removes it from its current list, if
+    // any.
     void _Adopt_locked(const _Container_base12* _Parent) noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
         _Adopt_unlocked(_Parent);
@@ -1484,8 +1492,7 @@ private:
 
     // During constant evaluation, the implementation cannot hold the lock, so there is a separated unlocked version for
     // convenience.
-    // Invalidates the iterator and removes it from its belonging linked list, if the iterator is not previously
-    // invalidated.
+    // Invalidates the iterator (if it is not previously invalidated) and removes it from its belonging linked list.
     _CONSTEXPR20 void _Orphan_me_unlocked_v3() noexcept {
         if (!_Myproxy) { // already orphaned
             return;
@@ -1503,8 +1510,7 @@ private:
     }
 
     // During runtime, *locking* is necessary for concurrent modification of the iterator linked list.
-    // Invalidates the iterator and removes it from its belonging linked list, if the iterator is not previously
-    // invalidated.
+    // Invalidates the iterator (if it is not previously invalidated) and removes it from its belonging linked list.
     void _Orphan_me_locked_v3() noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
         _Orphan_me_unlocked_v3();
