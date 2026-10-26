@@ -1131,8 +1131,8 @@ template <class _Size_type, class _Unsigned_type>
 _NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len)
     noexcept(sizeof(_Unsigned_type) <= sizeof(_Size_type)) {
     // convert _Unsigned_type to _Size_type, avoiding truncation
-    _STL_INTERNAL_STATIC_ASSERT(_Unsigned_type(-1) > 0);
-    _STL_INTERNAL_STATIC_ASSERT(_Size_type(-1) > 0);
+    _STL_INTERNAL_STATIC_ASSERT(static_cast<_Unsigned_type>(-1) > 0);
+    _STL_INTERNAL_STATIC_ASSERT(static_cast<_Size_type>(-1) > 0);
 
     if constexpr (sizeof(_Unsigned_type) > sizeof(_Size_type)) {
         if (_Len > _STD _Max_limit<_Size_type>()) {
