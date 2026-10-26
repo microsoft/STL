@@ -73,7 +73,7 @@ elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
     set(VCLIBS_I386_OR_AMD64 "arm64ec")
     set(VCLIBS_X86_OR_X64 "arm64") # Yes, really: `%VCToolsInstallDir%lib\arm64ec` only contains the Link Options
     set(VCLIBS_COMPILE_OPTIONS "/arm64EC")
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${VCLIBS_COMPILE_OPTIONS}>")
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arm64EC>)
     set(VCLIBS_EXPLICIT_MACHINE "/machine:arm64ec")
 else()
     message(FATAL_ERROR "Could not determine target architecture: VCLIBS_TARGET_ARCHITECTURE: ${VCLIBS_TARGET_ARCHITECTURE}")
