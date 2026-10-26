@@ -3243,8 +3243,8 @@ namespace ranges {
                 }
             }
 
-            template <class _Ret = void>
-            constexpr _Ret _Visit_inner_it(auto&& _Func) const {
+            template <class _Ret, class _Fn>
+            constexpr _Ret _Visit_inner_it(_Fn&& _Func) const {
                 if (_Inner_it._Contains == _Variantish_state::_Holds_first) {
                     return _Func(_Inner_it._Get_first());
                 } else if (_Inner_it._Contains == _Variantish_state::_Holds_second) {
