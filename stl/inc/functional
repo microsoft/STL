@@ -2159,7 +2159,7 @@ private:
         && _Call::template _Is_callable_from<decay_t<_Fn>>;
 
     template <class...>
-    friend class move_only_function;
+    friend class _STD move_only_function;
 
     template <class _Vt>
     static constexpr bool _Is_move_only_function_varying_cv_ref_noex() {

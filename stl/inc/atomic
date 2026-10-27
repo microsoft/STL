@@ -662,7 +662,7 @@ public:
 
 #if _HAS_CXX20
     template <class>
-    friend struct atomic_ref;
+    friend struct _STD atomic_ref;
 #endif // _HAS_CXX20
 };
 

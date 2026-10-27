@@ -1856,7 +1856,7 @@ public:
     }
 
     template <class>
-    friend class _Tree;
+    friend class _STD _Tree;
 
     template <class _Other_traits>
     void merge(_Tree<_Other_traits>& _That) {

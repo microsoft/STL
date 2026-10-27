@@ -1932,7 +1932,7 @@ public:
     using reference       = _Iter_ref_t<_BidIt>;
 
     template <class>
-    friend class reverse_iterator;
+    friend class _STD reverse_iterator;
 
     _CONSTEXPR17 reverse_iterator() = default;
 
@@ -2394,7 +2394,7 @@ _EXPORT_STD template <input_iterator _Iter>
 class basic_const_iterator : public _Basic_const_iterator_category<_Iter> {
 private:
     template <input_iterator>
-    friend class basic_const_iterator;
+    friend class _STD basic_const_iterator;
 
     /* [[no_unique_address]] */ _Iter _Current{};
 

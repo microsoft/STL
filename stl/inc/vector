@@ -462,7 +462,7 @@ _EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
     template <class>
-    friend class _Vb_val;
+    friend class _STD _Vb_val;
     friend _Tidy_guard<vector>;
 
     using _Alty        = _Rebind_alloc_t<_Alloc, _Ty>;

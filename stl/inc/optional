@@ -288,7 +288,7 @@ private:
     using _Mybase = _SMF_control<_Optional_construct_base<_Ty>, _Ty>;
 
     template <class>
-    friend class optional;
+    friend class _STD optional;
 
 #if _HAS_CXX23
     template <class _Fn, class _Ux>
