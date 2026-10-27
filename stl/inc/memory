@@ -1480,8 +1480,10 @@ private:
 
     friend shared_ptr<_Ty>;
 
+#if _HAS_CXX20
     template <class _Ty0>
     friend struct atomic;
+#endif // _HAS_CXX20
 
     friend _Exception_ptr_access;
 
