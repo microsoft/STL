@@ -2180,7 +2180,7 @@ void test_gh_5790() {
         g_regexTester.should_not_match("", "a+", options);
         g_regexTester.should_match("b", "a{0}b", options);
         g_regexTester.should_not_match("ab", "a{0}b", options);
-        g_regexTester.should_match("ab", "a{0,1}b");
+        g_regexTester.should_match("ab", "a{0,1}b", options);
         g_regexTester.should_not_match("aab", "a{0,1}b", options);
         g_regexTester.should_match("aab", "a{0,2}b", options);
         g_regexTester.should_match("aab", "a{1,2}b", options);
