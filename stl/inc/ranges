@@ -7150,6 +7150,10 @@ namespace ranges {
         && (view<_Views> && ...) && regular_invocable<_Func&, range_reference_t<_Views>...>
         && _Can_reference<invoke_result_t<_Func&, range_reference_t<_Views>...>>;
 
+    _EXPORT_STD template <class _Func, class... _ViewTypes>
+        requires _Zip_transform_constraints<_Func, _ViewTypes...>
+    class zip_transform_view;
+
     _EXPORT_STD template <input_range... _ViewTypes>
         requires (view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
     class zip_view : public view_interface<zip_view<_ViewTypes...>> {

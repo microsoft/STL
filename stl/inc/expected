@@ -37,6 +37,9 @@ struct _Check_unexpected_argument : true_type {
         "E must not be a specialization of unexpected. (N4950 [expected.un.general]/2)");
 };
 
+_EXPORT_STD template <class _Ty, class _Err>
+class _NODISCARD expected;
+
 // [expected.un.general]
 _EXPORT_STD template <class _Err>
 class _NODISCARD unexpected {

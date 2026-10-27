@@ -455,6 +455,9 @@ struct _NODISCARD _Allocation_guard {
     }
 };
 
+template <class _Alloc>
+class _Vb_val;
+
 _EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
