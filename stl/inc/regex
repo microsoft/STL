@@ -4639,7 +4639,6 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                                 }
                             }
 
-
                             _Increase_complexity_count(_Count);
 
                             _Next           = _Node->_End_rep->_Next;
