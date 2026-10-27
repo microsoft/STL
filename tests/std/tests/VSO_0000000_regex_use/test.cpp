@@ -3198,9 +3198,9 @@ void test_gh_6499() {
     g_regexTester.should_not_match("aAab", "a{1,2}b", icase);
     g_regexTester.should_match("aaab", "a{1,3}b", icase);
     g_regexTester.should_match("aAAb", "a{1,3}b", icase);
-    g_regexTester.should_not_match("ab", ".{2,}b", icase);
-    g_regexTester.should_match("aAb", ".{2,}b", icase);
-    g_regexTester.should_match("AaAb", ".{2,}b", icase);
+    g_regexTester.should_not_match("ab", "a{2,}b", icase);
+    g_regexTester.should_match("aAb", "a{2,}b", icase);
+    g_regexTester.should_match("AaAb", "a{2,}b", icase);
 
     {
         test_regex greedy_a_star(&g_regexTester, "a*", icase);
