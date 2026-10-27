@@ -2771,7 +2771,6 @@ bool _Regex_search4(const _It _First, const _It _Last, const basic_regex<_Elem, 
     return _Mx._Search();
 }
 
-
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool _Regex_search4(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, const regex_constants::match_flag_type _Flgs) {
@@ -5088,7 +5087,6 @@ void _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Copy_captures2(
     _STD _Assign_wrapped(_Submatch0.first, _Begin, _Orig_last);
     _STD _Assign_wrapped(_Submatch0.second, _Result._Cur, _Orig_last);
 
-
     for (unsigned int _Idx = 1U; _Idx < _Ncap; ++_Idx) { // copy submatch _Idx
         auto& _Submatch   = _Matches._At(_Idx);
         const bool _Valid = _Result._Grp_valid._Get(_Idx - 1U);
@@ -5360,7 +5358,6 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip2(
     }
     return _First;
 }
-
 
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Search() {
