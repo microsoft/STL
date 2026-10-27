@@ -4286,7 +4286,7 @@ _FwdIt _Find_next_ecmascript_line_terminator(_FwdIt _First, _FwdIt _Last) {
 }
 
 template <class _InIt, class _Ty>
-_NODISCARD _CONSTEXPR20 _InIt _Find_not_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
+_NODISCARD _InIt _Find_not_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first non-matching _Val
     // activate optimization for contiguous iterators to most scalar types (possibly const-qualified)
 #if _VECTORIZED_FIND
