@@ -4596,34 +4596,28 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                                     }
                                 }
 
-                                switch (static_cast<int>(_Rep_subtype)) {
-                                case _Fl_rep_char_icase:
-                                    _Cur = _STD find_if_not(_Cur, _Last,
-                                        [&_Traits = this->_Traits,
-                                            _Val  = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str()](
-                                            const _Elem& _Ch) { return _Traits.translate_nocase(_Ch) == _Val; });
-                                    break;
-                                case _Fl_rep_char_collate:
-                                    if constexpr (!_Is_implementation_handled_regex_traits<_RxTraits>) {
-                                        _Cur = _STD find_if_not(_Cur, _Last,
-                                            [&_Traits = this->_Traits,
-                                                _Val  = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str()](
-                                                const _Elem& _Ch) { return _Traits.translate(_Ch) == _Val; });
-                                        break;
-                                    }
-                                    _FALLTHROUGH;
-                                case _Fl_rep_char_default:
-                                    _Cur = _STD _Find_not_unchecked(
-                                        _Cur, _Last, *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str());
-                                    break;
-                                case _Fl_rep_dot_ecma:
+                                if (_Rep_subtype == _Fl_rep_dot_ecma) {
                                     _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
-                                    break;
-                                case _Fl_rep_dot_posix:
+                                } else if (_Rep_subtype == _Fl_rep_dot_posix) {
                                     _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem{});
-                                    break;
-                                default:
-                                    _Xregex_error(regex_constants::error_complexity); // this should not happen
+                                } else {
+                                    const _Elem _Val = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str();
+                                    if (_Rep_subtype == _Fl_rep_char_icase) {
+                                        auto _Pred = [this, _Val](const _Elem& _Ch) {
+                                            return _Traits.translate_nocase(_Ch) == _Val;
+                                        };
+                                        _Cur = _STD find_if_not(_Cur, _Last, _Pred);
+                                    } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
+                                        _Cur = _STD _Find_not_unchecked(_Cur, _Last, _Val);
+                                    } else if (_Rep_subtype == _Fl_rep_char_default) {
+                                        _Cur = _STD _Find_not_unchecked(_Cur, _Last, _Val);
+                                    } else {
+                                        _STL_INTERNAL_CHECK(_Rep_subtype == _Fl_rep_char_collate);
+                                        auto _Pred = [this, _Val](const _Elem& _Ch) { //
+                                            return _Traits.translate(_Ch) == _Val;
+                                        };
+                                        _Cur = _STD find_if_not(_Cur, _Last, _Pred);
+                                    }
                                 }
 
                                 _Count    = _STD distance(_Tgt_state._Cur, _Cur);
