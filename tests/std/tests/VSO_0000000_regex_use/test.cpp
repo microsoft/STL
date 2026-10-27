@@ -3116,12 +3116,12 @@ void test_gh_6499() {
         }
 
         {
-            test_regex greedy_ab_star(&g_regexTester, "(ab)+", options);
-            greedy_ab_star.should_search_match("abababababab", "abababababab");
-            greedy_ab_star.should_search_match("ababababababa", "abababababab");
-            greedy_ab_star.should_search_match("babababababab", "abababababab");
-            greedy_ab_star.should_search_match("aababababbab", "abababab");
-            greedy_ab_star.should_search_match("caababacababab", "abab");
+            test_regex greedy_ab_plus(&g_regexTester, "(ab)+", options);
+            greedy_ab_plus.should_search_match("abababababab", "abababababab");
+            greedy_ab_plus.should_search_match("ababababababa", "abababababab");
+            greedy_ab_plus.should_search_match("babababababab", "abababababab");
+            greedy_ab_plus.should_search_match("aababababbab", "abababab");
+            greedy_ab_plus.should_search_match("caababacababab", "abab");
         }
 
         {
@@ -3131,9 +3131,9 @@ void test_gh_6499() {
         }
 
         {
-            test_regex bounded_greedy_aa_rep(&g_regexTester, "(ab){5}", options);
-            bounded_greedy_aa_rep.should_search_match("ababababababab", "ababababab");
-            bounded_greedy_aa_rep.should_search_fail("ababcabababcbababababac");
+            test_regex bounded_greedy_ab_rep(&g_regexTester, "(ab){5}", options);
+            bounded_greedy_ab_rep.should_search_match("ababababababab", "ababababab");
+            bounded_greedy_ab_rep.should_search_fail("ababcabababcbababababac");
         }
 
         {
