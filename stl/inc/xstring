@@ -692,11 +692,9 @@ private:
     static _CONSTEXPR20 void _Apply_annotation(const value_type* const _First, const size_type _Capacity,
         const size_type _Old_size, const size_type _New_size) noexcept {
         if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
+            if (_STD _Is_constant_evaluated()) {
                 return;
             }
-#endif // _HAS_CXX20
 
             // Don't annotate small strings; only annotate on the heap.
             if (_Capacity <= _Small_string_capacity || !_Asan_string_should_annotate) {
@@ -1316,10 +1314,7 @@ private:
 
 #if !defined(_INSERT_STRING_ANNOTATION)
         if constexpr (_Can_memcpy_val) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
+            if (!_STD _Is_constant_evaluated()) {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 if (_Right_data._Large_mode_engaged()) {
                     // take ownership of _Right's iterators along with its buffer
@@ -2469,10 +2464,7 @@ public:
 
 #if !defined(_INSERT_STRING_ANNOTATION)
         if constexpr (_Can_memcpy_val) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
+            if (!_STD _Is_constant_evaluated()) {
                 const auto _My_data_mem =
                     reinterpret_cast<unsigned char*>(_STD addressof(_My_data)) + _Memcpy_val_offset;
                 const auto _Right_data_mem =
@@ -3185,10 +3177,7 @@ private:
 
         // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
         // and copy to the new buffer if constant evaluated
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
                 const auto _New_size = static_cast<size_type>(_Old_size + _Growth);
                 _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);

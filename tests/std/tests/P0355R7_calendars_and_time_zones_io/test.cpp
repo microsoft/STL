@@ -109,7 +109,7 @@ void test_duration_output() {
     assert(test_duration_basic_out(duration<int, pico>{3}, L"3ps"));
     assert(test_duration_basic_out(duration<int, nano>{42}, L"42ns"));
     assert(test_duration_basic_out(duration<int, micro>{42}, L"42us"));
-    assert(test_duration_basic_out(duration<int, milli>{42}, "42ms"));
+    assert(test_duration_basic_out(duration<int, milli>{42}, L"42ms"));
     assert(test_duration_basic_out(duration<int, centi>{42}, L"42cs"));
     assert(test_duration_basic_out(duration<int, deci>{42}, L"42ds"));
     assert(test_duration_basic_out(duration<int, ratio<1>>{42}, L"42s"));

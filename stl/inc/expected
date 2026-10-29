@@ -37,13 +37,16 @@ struct _Check_unexpected_argument : true_type {
         "E must not be a specialization of unexpected. (N4950 [expected.un.general]/2)");
 };
 
+_EXPORT_STD template <class _Ty, class _Err>
+class _NODISCARD expected;
+
 // [expected.un.general]
 _EXPORT_STD template <class _Err>
 class _NODISCARD unexpected {
     static_assert(_Check_unexpected_argument<_Err>::value);
 
     template <class _Ty, class _Err2>
-    friend class expected;
+    friend class _STD expected;
 
 public:
     // [expected.un.cons]
@@ -211,7 +214,7 @@ private:
     static_assert(_Check_unexpected_argument<_Err>::value);
 
     template <class _UTy, class _UErr>
-    friend class expected;
+    friend class _STD expected;
 
     template <class _Uty, class _UErr>
     static constexpr bool _Allow_unwrapping = disjunction_v<is_same<remove_cv_t<_Ty>, bool>,
@@ -1225,7 +1228,7 @@ private:
     static_assert(_Check_unexpected_argument<_Err>::value);
 
     template <class _UTy, class _UErr>
-    friend class expected;
+    friend class _STD expected;
 
     template <class _Uty, class _UErr>
     static constexpr bool _Allow_unwrapping = !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&>

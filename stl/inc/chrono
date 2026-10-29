@@ -3630,7 +3630,7 @@ namespace chrono {
             }
 
             if constexpr (_Can_rep_day) {
-                if (_For_time_point) {
+                if constexpr (_For_time_point) {
                     const year_month_day _Ymd{year{_Compose_year(*_Century, *_Two_dig_year)},
                         month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
                     _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());

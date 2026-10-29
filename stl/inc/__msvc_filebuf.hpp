@@ -646,16 +646,18 @@ protected:
 
         _Mysb::_Init(); // initialize stream buffer base object
 
-        if (_File && sizeof(_Elem) == 1) { // point inside C stream with [first, first + count) buffer
-            _Elem** _Pb = nullptr;
-            _Elem** _Pn = nullptr;
-            int* _Nr    = nullptr;
+        if constexpr (sizeof(_Elem) == 1) {
+            if (_File) { // point inside C stream with [first, first + count) buffer
+                _Elem** _Pb = nullptr;
+                _Elem** _Pn = nullptr;
+                int* _Nr    = nullptr;
 
-            ::_get_stream_buffer_pointers(
-                _File, reinterpret_cast<char***>(&_Pb), reinterpret_cast<char***>(&_Pn), &_Nr);
-            int* _Nw = _Nr;
+                ::_get_stream_buffer_pointers(
+                    _File, reinterpret_cast<char***>(&_Pb), reinterpret_cast<char***>(&_Pn), &_Nr);
+                int* _Nw = _Nr;
 
-            _Mysb::_Init(_Pb, _Pn, _Nr, _Pb, _Pn, _Nw);
+                _Mysb::_Init(_Pb, _Pn, _Nr, _Pb, _Pn, _Nw);
+            }
         }
 
         _Myfile = _File;

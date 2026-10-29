@@ -1624,8 +1624,10 @@ template <class _Iter>
 using _Unwrapped_unverified_t = _Remove_cvref_t<decltype(_Get_unwrapped_unverified(_STD declval<_Iter>()))>;
 
 struct _Distance_unknown {
+    explicit _Distance_unknown() = default;
+
     constexpr _Distance_unknown operator-() const noexcept {
-        return {};
+        return _Distance_unknown{};
     }
 };
 
@@ -1930,7 +1932,7 @@ public:
     using reference       = _Iter_ref_t<_BidIt>;
 
     template <class>
-    friend class reverse_iterator;
+    friend class _STD reverse_iterator;
 
     _CONSTEXPR17 reverse_iterator() = default;
 
@@ -2392,7 +2394,7 @@ _EXPORT_STD template <input_iterator _Iter>
 class basic_const_iterator : public _Basic_const_iterator_category<_Iter> {
 private:
     template <input_iterator>
-    friend class basic_const_iterator;
+    friend class _STD basic_const_iterator;
 
     /* [[no_unique_address]] */ _Iter _Current{};
 
@@ -4372,7 +4374,9 @@ namespace ranges {
 struct _Container_proxy;
 struct _Iterator_base12;
 
-struct _Default_sentinel {}; // empty struct to serve as the end of a range
+struct _Default_sentinel { // empty struct to serve as the end of a range
+    explicit _Default_sentinel() = default;
+};
 
 #if _HAS_CXX20
 _EXPORT_STD template <semiregular>
@@ -4756,8 +4760,10 @@ _EXPORT_STD inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 
 namespace ranges {
     struct _Distance_unbounded {
+        explicit _Distance_unbounded() = default;
+
         _NODISCARD constexpr _Distance_unbounded operator-() const noexcept {
-            return {};
+            return _Distance_unbounded{};
         }
     };
 
@@ -4960,11 +4966,9 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Se
                   && sized_sentinel_for<_Sent1, _Iter1>
 #endif // _HAS_CXX20
     ) {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
+        if (_STD _Is_constant_evaluated()) {
             return;
         }
-#endif // _HAS_CXX20
 
         const auto _Offset     = static_cast<ptrdiff_t>(_Last1 - _First1);
         const auto _Ptr1Offset = _Offset * sizeof(*_STD _To_address(_First1));
@@ -5089,10 +5093,7 @@ _CONSTEXPR20 _OutIt _Copy_n_unchecked4(_InIt _First, _SizeTy _Count, _OutIt _Des
     _STL_INTERNAL_CHECK(_Count >= 0);
 
     if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             return _Copy_memmove_n(_First, static_cast<size_t>(_Count), _Dest);
         }
     }
@@ -5121,10 +5122,7 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
         return _STD _Copy_vbool(_First, _Last, _Dest);
     } else {
         if constexpr (_Sent_copy_cat<_InIt, _Sent, _OutIt>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
+            if (!_STD _Is_constant_evaluated()) {
 #if _HAS_CXX20
                 if constexpr (!is_same_v<_InIt, _Sent>) {
                     return _STD _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
@@ -5326,10 +5324,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
             auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
             auto _UDest  = _STD _Get_unwrapped_n(_Dest, _Count);
             if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-                if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-                {
+                if (!_STD _Is_constant_evaluated()) {
                     _UDest = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
                     _STD _Seek_wrapped(_Dest, _UDest);
                     return _Dest;
@@ -5394,10 +5389,7 @@ template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
     if constexpr (_Iter_copy_cat<_BidIt1, _BidIt2>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             return _STD _Copy_backward_memmove(_First, _Last, _Dest);
         }
     }
@@ -5428,10 +5420,7 @@ _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
         return _STD _Copy_vbool(_First, _Last, _Dest);
     } else {
         if constexpr (_Iter_move_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
+            if (!_STD _Is_constant_evaluated()) {
                 return _STD _Copy_memmove(_First, _Last, _Dest);
             }
         }
@@ -5471,10 +5460,7 @@ _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _Bi
     // move [_First, _Last) backwards to [..., _Dest)
     // note: _Move_backward_unchecked has callers other than the move_backward family
     if constexpr (_Iter_move_cat<_BidIt1, _BidIt2>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             return _STD _Copy_backward_memmove(_First, _Last, _Dest);
         }
     }
@@ -5592,10 +5578,7 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
     } else {
         auto _UFirst      = _STD _Get_unwrapped(_First);
         const auto _ULast = _STD _Get_unwrapped(_Last);
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                 _STD _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
                 return;
@@ -5634,10 +5617,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
             return _Last;
         } else {
             auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
+            if (!_STD _Is_constant_evaluated()) {
                 if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
                     _STD _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
                     _STD _Seek_wrapped(_Dest, _UDest + _Count);
@@ -5826,10 +5806,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     const auto _ULast1 = _STD _Get_unwrapped(_Last1);
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             _STL_INTERNAL_STATIC_ASSERT(
                 sizeof(_Iter_value_t<decltype(_UFirst1)>) == sizeof(_Iter_value_t<decltype(_UFirst2)>));
             _STD _Contiguous_iter_verify(_UFirst2, static_cast<_Iter_diff_t<_InIt2>>(_ULast1 - _UFirst1));
@@ -6154,10 +6131,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
 
     using _Memcmp_pred = _Lex_compare_memcmp_classify<decltype(_UFirst1), decltype(_UFirst2), _Pr>;
     if constexpr (!is_void_v<_Memcmp_pred>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             const auto _Num1  = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst1, _ULast1));
             const auto _Num2  = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst2, _ULast2));
             const size_t _Num = (_STD min) (_Num1, _Num2);
@@ -6441,10 +6415,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
     // find first matching _Val; choose optimization
     // activate optimization for contiguous iterators to most scalar types (possibly const-qualified)
     if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             if (!_STD _Could_compare_equal_to_value_type<_InIt>(_Val)) {
                 return _Last;
             }
@@ -6616,10 +6587,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
 
 #if _VECTORIZED_COUNT
         if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
+            if (!_STD _Is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Val)) {
                     return 0;
                 }
@@ -6825,10 +6793,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
     constexpr size_t _Nx                = sizeof(_Elem);
 
     if constexpr (_Allow_vectorization && _Is_vector_element_size<_Nx>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             _STD _Reverse_vectorized<_Nx>(_STD _To_address(_UFirst), _STD _To_address(_ULast));
             return;
         }
@@ -7844,10 +7809,7 @@ _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last
     using _Elem2 = remove_reference_t<_Iter_ref_t<_FwdIt2>>;
     if constexpr (is_same_v<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1>
                   && _Iterators_are_contiguous<_FwdIt1, _FwdIt2>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             const auto _Dist2 = static_cast<_Iter_diff_t<_FwdIt2>>(_Last1 - _First1);
             _STD _Contiguous_iter_verify(_First2, _Dist2);
             ::__std_swap_ranges_trivially_swappable_noalias(

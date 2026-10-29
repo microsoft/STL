@@ -202,7 +202,7 @@ namespace pmr {
     class polymorphic_allocator {
     public:
         template <class>
-        friend class polymorphic_allocator;
+        friend class pmr::polymorphic_allocator;
 
         using value_type = _Ty;
 
