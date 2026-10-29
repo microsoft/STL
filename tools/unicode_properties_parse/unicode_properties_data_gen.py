@@ -4,7 +4,6 @@
 from io import StringIO
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Optional
 import re
 
 
@@ -27,9 +26,9 @@ LINE_REGEX = re.compile(
 INCB_LINE_REGEX = re.compile(
     r"^(?P<lower>[0-9A-F]{4,5})(?:\.\.(?P<upper>[0-9A-F]{4,5}))?\s*;\s*InCB;\s*(?P<prop>\w+)")
 
-def parse_property_line(inputLine: str, line_regex: re.Pattern[str]) -> Optional[PropertyRange]:
+def parse_property_line(inputLine: str, line_regex: re.Pattern[str]) -> PropertyRange | None:
     result = PropertyRange()
-    if m := line_regex.match(inputLine):
+    if m := line_regex.prefixmatch(inputLine):
         lower_str, upper_str, result.prop = m.group("lower", "upper", "prop")
         result.lower = int(lower_str, base=16)
         result.upper = result.lower
@@ -253,7 +252,7 @@ def property_ranges_to_table(ranges: list[PropertyRange], props: list[str], is_b
 
 def generate_cpp_data(filename: str, timestamp: str, prop_name: str, ranges: list[PropertyRange]) -> str:
     result = StringIO()
-    prop_values = sorted(set(x.prop for x in ranges))
+    prop_values = sorted({x.prop for x in ranges})
     is_binary_property = len(prop_values) == 1
     table = property_ranges_to_table(ranges, prop_values, is_binary_property)
     enumerator_values = [PROP_VALUE_ENUMERATOR_TEMPLATE.format(
@@ -264,8 +263,8 @@ def generate_cpp_data(filename: str, timestamp: str, prop_name: str, ranges: lis
     result.write(DATA_ARRAY_TEMPLATE.lstrip().format(filename=filename, timestamp=timestamp, prop_name=prop_name,
                  size=len(table.lower_bounds),
                  is_binary_property='true' if is_binary_property else 'false',
-                 lower_bounds=",".join(["0x" + format(x, 'x') for x in table.lower_bounds]),
-                 props_and_size=",".join(["0x" + format(x, 'x') for x in table.props_and_range])))
+                 lower_bounds=",".join([f"0x{x:x}" for x in table.lower_bounds]),
+                 props_and_size=",".join([f"0x{x:x}" for x in table.props_and_range])))
     return result.getvalue()
 
 
@@ -279,14 +278,10 @@ def read_file(filename: str, line_regex: re.Pattern[str] = LINE_REGEX) -> tuple[
 
 
 def generate_width_estimate_intervals(filename: str, timestamp: str, width_2_ranges: list[PropertyRange]):
-    values = []
-
-    for width_2_range in width_2_ranges:
-        values.append(width_2_range.lower)
-        values.append(width_2_range.upper + 1)
+    values = [*(r.lower, r.upper + 1) for r in width_2_ranges]
 
     return WIDTH_ESTIMATE_INTERVALS_TEMPLATE.lstrip().format(
-            filename=filename, timestamp=timestamp, data=",".join(['0x' + format(x, 'x') for x in values]))
+            filename=filename, timestamp=timestamp, data=",".join([f'0x{x:x}' for x in values]))
 
 
 def generate_data_tables() -> str:
