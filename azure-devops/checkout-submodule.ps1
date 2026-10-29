@@ -3,7 +3,7 @@
 
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [Parameter(Mandatory)][ValidateSet('llvm-project', 'boost-math', 'benchmarks/google-benchmark')][String]$submodule
+  [Parameter(Mandatory)][ValidateSet('llvm-project', 'boost-math', 'benchmarks/google-benchmark')][String]$Submodule
 )
 
 $ErrorActionPreference = 'Stop'
