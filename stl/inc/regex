@@ -2290,10 +2290,9 @@ enum _Lang_flags2 : unsigned long long { // describe language properties
 
 class _Regex_base : public _Container_base { // base class for basic_regex to construct and destroy proxy
 public:
-#if 0 < _ITERATOR_DEBUG_LEVEL
+#if _ITERATOR_DEBUG_LEVEL != 0
     _Regex_base() { // construct proxy
-        this->_Myproxy = new _Container_proxy;
-        this->_Myproxy->_Mycont = this;
+        this->_Myproxy = new _Container_proxy{this};
     }
 
     ~_Regex_base() noexcept {
@@ -2301,7 +2300,7 @@ public:
         delete this->_Myproxy;
         this->_Myproxy = nullptr;
     }
-#endif // 0 < _ITERATOR_DEBUG_LEVEL
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 };
 
 _EXPORT_STD template <class _Elem, class _RxTraits = regex_traits<_Elem>>
