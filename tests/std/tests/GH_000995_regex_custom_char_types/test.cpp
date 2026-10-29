@@ -370,6 +370,28 @@ void test_regex_on_custom_wchars(const wstring& pattern, const wstring& input, b
     test_regex_for_custom_char<wrapped_wchar, test_regex_traits<wrapped_wchar, wchar_t>>(pattern, input, should_match);
 }
 
+template <class Elem, class RxTraits>
+void test_regex_search_for_custom_char(
+    const wstring& pattern, const wstring& input, const wstring& expected, bool should_match) {
+    auto converted_pattern  = convert_from_underlying_string<basic_string<Elem>>(pattern);
+    auto converted_input    = convert_from_underlying_string<basic_string<Elem>>(input);
+    auto converted_expected = convert_from_underlying_string<basic_string<Elem>>(expected);
+    basic_regex<Elem, RxTraits> re{converted_pattern};
+    match_results<typename basic_string<Elem>::const_iterator> result;
+    assert(regex_search(converted_input, result, re) == should_match);
+    if (should_match) {
+        assert((converted_expected == basic_string<Elem>{result[0].first, result[0].second}));
+    }
+}
+
+void test_regex_search_on_custom_wchars(
+    const wstring& pattern, const wstring& input, const wstring& expected, bool should_match) {
+    test_regex_search_for_custom_char<signed_wchar_enum, test_regex_traits<signed_wchar_enum, wchar_t>>(
+        pattern, input, expected, should_match);
+    test_regex_search_for_custom_char<wrapped_wchar, test_regex_traits<wrapped_wchar, wchar_t>>(
+        pattern, input, expected, should_match);
+}
+
 template <class Elem, class RxTraits, class UnderlyingChar>
 void test_regex_for_custom_char(const UnderlyingChar* pat_first, const UnderlyingChar* pat_last,
     const UnderlyingChar* input_first, const UnderlyingChar* input_last, bool should_match) {
@@ -503,9 +525,26 @@ void test_gh_6475() {
     test_regex_on_custom_wchars(L".*", L"aaa\u2029", false); // U+2029 PARAGRAPH SEPARATOR
 }
 
+void test_gh_6499() {
+    // GH-6499: Accelerate greedy single-character loops
+    //
+    // Test fallback for greedy single-character loops
+    // on custom character types.
+    test_regex_on_custom_wchars(L"a*", L"aaaaa", true);
+    test_regex_on_custom_wchars(L"a*", L"aaabaaa", false);
+    test_regex_search_on_custom_wchars(L"a*", L"aaabaa", L"aaa", true);
+    test_regex_on_custom_wchars(L"a*", L"baaaaa", false);
+    test_regex_search_on_custom_wchars(L"a*", L"baaaaa", L"", true);
+    test_regex_on_custom_wchars(L"a*", L"aaaaab", false);
+    test_regex_search_on_custom_wchars(L"a*", L"aaaaab", L"aaaaa", true);
+    test_regex_on_custom_wchars(L"a+", L"", false);
+    test_regex_search_on_custom_wchars(L"a+", L"", L"", false);
+}
+
 int main() {
     test_gh_5592();
     test_gh_5671();
     test_gh_6475();
+    test_gh_6499();
     return 0;
 }
