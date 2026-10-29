@@ -49,10 +49,13 @@ void large_args(benchmark::Benchmark* bm) {
     bm->Arg(1000)->Arg(10000)->Arg(100000);
 }
 
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*", "a*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*" ecma, "a*")->Apply(large_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*" posix longest, "a*", extended)->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*" collate, "a*", regex_constants::collate)->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "A*" icase, "A*", icase)->Apply(large_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*?", "a*?")->Apply(common_args);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:a)*", "(?:a)*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:a)*", "(?:a)*")->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:aa)*", "(?:aa)*")->Apply(large_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)*", "(a)*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)*?", "(a)*?")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:b|a)*", "(?:b|a)*")->Apply(common_args);

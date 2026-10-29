@@ -1131,8 +1131,8 @@ template <class _Size_type, class _Unsigned_type>
 _NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len)
     noexcept(sizeof(_Unsigned_type) <= sizeof(_Size_type)) {
     // convert _Unsigned_type to _Size_type, avoiding truncation
-    _STL_INTERNAL_STATIC_ASSERT(_Unsigned_type(-1) > 0);
-    _STL_INTERNAL_STATIC_ASSERT(_Size_type(-1) > 0);
+    _STL_INTERNAL_STATIC_ASSERT(static_cast<_Unsigned_type>(-1) > 0);
+    _STL_INTERNAL_STATIC_ASSERT(static_cast<_Size_type>(-1) > 0);
 
     if constexpr (sizeof(_Unsigned_type) > sizeof(_Size_type)) {
         if (_Len > _STD _Max_limit<_Size_type>()) {
@@ -1193,7 +1193,9 @@ struct _Alloc_construct_ptr { // pointer used to help construct 1 _Alloc::value_
 // Helper class returned by `_Get_proxy_allocator` when `_ITERATOR_DEBUG_LEVEL == 0`.
 // Does not allocate, just avoids branches among different `_ITERATOR_DEBUG_LEVEL`s.
 // TRANSITION, ABI: This will be eliminated together with dynamic allocation of proxy objects.
-struct _Fake_allocator {};
+struct _Fake_allocator {
+    explicit _Fake_allocator() = default;
+};
 
 // The placeholder base class used in containers when `_ITERATOR_DEBUG_LEVEL == 0`.
 // Does not hold meta data or need dynamic allocation, just avoids branches among different `_ITERATOR_DEBUG_LEVEL`s.
@@ -1659,7 +1661,7 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
 // TRANSITION, ABI: This will be eliminated together with dynamic allocation of proxy objects.
 template <class _Alloc>
 _CONSTEXPR20 _Fake_allocator _Get_proxy_allocator(const _Alloc&) noexcept {
-    return {};
+    return _Fake_allocator{};
 }
 
 // consistent alias for the scope guard for proxy objects among different `_ITERATOR_DEBUG_LEVEL`s
@@ -2056,10 +2058,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
                               && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
 
     if constexpr (_Can_memcpy) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
                 _STD _Copy_memcpy(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
                 _Dest += _ULast - _UFirst;
@@ -2098,10 +2097,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
             _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>;
 
     if constexpr (_Can_memcpy) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             _STD _Copy_memcpy_n(_UFirst, _Count, _STD _Unfancy(_Dest));
             _Dest += _Count;
             return _Dest;
@@ -2160,10 +2156,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (conjunction_v<bool_constant<_Iter_move_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             _STD _Copy_memcpy(_UFirst, _ULast, _STD _Unfancy(_Dest));
             return _Dest + (_ULast - _UFirst);
         }
@@ -2183,18 +2176,12 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     // copy _Count copies of _Val to raw _First, using _Al
     using _Ty = typename _Alloc::value_type;
     if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             _Fill_memset(_Unfancy(_First), _Val, static_cast<size_t>(_Count));
             return _First + _Count;
         }
     } else if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             if (_Is_all_bits_zero(_Val)) {
                 _Fill_zero_memset(_Unfancy(_First), static_cast<size_t>(_Count));
                 return _First + _Count;
@@ -2254,10 +2241,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_value_construct_n(
     // value-initialize _Count objects to raw _First, using _Al
     using _Ptrty = typename _Alloc::value_type*;
     if constexpr (_Use_memset_value_construct_v<_Ptrty> && _Uses_default_construct<_Alloc, _Ptrty>::value) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             auto _PFirst = _Unfancy(_First);
             _Zero_range(_PFirst, _PFirst + _Count);
             return _First + _Count;
@@ -2499,10 +2483,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
     if (_UFirst != _ULast) {
 #if _VECTORIZED_REMOVE
         if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
+            if (!_STD _Is_constant_evaluated()) {
                 const auto _First_ptr = _STD _To_address(_UFirst);
                 const auto _Result    = _STD _Remove_vectorized(_First_ptr, _STD _To_address(_ULast), _Val);
 
@@ -2551,27 +2532,29 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt 
     return _First;
 }
 
+#if _HAS_CXX20
 template <class _Container, class _Uty>
-_CONSTEXPR20 typename _Container::size_type _Erase_remove(_Container& _Cont, const _Uty& _Val) {
+constexpr _Container::size_type _Erase_remove(_Container& _Cont, const _Uty& _Val) {
     // erase each element matching _Val
     auto _First          = _Cont.begin();
     const auto _Last     = _Cont.end();
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Val));
     _Cont.erase(_First, _Last);
-    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
+    return static_cast<_Container::size_type>(_Old_size - _Cont.size());
 }
 
 template <class _Container, class _Pr>
-_CONSTEXPR20 typename _Container::size_type _Erase_remove_if(_Container& _Cont, _Pr _Pred) {
+constexpr _Container::size_type _Erase_remove_if(_Container& _Cont, _Pr _Pred) {
     // erase each element satisfying _Pred
     auto _First          = _Cont.begin();
     const auto _Last     = _Cont.end();
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove_if(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Pred));
     _Cont.erase(_First, _Last);
-    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
+    return static_cast<_Container::size_type>(_Old_size - _Cont.size());
 }
+#endif // _HAS_CXX20
 
 template <class _Container, class _Pr>
 typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) {

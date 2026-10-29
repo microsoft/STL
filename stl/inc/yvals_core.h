@@ -899,7 +899,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202610L
+#define _MSVC_STL_UPDATE  202611L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1726,7 +1726,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
+#ifndef __EDG__ // TRANSITION, EDG support for modules
 #define __cpp_lib_modules 202207L
 #endif // ^^^ no workaround ^^^
 

@@ -16,10 +16,10 @@ class AddRunPLTags(ConfigAction):
     self._taglist = taglist
 
   def applyTo(self, config):
-    config.runPLTags = set(map(lambda x: x.casefold(), self._taglist))
+    config.runPLTags = {x.casefold() for x in self._taglist}
 
   def pretty(self, config, litParams):
-    return 'select run.pl tags {}'.format(str(self._taglist))
+    return f'select run.pl tags {self._taglist!s}'
 
 
 class AddRunPLNotags(ConfigAction):
@@ -30,10 +30,10 @@ class AddRunPLNotags(ConfigAction):
     self._taglist = taglist
 
   def applyTo(self, config):
-    config.runPLNotags = set(map(lambda x: x.casefold(), self._taglist))
+    config.runPLNotags = {x.casefold() for x in self._taglist}
 
   def pretty(self, config, litParams):
-    return 'exclude run.pl tags {}'.format(str(self._taglist))
+    return f'exclude run.pl tags {self._taglist!s}'
 
 
 def beNice(prio: str) -> list[ConfigAction]:
@@ -71,7 +71,7 @@ def getDefaultParameters(config, litConfig):
                 help="Comma-separated list of run.pl tags to exclude tests",
                 actions=lambda tags: [AddRunPLNotags(tags)]),
       Parameter(name="priority", choices=["idle", "low", "normal"], default="idle", type=str,
-                help='Process priority to run tests with: "idle" (the default), "low", or "normal". ' +
+                help='Process priority to run tests with: "idle" (the default), "low", or "normal". '
                   'Module "psutil" must be installed for this to have any effect.',
                 actions=beNice),
     ]

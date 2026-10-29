@@ -31,7 +31,9 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 _EXPORT_STD struct nullopt_t { // no-value state indicator
-    struct _Tag {};
+    struct _Tag {
+        explicit _Tag() = default;
+    };
     constexpr explicit nullopt_t(_Tag) {}
 #if _HAS_CXX20
     _NODISCARD friend constexpr auto operator<=>(nullopt_t, nullopt_t) noexcept /* strengthened */ = default;
@@ -286,7 +288,7 @@ private:
     using _Mybase = _SMF_control<_Optional_construct_base<_Ty>, _Ty>;
 
     template <class>
-    friend class optional;
+    friend class _STD optional;
 
 #if _HAS_CXX23
     template <class _Fn, class _Ux>

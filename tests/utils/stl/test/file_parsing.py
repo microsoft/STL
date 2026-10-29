@@ -3,7 +3,6 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union
 import itertools
 import os
 import re
@@ -19,38 +18,31 @@ _expected_result_entry_cache = dict()
 
 @dataclass
 class _TmpEnvEntry:
-    env: Dict[str, str] = field(default_factory=dict)
-    tags: Set[str] = field(default_factory=set)
+    env: dict[str, str] = field(default_factory=dict)
+    tags: set[str] = field(default_factory=set)
 
 
 @dataclass(frozen=True)
 class EnvEntry:
     def __init__(self, tmp_env: _TmpEnvEntry):
-        object.__setattr__(self, "_env_keys", tuple(tmp_env.env.keys()))
-        object.__setattr__(self, "_env_vals", tuple(tmp_env.env.values()))
+        object.__setattr__(self, "_env", frozendict(tmp_env.env))
         object.__setattr__(self, "_env_tags", tmp_env.tags)
 
-    def hasAnyTag(self, tags: Set[str]) -> bool:
-        return bool(self._env_tags & tags)
+    def hasAnyTag(self, tags: set[str]) -> bool:
+        return not self._env_tags.isdisjoint(tags)
 
-    def getEnvVal(self, key: str, default: Optional[str] = None) \
-            -> Optional[str]:
-        if key not in self._env_keys:
-            return default
+    def getEnvVal(self, key: str, default: str | None = None) \
+            -> str | None:
+        return self._env.get(key, default)
 
-        # TRANSITION: All of this is to avoid having to install frozendict.
-        # Reconsider this at a future date.
-        return self._env_vals[self._env_keys.index(key)]
-
-    _env_keys: Tuple[str]
-    _env_vals: Tuple[str]
-    _env_tags: Set[str]
+    _env: frozendict[str, str]
+    _env_tags: set[str]
 
 
 @dataclass
 class _ParseCtx:
-    current: List[_TmpEnvEntry] = field(default_factory=list)
-    result: List[List[_TmpEnvEntry]] = field(default_factory=list)
+    current: list[_TmpEnvEntry] = field(default_factory=list)
+    result: list[list[_TmpEnvEntry]] = field(default_factory=list)
 
 
 _COMMENT_REGEX = re.compile(r"\s*#.*", re.DOTALL)
@@ -61,11 +53,11 @@ _CROSSLIST_REGEX = re.compile(r'^RUNALL_CROSSLIST$')
 _EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>[^ ]+) (?P<result>\w+)$')
 
 
-def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
+def _parse_env_line(line: str) -> _TmpEnvEntry | None:
     result = _TmpEnvEntry()
-    if (m:=_TAGS_REGEX.match(line)) is not None:
+    if (m:=_TAGS_REGEX.prefixmatch(line)) is not None:
         tags = m.group("tags").split(',')
-        result.tags = set([x.strip().casefold() for x in tags])
+        result.tags = {x.strip().casefold() for x in tags}
         line = m.group("remainder")
     for env_match in _ENV_VAR_MULTI_ITEM_REGEX.finditer(line):
         name = env_match.group("name")
@@ -76,12 +68,12 @@ def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
 
 def _merge_crosslist_entries(*args) -> _TmpEnvEntry:
     result = _TmpEnvEntry()
-    result.tags = set(['*'])
+    result.tags = {'*'}
     for entry in args:
         # tags are intersected; `*` matches everything
-        if len(entry.tags) == 1 and '*' in entry.tags:
+        if entry.tags == {'*'}:
             pass
-        elif len(result.tags) == 1 and '*' in result.tags:
+        elif result.tags == {'*'}:
             result.tags = entry.tags
         else:
             result.tags &= entry.tags
@@ -102,25 +94,25 @@ def _do_crosslist(ctx: _ParseCtx):
 
 def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
     for _, line in _parse_commented_file(env_lst):
-        if (m:=_INCLUDE_REGEX.match(line)) is not None:
+        if (m:=_INCLUDE_REGEX.prefixmatch(line)) is not None:
             p = env_lst.parent / Path(m.group("filename"))
             _parse_env_lst(p, ctx)
-        elif _CROSSLIST_REGEX.match(line) is not None:
+        elif _CROSSLIST_REGEX.prefixmatch(line) is not None:
             ctx.result.append(ctx.current)
             ctx.current = []
         else:
             ctx.current.append(_parse_env_line(line))
 
 
-def _parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
-        -> List[Tuple[int, str]]:
+def _parse_commented_file(filename: str | bytes | os.PathLike) \
+        -> list[tuple[int, str]]:
     if str(filename) in _preprocessed_file_cache:
         return _preprocessed_file_cache[str(filename)]
 
     filename_path = Path(filename)
     result = list()
     with filename_path.open() as f:
-        for line_number, line in enumerate(f.readlines(), start=1):
+        for line_number, line in enumerate(f, start=1):
             if (line:=_COMMENT_REGEX.sub("", line)):
                 line = line.strip()
                 if line:
@@ -130,14 +122,14 @@ def _parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
         return result
 
 
-def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
-        -> Dict[str, lit.Test.ResultCode]:
+def parse_result_file(filename: str | bytes | os.PathLike) \
+        -> dict[str, lit.Test.ResultCode]:
     if str(filename) in _expected_result_entry_cache:
         return _expected_result_entry_cache[str(filename)]
 
     res = dict()
     for line_number, line in _parse_commented_file(filename):
-        m = _EXPECTED_RESULT_REGEX.match(line)
+        m = _EXPECTED_RESULT_REGEX.prefixmatch(line)
         if m is None:
             raise Exception(f'Incorrectly formatted line {line_number}: "{line}" in {filename}.')
         prefix = m.group("prefix")
@@ -153,8 +145,8 @@ def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
     return res
 
 
-def parse_env_lst_file(env_list: Union[str, bytes, os.PathLike]) \
-        -> Tuple[EnvEntry, ...]:
+def parse_env_lst_file(env_list: str | bytes | os.PathLike) \
+        -> tuple[EnvEntry, ...]:
     if str(env_list) in _envlst_cache:
         return _envlst_cache[str(env_list)]
 

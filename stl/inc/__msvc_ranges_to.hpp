@@ -65,10 +65,14 @@ namespace ranges {
                 is_nothrow_constructible_v<_Ty1, _ClosureLeft> && is_nothrow_constructible_v<_Ty2, _ClosureRight>)
                 : _Left(_STD forward<_Ty1>(_Val1)), _Right(_STD forward<_Ty2>(_Val2)) {}
 
-            void operator()(auto&&) &       = delete;
-            void operator()(auto&&) const&  = delete;
-            void operator()(auto&&) &&      = delete;
-            void operator()(auto&&) const&& = delete;
+            template <class _Ty>
+            void operator()(_Ty&&) & = delete;
+            template <class _Ty>
+            void operator()(_Ty&&) const& = delete;
+            template <class _Ty>
+            void operator()(_Ty&&) && = delete;
+            template <class _Ty>
+            void operator()(_Ty&&) const&& = delete;
 
             template <class _Ty>
             _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) & noexcept(
@@ -402,10 +406,14 @@ namespace ranges {
             noexcept(conjunction_v<is_nothrow_constructible<_Types, _UTypes>...>)
             : _Captures(_STD forward<_UTypes>(_Args)...) {}
 
-        void operator()(auto&&) &       = delete;
-        void operator()(auto&&) const&  = delete;
-        void operator()(auto&&) &&      = delete;
-        void operator()(auto&&) const&& = delete;
+        template <class _Ty>
+        void operator()(_Ty&&) & = delete;
+        template <class _Ty>
+        void operator()(_Ty&&) const& = delete;
+        template <class _Ty>
+        void operator()(_Ty&&) && = delete;
+        template <class _Ty>
+        void operator()(_Ty&&) const&& = delete;
 
         using _Indices = index_sequence_for<_Types...>;
 

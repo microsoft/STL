@@ -3,6 +3,7 @@
 
 # This script checks tests/std/test.lst (and tr1) for duplicate, missing, nonexistent, and unsorted test paths.
 
+from itertools import pairwise
 from pathlib import Path
 import sys
 
@@ -62,11 +63,11 @@ if __name__ == "__main__":
         for s in sorted(nonexistent_tests):
             print(f"{s}", file=sys.stderr)
 
-    for i in range(len(filtered_lines) - 1): # If filtered_lines is empty, range(-1) is empty.
-        if filtered_lines[i] > filtered_lines[i + 1]: # Use greater-than to avoid reporting adjacent duplicates.
+    for previous, current in pairwise(filtered_lines):
+        if previous > current: # Use greater-than to avoid reporting adjacent duplicates.
             failed = True
             print(f"Failure: {relative_test_lst} isn't sorted, starting with:", file=sys.stderr)
-            print(f"{filtered_lines[i + 1]}", file=sys.stderr)
+            print(f"{current}", file=sys.stderr)
             break # Report only the first unsorted line.
 
     if failed:

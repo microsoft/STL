@@ -105,14 +105,12 @@ class CustomTestFormat(STLTestFormat):
                 }
 
                 # Add compiler options to consume the header units that we just built.
-                for hdr in readyToBuild:
-                    consumeBuiltHeaderUnits += ['/headerUnit:angle', f'{hdr}={hdr}.ifc']
+                consumeBuiltHeaderUnits += [*('/headerUnit:angle', f'{hdr}={hdr}.ifc') for hdr in readyToBuild]
         else: # Build independent header units:
             stlHeaders = getImportableCxxLibraryHeaders(sourcePath)
             exportHeaderOptions = ['/exportHeader', '/headerName:angle', '/Fo', '/MP']
-            for hdr in stlHeaders:
-                consumeBuiltHeaderUnits += ['/headerUnit:angle', f'{hdr}={hdr}.ifc']
-                objFilenames.append(f'{hdr}.obj')
+            consumeBuiltHeaderUnits = [*('/headerUnit:angle', f'{hdr}={hdr}.ifc') for hdr in stlHeaders]
+            objFilenames = [f'{hdr}.obj' for hdr in stlHeaders]
 
             if noisyProgress:
                 print('Building independent header units...')
