@@ -15,7 +15,20 @@ set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
 set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
     "Location of the libcxx source tree")
 
-option(TESTS_BUILD_ONLY "Only run the build steps of tests" OFF)
+if(NOT DEFINED TESTS_BUILD_ONLY)
+    try_run(RUN_RESULT COMPILE_RESULT
+        SOURCE_FROM_CONTENT test.cpp "int main() {}"
+        COMPILE_DEFINITIONS ${VCLIBS_COMPILE_OPTIONS}
+        LINK_OPTIONS ${VCLIBS_EXPLICIT_MACHINE}
+        NO_CACHE)
+
+    set(TESTS_BUILD_ONLY_DEFAULT ON)
+    if(COMPILE_RESULT AND "${RUN_RESULT}" STREQUAL "0")
+        set(TESTS_BUILD_ONLY_DEFAULT OFF)
+    endif()
+endif()
+
+option(TESTS_BUILD_ONLY "Only run the build steps of tests" "${TESTS_BUILD_ONLY_DEFAULT}")
 
 add_subdirectory(libcxx)
 add_subdirectory(std)
