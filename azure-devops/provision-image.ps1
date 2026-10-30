@@ -62,11 +62,11 @@ foreach ($workload in $VisualStudioWorkloads) {
 
 # https://github.com/PowerShell/PowerShell/releases/latest
 if ($Provisioning_x64) {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.7/PowerShell-7.6.7-win-x64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.7.0/PowerShell-7.7.0-win-x64.zip'
 } else {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.7/PowerShell-7.6.7-win-arm64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.7.0/PowerShell-7.7.0-win-arm64.zip'
 }
-$PowerShellArgs = @('/quiet', '/norestart')
+$PowerShellPath = [uri]::new($PowerShellUrl).Segments[-1] -ireplace '(PowerShell-\d+\.\d+\.\d+)-win-\w+\.zip', 'C:\$1'
 
 # https://www.python.org
 if ($Provisioning_x64) {
@@ -192,7 +192,7 @@ Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 # Skip a blank line to improve the output.
 (cmd /c ver)[1]
 
-DownloadAndInstall   -Name 'PowerShell'    -Url $PowerShellUrl   -Args $PowerShellArgs
+DownloadAndExtract   -Name 'PowerShell'    -Url $PowerShellUrl   -Dest $PowerShellPath
 DownloadAndExtract   -Name 'Python'        -Url $PythonUrl       -Dest $PythonPath
 DownloadAndInstall   -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
 if ($Provisioning_x64) {
@@ -202,7 +202,7 @@ if ($Provisioning_x64) {
 Write-Host 'Setting environment variables...'
 
 $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine') # Get what the installers just updated...
-$machinePath = "$PythonPath;$machinePath"                               # then manually add Python...
+$machinePath = "$PowerShellPath;$PythonPath;$machinePath"               # then manually add PowerShell and Python...
 [Environment]::SetEnvironmentVariable('Path', $machinePath, 'Machine')  # to the machine path and...
 $Env:PATH = $machinePath                                                # update the current PowerShell session's path.
 
