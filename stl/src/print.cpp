@@ -23,13 +23,13 @@
 extern "C" NTSYSAPI NTSTATUS NTAPI NtQueryVolumeInformationFile(
     HANDLE handle, PIO_STATUS_BLOCK ioStatus, PVOID information, ULONG length, ULONG informationClass);
 
-// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_fs_device_information
+// https://learn.microsoft.com/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_fs_device_information
 struct FILE_FS_DEVICE_INFORMATION {
     DEVICE_TYPE DeviceType;
     ULONG Characteristics;
 };
 
-// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_fsinfoclass
+// https://learn.microsoft.com/windows-hardware/drivers/ddi/wdm/ne-wdm-_fsinfoclass
 #define FileFsDeviceInformation 4
 
 static bool _Is_console_handle(HANDLE _Handle) {
