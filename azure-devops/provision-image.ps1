@@ -70,9 +70,9 @@ $PowerShellArgs = @('/quiet', '/norestart')
 
 # https://www.python.org
 if ($Provisioning_x64) {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.15.0/python-3.15.0-embed-amd64.zip'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.15.2/python-3.15.2-embed-amd64.zip'
 } else {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.15.0/python-3.15.0-embed-arm64.zip'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.15.2/python-3.15.2-embed-arm64.zip'
 }
 $PythonPath = [uri]::new($PythonUrl).Segments[-1] -ireplace '(python-\d+\.\d+\.\d+)-embed-\w+\.zip', 'C:\$1'
 
