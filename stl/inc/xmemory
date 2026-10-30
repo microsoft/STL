@@ -1418,7 +1418,11 @@ public:
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL != 2 ^^^
     }
 
-    // when `_ITERATOR_DEBUG_LEVEL == 0`, obtains information of the host container if possible
+    // Returns a pointer to the container if there is a proxy. Otherwise, returns a null value and the iterator is
+    // invalid in this case.
+    // When `_ITERATOR_DEBUG_LEVEL == 2`, the return value is used for verification of several iterator operations.
+    // For iterators of `deque`, the return value is currently always used for these iterator operations even when they
+    // are not verified.
     _CONSTEXPR20 const _Container_base12* _Getcont() const noexcept {
         return _Myproxy ? _Myproxy->_Mycont : nullptr;
     }
