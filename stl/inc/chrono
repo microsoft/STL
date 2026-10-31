@@ -3568,8 +3568,7 @@ namespace chrono {
             // A distinction has to be made here between clocks that always count 86,400 seconds/day (system_clock,
             // tai_clock, and gps_clock) and ones that count leap seconds (utc_clock and, since 2018-06-01, file_clock).
             // The correct tick count for the clocks that always count 86,400 seconds/day can be determined without
-            // knowing whether any leap seconds have occurred, and there aren't any invalid times due to negative leap
-            // second deletions.
+            // knowing whether any leap seconds have occurred.
 
             if (_Leap == _Leap_second_rep::_All) {
                 if constexpr (!_Can_represent<_DurationType, seconds>()) {
