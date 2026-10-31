@@ -54,7 +54,7 @@ if ($VMSku -ieq 'Fadsv7') {
   $AvailableLocations = @('australiaeast', 'southcentralus')
 }
 
-$AvailableLocationIdx = 2 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 3 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {
@@ -433,7 +433,7 @@ $PoolName = "$ResourceGroupName-Pool"
 $PoolProperties = @{
   'organization' = 'https://dev.azure.com/vclibs'
   'projects' = @('STL')
-  'sku' = @{ 'name' = $PoolSkuName; 'tier' = 'StandardSSD'; 'enableSpot' = $false; }
+  'sku' = @{ 'name' = $PoolSkuName; 'tier' = 'StandardSSD'; 'poolVmPriority' = 'Regular'; }
   'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
   'maxPoolSize' = $PoolSize
   'agentProfile' = @{ 'type' = 'Stateless'; }

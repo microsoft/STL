@@ -201,11 +201,10 @@ if ($Provisioning_x64) {
 
 Write-Host 'Setting environment variables...'
 
-# Manually add Python to the PATH.
-# Don't use $Env:PATH here - that's the local path for this running script, captured before we installed anything.
-# The machine path was just updated by the installers above.
-$machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-[Environment]::SetEnvironmentVariable('Path', "$PythonPath;$machinePath", 'Machine')
+$machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine') # Get what the installers just updated...
+$machinePath = "$PythonPath;$machinePath"                               # then manually add Python...
+[Environment]::SetEnvironmentVariable('Path', $machinePath, 'Machine')  # to the machine path and...
+$Env:PATH = $machinePath                                                # update the current PowerShell session's path.
 
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
 [Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
