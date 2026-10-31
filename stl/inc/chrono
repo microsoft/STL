@@ -2239,45 +2239,13 @@ namespace chrono {
             {sys_seconds{seconds{1483228800}}, true, seconds{26}},
         };
 
-        // __std_tzdb_get_leap_seconds gets leap second (LS) data from the registry, but only if it contains more
-        // LSs than we already know about. The registry only contains LSs after 2018, so we need to tell it how many of
-        // *those* we already know about. The *total* number of LSs known at this point is a combination of what the
-        // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
-        constexpr size_t _Pre_2018_count = 27;
-        const size_t _Known_post_2018_ls_size =
-            (_STD max) (_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
-
-        size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
-        unique_ptr<__std_tzdb_leap_info[], _Tzdb_deleter<__std_tzdb_leap_info[]>> _Reg_ls_data{
-            ::__std_tzdb_get_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size)};
-
-        if (_Reg_post_2018_ls_size > _Known_post_2018_ls_size && !_Reg_ls_data) {
-            _STD _Xbad_alloc(); // registry has new data, but failed to allocate storage
-        } else if (_Reg_post_2018_ls_size == 0 && _Reg_ls_data) {
-            _STD _XGetLastError(); // allocated storage for registry data, but failed to read
-        }
-
-        const size_t _New_size = _Pre_2018_count + _Reg_post_2018_ls_size; // total size with registry data
         vector<leap_second> _Leap_sec_info;
-        bool _All_ls_positive = true;
 
-        if (_New_size > _Current_size) {
-            _Leap_sec_info.reserve(_New_size);
+        if (_STD size(_Known_leap_seconds) > _Current_size) {
             _Leap_sec_info.assign(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
-
-            for (size_t _Idx = 0; _Idx < _Reg_post_2018_ls_size; ++_Idx) {
-                // Leap seconds occur at _Ls._Hour:59:59. We store the next second after, so we need to add an entire
-                // hour.
-                const auto& _Ls = _Reg_ls_data[_Idx];
-                const auto _Date =
-                    static_cast<sys_days>(year_month_day{year{_Ls._Year}, month{_Ls._Month}, day{_Ls._Day}})
-                    + hours{_Ls._Hour + 1};
-                _Leap_sec_info.emplace_back(_Date, !_Ls._Negative, _Leap_sec_info.back()._Elapsed());
-                _All_ls_positive = _All_ls_positive && !_Ls._Negative;
-            }
         }
 
-        return {_STD move(_Leap_sec_info), _All_ls_positive};
+        return {_STD move(_Leap_sec_info), true};
     }
 
     _NODISCARD inline string _Tzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
