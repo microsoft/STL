@@ -593,56 +593,15 @@ void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* const _Info) noex
     }
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 [[nodiscard]] __std_tzdb_leap_info* __stdcall __std_tzdb_get_leap_seconds(
-    const size_t prev_reg_ls_size, size_t* const current_reg_ls_size) noexcept {
-    // On exit---
-    //    *current_reg_ls_size <= prev_reg_ls_size, reg_ls_data == nullptr --> no new data
-    //    *current_reg_ls_size >  prev_reg_ls_size, reg_ls_data != nullptr --> new data, successfully read
-    //    *current_reg_ls_size == 0,                reg_ls_data != nullptr --> new data, failed reading
-    //    *current_reg_ls_size >  prev_reg_ls_size, reg_ls_data == nullptr --> new data, failed allocation
-
-    constexpr auto reg_key_name    = LR"(SYSTEM\CurrentControlSet\Control\LeapSecondInformation)";
-    constexpr auto reg_subkey_name = L"LeapSeconds";
-    *current_reg_ls_size           = 0;
-    HKEY leap_sec_key              = nullptr;
-
-    LSTATUS status = RegOpenKeyExW(HKEY_LOCAL_MACHINE, reg_key_name, 0, KEY_READ, &leap_sec_key);
-    if (status != ERROR_SUCCESS) {
-        // May not exist on older systems. Treat this as equivalent to the key existing but with no data.
-        return nullptr;
-    }
-
-    DWORD byte_size = 0;
-    status          = RegQueryValueExW(leap_sec_key, reg_subkey_name, nullptr, nullptr, nullptr, &byte_size);
-    static_assert(sizeof(__std_tzdb_leap_info) == 12);
-    const auto ls_size   = byte_size / 12;
-    *current_reg_ls_size = ls_size;
-
-    __std_tzdb_leap_info* reg_ls_data = nullptr;
-    if ((status == ERROR_SUCCESS || status == ERROR_MORE_DATA) && ls_size > prev_reg_ls_size) {
-        try {
-            reg_ls_data = new __std_tzdb_leap_info[ls_size];
-
-            status = RegQueryValueExW(
-                leap_sec_key, reg_subkey_name, nullptr, nullptr, reinterpret_cast<LPBYTE>(reg_ls_data), &byte_size);
-            if (status != ERROR_SUCCESS) {
-                *current_reg_ls_size = 0;
-            }
-        } catch (...) {
-        }
-    }
-
-    RegCloseKey(leap_sec_key);
-    if (status != ERROR_SUCCESS) {
-        SetLastError(status);
-    }
-
-    return reg_ls_data;
+    size_t, size_t* const current_reg_ls_size) noexcept {
+    *current_reg_ls_size = 0;
+    return nullptr;
 }
 
-void __stdcall __std_tzdb_delete_leap_seconds(__std_tzdb_leap_info* _Info) noexcept {
-    delete[] _Info;
-}
+// TRANSITION, ABI: preserved for binary compatibility
+void __stdcall __std_tzdb_delete_leap_seconds(__std_tzdb_leap_info*) noexcept {}
 
 [[nodiscard]] void* __stdcall __std_calloc_crt(const size_t count, const size_t size) noexcept {
     return _calloc_crt(count, size);
