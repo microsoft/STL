@@ -2207,47 +2207,6 @@ namespace chrono {
         return {_Info->_Version, _STD move(_Time_zones), _STD move(_Time_zone_links)};
     }
 
-    _NODISCARD inline pair<vector<leap_second>, bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
-        // Returns empty vector if no new leap seconds are found.
-        static constexpr leap_second _Known_leap_seconds[]{
-            {sys_seconds{seconds{78796800}}, true, seconds{0}},
-            {sys_seconds{seconds{94694400}}, true, seconds{1}},
-            {sys_seconds{seconds{126230400}}, true, seconds{2}},
-            {sys_seconds{seconds{157766400}}, true, seconds{3}},
-            {sys_seconds{seconds{189302400}}, true, seconds{4}},
-            {sys_seconds{seconds{220924800}}, true, seconds{5}},
-            {sys_seconds{seconds{252460800}}, true, seconds{6}},
-            {sys_seconds{seconds{283996800}}, true, seconds{7}},
-            {sys_seconds{seconds{315532800}}, true, seconds{8}},
-            {sys_seconds{seconds{362793600}}, true, seconds{9}},
-            {sys_seconds{seconds{394329600}}, true, seconds{10}},
-            {sys_seconds{seconds{425865600}}, true, seconds{11}},
-            {sys_seconds{seconds{489024000}}, true, seconds{12}},
-            {sys_seconds{seconds{567993600}}, true, seconds{13}},
-            {sys_seconds{seconds{631152000}}, true, seconds{14}},
-            {sys_seconds{seconds{662688000}}, true, seconds{15}},
-            {sys_seconds{seconds{709948800}}, true, seconds{16}},
-            {sys_seconds{seconds{741484800}}, true, seconds{17}},
-            {sys_seconds{seconds{773020800}}, true, seconds{18}},
-            {sys_seconds{seconds{820454400}}, true, seconds{19}},
-            {sys_seconds{seconds{867715200}}, true, seconds{20}},
-            {sys_seconds{seconds{915148800}}, true, seconds{21}},
-            {sys_seconds{seconds{1136073600}}, true, seconds{22}},
-            {sys_seconds{seconds{1230768000}}, true, seconds{23}},
-            {sys_seconds{seconds{1341100800}}, true, seconds{24}},
-            {sys_seconds{seconds{1435708800}}, true, seconds{25}},
-            {sys_seconds{seconds{1483228800}}, true, seconds{26}},
-        };
-
-        vector<leap_second> _Leap_sec_info;
-
-        if (_STD size(_Known_leap_seconds) > _Current_size) {
-            _Leap_sec_info.assign(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
-        }
-
-        return {_STD move(_Leap_sec_info), true};
-    }
-
     struct _Secret_tzdb_list_construct_tag {
         explicit _Secret_tzdb_list_construct_tag() = default;
     };
@@ -2263,11 +2222,42 @@ namespace chrono {
         tzdb_list& operator=(const tzdb_list&) = delete;
 
         explicit tzdb_list(_Secret_tzdb_list_construct_tag) {
+            static constexpr leap_second _Known_leap_seconds[]{
+                {sys_seconds{seconds{78796800}}, true, seconds{0}},
+                {sys_seconds{seconds{94694400}}, true, seconds{1}},
+                {sys_seconds{seconds{126230400}}, true, seconds{2}},
+                {sys_seconds{seconds{157766400}}, true, seconds{3}},
+                {sys_seconds{seconds{189302400}}, true, seconds{4}},
+                {sys_seconds{seconds{220924800}}, true, seconds{5}},
+                {sys_seconds{seconds{252460800}}, true, seconds{6}},
+                {sys_seconds{seconds{283996800}}, true, seconds{7}},
+                {sys_seconds{seconds{315532800}}, true, seconds{8}},
+                {sys_seconds{seconds{362793600}}, true, seconds{9}},
+                {sys_seconds{seconds{394329600}}, true, seconds{10}},
+                {sys_seconds{seconds{425865600}}, true, seconds{11}},
+                {sys_seconds{seconds{489024000}}, true, seconds{12}},
+                {sys_seconds{seconds{567993600}}, true, seconds{13}},
+                {sys_seconds{seconds{631152000}}, true, seconds{14}},
+                {sys_seconds{seconds{662688000}}, true, seconds{15}},
+                {sys_seconds{seconds{709948800}}, true, seconds{16}},
+                {sys_seconds{seconds{741484800}}, true, seconds{17}},
+                {sys_seconds{seconds{773020800}}, true, seconds{18}},
+                {sys_seconds{seconds{820454400}}, true, seconds{19}},
+                {sys_seconds{seconds{867715200}}, true, seconds{20}},
+                {sys_seconds{seconds{915148800}}, true, seconds{21}},
+                {sys_seconds{seconds{1136073600}}, true, seconds{22}},
+                {sys_seconds{seconds{1230768000}}, true, seconds{23}},
+                {sys_seconds{seconds{1341100800}}, true, seconds{24}},
+                {sys_seconds{seconds{1435708800}}, true, seconds{25}},
+                {sys_seconds{seconds{1483228800}}, true, seconds{26}},
+            };
+
             auto [_Icu_version, _Zones, _Links] = _CHRONO _Tzdb_generate_time_zones();
-            auto [_Leap_sec, _All_ls_positive]  = _CHRONO _Tzdb_generate_leap_seconds(0);
-            auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
+            vector<leap_second> _Leap_sec(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
+
+            static_assert(_STD size(_Known_leap_seconds) == 27);
             _Tzdb_list.emplace_front(
-                _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive);
+                _Icu_version + ".27", _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), true);
         }
 
         _NODISCARD const tzdb& front() const noexcept {
