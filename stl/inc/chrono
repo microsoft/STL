@@ -2765,12 +2765,6 @@ namespace filesystem {
         }
 
 #if _HAS_CXX20
-        // Assumes that FILETIME counts leap seconds since 2018-06-01 (i.e., after the first 27 leap seconds), even
-        // though systems can opt out of this behavior.
-        static constexpr chrono::seconds _Skipped_filetime_leap_seconds{27};
-        static constexpr chrono::sys_days _Cutoff{
-            chrono::year_month_day{chrono::year{2018}, chrono::June, chrono::day{1}}};
-
         template <class _Duration>
         _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
             const chrono::file_time<_Duration>& _File_time) {
@@ -2778,12 +2772,7 @@ namespace filesystem {
             using _CommonType = common_type_t<_Duration, seconds>;
             const auto _Ticks = _File_time.time_since_epoch()
                               - _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
-
-            if (_Ticks < _Cutoff.time_since_epoch()) {
-                return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
-            } else {
-                return utc_time<_CommonType>{_Ticks + _Skipped_filetime_leap_seconds};
-            }
+            return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
         }
 
         template <class _Duration>
@@ -2792,13 +2781,7 @@ namespace filesystem {
             using namespace chrono;
             file_time<common_type_t<_Duration, seconds>> _File_time{
                 _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
-
-            if (_Utc_time < utc_seconds{_Cutoff.time_since_epoch()} + _Skipped_filetime_leap_seconds) {
-                _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();
-            } else {
-                _File_time += _Utc_time.time_since_epoch() - _Skipped_filetime_leap_seconds;
-            }
-
+            _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();
             return _File_time;
         }
 #endif // ^^^ _HAS_CXX20 ^^^
@@ -3543,9 +3526,8 @@ namespace chrono {
         }
 
         enum class _Leap_second_rep : unsigned int {
-            _None, // system_clock, tai_clock, gps_clock; oblivious to leap seconds
-            _All, // utc_clock
-            _File_time // _None before 2018-06-01, _All afterwards.
+            _None, // system_clock, tai_clock, gps_clock, file_clock, local_t; oblivious to leap seconds
+            _All // utc_clock
         };
 
         template <class _DurationType>
@@ -3555,18 +3537,12 @@ namespace chrono {
                 return false;
             }
 
-            const _Leap_second_rep _Original_leap{_Leap};
-            if (_Leap == _Leap_second_rep::_File_time) {
-                _Leap =
-                    _Dur < file_clock::_Cutoff.time_since_epoch() ? _Leap_second_rep::_None : _Leap_second_rep::_All;
-            }
-
             if (_Second > (_Leap == _Leap_second_rep::_All ? 60 : 59)) {
                 return false;
             }
 
             // A distinction has to be made here between clocks that always count 86,400 seconds/day (system_clock,
-            // tai_clock, and gps_clock) and ones that count leap seconds (utc_clock and, since 2018-06-01, file_clock).
+            // tai_clock, gps_clock, and file_clock) and ones that count leap seconds (utc_clock).
             // The correct tick count for the clocks that always count 86,400 seconds/day can be determined without
             // knowing whether any leap seconds have occurred.
 
@@ -3594,11 +3570,6 @@ namespace chrono {
 
                     const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : _STD _Prev_iter(_It)->_Elapsed();
                     _Dur += _CHRONO duration_cast<_DurationType>(_Offset);
-
-                    if (_Original_leap == _Leap_second_rep::_File_time) {
-                        _Dur -= _CHRONO duration_cast<_DurationType>(
-                            filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
-                    }
                 }
             }
 
@@ -4525,7 +4496,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_File_time)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
             constexpr auto _File_clock_adj{_CHRONO duration_cast<_Duration>(
                 filesystem::_File_time_clock::duration{filesystem::__std_fs_file_time_epoch_adjustment})};
             _Tp = file_time<_Duration>{_Dur} + _File_clock_adj;
