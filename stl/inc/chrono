@@ -2764,9 +2764,10 @@ namespace filesystem {
         _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
             const chrono::file_time<_Duration>& _File_time) {
             using namespace chrono;
-            using _CommonType = common_type_t<_Duration, seconds>;
-            const auto _Ticks = _File_time.time_since_epoch()
-                              - _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
+            using _CommonType          = common_type_t<_Duration, seconds>;
+            constexpr auto _Adjustment = _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
+
+            const auto _Ticks = _File_time.time_since_epoch() - _Adjustment;
             return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
         }
 
@@ -2774,8 +2775,10 @@ namespace filesystem {
         _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> from_utc(
             const chrono::utc_time<_Duration>& _Utc_time) {
             using namespace chrono;
-            file_time<common_type_t<_Duration, seconds>> _File_time{
-                _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
+            using _CommonType          = common_type_t<_Duration, seconds>;
+            constexpr auto _Adjustment = _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
+
+            file_time<_CommonType> _File_time{_Adjustment};
             _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();
             return _File_time;
         }
