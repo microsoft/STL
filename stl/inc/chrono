@@ -2012,22 +2012,15 @@ namespace chrono {
         leap_second(const leap_second&)            = default;
         leap_second& operator=(const leap_second&) = default;
 
-        constexpr leap_second(
-            const sys_seconds& _Date_, const bool _Is_positive_, const seconds& _Prev_elapsed) noexcept
-            : _Date{_Date_}, _Is_positive{_Is_positive_} {
-            _Elapsed_offset = _Prev_elapsed + value();
-        }
+        constexpr leap_second(const sys_seconds& _Date_, const seconds& _Prev_elapsed) noexcept
+            : _Date{_Date_}, _Elapsed_offset{_Prev_elapsed + seconds{1}} {}
 
         _NODISCARD constexpr sys_seconds date() const noexcept {
             return _Date;
         }
 
         _NODISCARD constexpr seconds value() const noexcept {
-            return _Is_positive ? seconds{1} : seconds{-1};
-        }
-
-        _NODISCARD constexpr bool _Positive() const noexcept {
-            return _Is_positive;
+            return seconds{1};
         }
 
         _NODISCARD constexpr seconds _Elapsed() const noexcept {
@@ -2100,7 +2093,7 @@ namespace chrono {
 
     private:
         sys_seconds _Date;
-        bool _Is_positive;
+        bool _Is_positive{true}; // TRANSITION, ABI: Always true
         seconds _Elapsed_offset;
     };
 
@@ -2223,33 +2216,33 @@ namespace chrono {
 
         explicit tzdb_list(_Secret_tzdb_list_construct_tag) {
             static constexpr leap_second _Known_leap_seconds[]{
-                {sys_seconds{seconds{78796800}}, true, seconds{0}},
-                {sys_seconds{seconds{94694400}}, true, seconds{1}},
-                {sys_seconds{seconds{126230400}}, true, seconds{2}},
-                {sys_seconds{seconds{157766400}}, true, seconds{3}},
-                {sys_seconds{seconds{189302400}}, true, seconds{4}},
-                {sys_seconds{seconds{220924800}}, true, seconds{5}},
-                {sys_seconds{seconds{252460800}}, true, seconds{6}},
-                {sys_seconds{seconds{283996800}}, true, seconds{7}},
-                {sys_seconds{seconds{315532800}}, true, seconds{8}},
-                {sys_seconds{seconds{362793600}}, true, seconds{9}},
-                {sys_seconds{seconds{394329600}}, true, seconds{10}},
-                {sys_seconds{seconds{425865600}}, true, seconds{11}},
-                {sys_seconds{seconds{489024000}}, true, seconds{12}},
-                {sys_seconds{seconds{567993600}}, true, seconds{13}},
-                {sys_seconds{seconds{631152000}}, true, seconds{14}},
-                {sys_seconds{seconds{662688000}}, true, seconds{15}},
-                {sys_seconds{seconds{709948800}}, true, seconds{16}},
-                {sys_seconds{seconds{741484800}}, true, seconds{17}},
-                {sys_seconds{seconds{773020800}}, true, seconds{18}},
-                {sys_seconds{seconds{820454400}}, true, seconds{19}},
-                {sys_seconds{seconds{867715200}}, true, seconds{20}},
-                {sys_seconds{seconds{915148800}}, true, seconds{21}},
-                {sys_seconds{seconds{1136073600}}, true, seconds{22}},
-                {sys_seconds{seconds{1230768000}}, true, seconds{23}},
-                {sys_seconds{seconds{1341100800}}, true, seconds{24}},
-                {sys_seconds{seconds{1435708800}}, true, seconds{25}},
-                {sys_seconds{seconds{1483228800}}, true, seconds{26}},
+                {sys_seconds{seconds{78796800}}, seconds{0}},
+                {sys_seconds{seconds{94694400}}, seconds{1}},
+                {sys_seconds{seconds{126230400}}, seconds{2}},
+                {sys_seconds{seconds{157766400}}, seconds{3}},
+                {sys_seconds{seconds{189302400}}, seconds{4}},
+                {sys_seconds{seconds{220924800}}, seconds{5}},
+                {sys_seconds{seconds{252460800}}, seconds{6}},
+                {sys_seconds{seconds{283996800}}, seconds{7}},
+                {sys_seconds{seconds{315532800}}, seconds{8}},
+                {sys_seconds{seconds{362793600}}, seconds{9}},
+                {sys_seconds{seconds{394329600}}, seconds{10}},
+                {sys_seconds{seconds{425865600}}, seconds{11}},
+                {sys_seconds{seconds{489024000}}, seconds{12}},
+                {sys_seconds{seconds{567993600}}, seconds{13}},
+                {sys_seconds{seconds{631152000}}, seconds{14}},
+                {sys_seconds{seconds{662688000}}, seconds{15}},
+                {sys_seconds{seconds{709948800}}, seconds{16}},
+                {sys_seconds{seconds{741484800}}, seconds{17}},
+                {sys_seconds{seconds{773020800}}, seconds{18}},
+                {sys_seconds{seconds{820454400}}, seconds{19}},
+                {sys_seconds{seconds{867715200}}, seconds{20}},
+                {sys_seconds{seconds{915148800}}, seconds{21}},
+                {sys_seconds{seconds{1136073600}}, seconds{22}},
+                {sys_seconds{seconds{1230768000}}, seconds{23}},
+                {sys_seconds{seconds{1341100800}}, seconds{24}},
+                {sys_seconds{seconds{1435708800}}, seconds{25}},
+                {sys_seconds{seconds{1483228800}}, seconds{26}},
             };
 
             auto [_Icu_version, _Zones, _Links] = _CHRONO _Tzdb_generate_time_zones();
@@ -2625,7 +2618,7 @@ namespace chrono {
             if (_STD is_gt(_Leap_cmp)) { // Case (1)
                 --_It;
             }
-            return {_Last_leap._Positive() && _STD is_eq(_Leap_cmp), _It->_Elapsed()};
+            return {_STD is_eq(_Leap_cmp), _It->_Elapsed()};
         }
     }
 
@@ -3583,8 +3576,8 @@ namespace chrono {
                     // Error if _Dur can't represent the adjustment below.
                     return false;
                 } else {
-                    // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
-                    // leap second insertion or (b) _Seconds >= 59 and there *is* a leap second deletion.
+                    // It's possible that the parsed time doesn't exist because _Second == 60 and there *isn't* a
+                    // leap second insertion.
                     const auto& _Tzdb{_CHRONO get_tzdb()};
 
                     const bool _Possible_insertion{_Second == 60};
@@ -3594,13 +3587,7 @@ namespace chrono {
                     const auto _It{_STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
                     const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time + seconds{1}};
 
-                    if (_Match_leap) {
-                        if (!_It->_Positive()) { // negative leap second
-                            if (_Second >= 59) {
-                                return false;
-                            }
-                        }
-                    } else { // no leap second
+                    if (!_Match_leap) { // no leap second
                         if (_Possible_insertion) {
                             return false;
                         }
