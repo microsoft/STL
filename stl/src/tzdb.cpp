@@ -592,14 +592,13 @@ void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* const _Info) noex
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-[[nodiscard]] __std_tzdb_leap_info* __stdcall __std_tzdb_get_leap_seconds(
-    size_t, size_t* const current_reg_ls_size) noexcept {
+[[nodiscard]] void* __stdcall __std_tzdb_get_leap_seconds(size_t, size_t* const current_reg_ls_size) noexcept {
     *current_reg_ls_size = 0;
     return nullptr;
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-void __stdcall __std_tzdb_delete_leap_seconds(__std_tzdb_leap_info*) noexcept {}
+void __stdcall __std_tzdb_delete_leap_seconds(void*) noexcept {}
 
 [[nodiscard]] void* __stdcall __std_calloc_crt(const size_t count, const size_t size) noexcept {
     return _calloc_crt(count, size);

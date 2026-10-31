@@ -23,15 +23,6 @@ extern "C" {
 
 using __std_tzdb_epoch_milli = double;
 
-struct __std_tzdb_leap_info {
-    uint16_t _Year;
-    uint16_t _Month;
-    uint16_t _Day;
-    uint16_t _Hour;
-    uint16_t _Negative;
-    uint16_t _Reserved;
-};
-
 enum class __std_tzdb_error {
     _Success   = 0,
     _Win_error = 1,
