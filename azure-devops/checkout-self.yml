@@ -20,8 +20,3 @@ steps:
           Remove-Item -LiteralPath "$(tmpDir)" -Recurse -Force
       }
       mkdir "$(tmpDir)" -Force | Out-Null
-- task: PowerShell@2
-  displayName: 'Configure Submodules'
-  inputs:
-    pwsh: true
-    filePath: azure-devops/configure-submodules.ps1
