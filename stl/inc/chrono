@@ -3585,10 +3585,10 @@ namespace chrono {
                         _CHRONO floor<seconds>(_Dur) - (_Possible_insertion ? seconds{1} : seconds{0})};
                     const auto& _Ls_vector{_Tzdb.leap_seconds};
                     const auto _It{_STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
-                    const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time + seconds{1}};
 
-                    if (!_Match_leap) { // no leap second
-                        if (_Possible_insertion) {
+                    if (_Possible_insertion) {
+                        const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time + seconds{1}};
+                        if (!_Match_leap) { // no leap second
                             return false;
                         }
                     }
