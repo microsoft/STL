@@ -2304,11 +2304,6 @@ namespace chrono {
             _Tzdb_list.emplace_front(_STD forward<_ArgsTy>(_Args)...);
         }
 
-        const tzdb& _Reload() {
-            _Unique_lock _Lk(_Tzdb_mutex);
-            return _Tzdb_list.front();
-        }
-
     private:
         _ListType _Tzdb_list;
         mutable _Smtx_t _Tzdb_mutex = {};
@@ -2392,15 +2387,7 @@ namespace chrono {
     }
 
     _EXPORT_STD inline const tzdb& reload_tzdb() {
-        _TRY_BEGIN
-        return _CHRONO get_tzdb_list()._Reload();
-        _CATCH(const runtime_error&)
-        _RERAISE;
-        _CATCH(const exception& _Except)
-#if _HAS_EXCEPTIONS
-        _STD _Xruntime_error(_Except.what());
-#endif // _HAS_EXCEPTIONS
-        _CATCH_END
+        return _CHRONO get_tzdb();
     }
 
     _EXPORT_STD _NODISCARD inline string remote_version() {
