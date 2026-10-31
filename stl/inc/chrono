@@ -2165,7 +2165,7 @@ namespace chrono {
         vector<time_zone> zones;
         vector<time_zone_link> links;
         vector<leap_second> leap_seconds;
-        bool _All_ls_positive;
+        bool _All_ls_positive{true}; // TRANSITION, ABI: Always true
 
         _NODISCARD const time_zone* locate_zone(string_view _Tz_name) const {
             auto _Tz = _CHRONO _Locate_zone_impl(zones, _Tz_name);
@@ -2256,8 +2256,7 @@ namespace chrono {
             vector<leap_second> _Leap_sec(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
 
             static_assert(_STD size(_Known_leap_seconds) == 27);
-            _Tzdb_list.emplace_front(
-                _Icu_version + ".27", _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), true);
+            _Tzdb_list.emplace_front(_Icu_version + ".27", _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec));
         }
 
         _NODISCARD const tzdb& front() const noexcept {
@@ -2586,51 +2585,35 @@ namespace chrono {
         const auto& _Ls_vector        = _Tzdb.leap_seconds;
 
         // Find first leap second after _Time.
-        vector<leap_second>::const_iterator _It;
-        if (_Tzdb._All_ls_positive) {
-            // Where "target_ls" is the next leap second at or after _Time, _It either points to:
-            //    (1) The 2nd leap second after _Time if _Time_floor is in the range [target_ls - _Elapsed() - 1,
-            //    target_ls), or
-            //    (2) The leap second just after _Time otherwise.
-            // Note that we can always use prev(_It) to determine whether _Time is *during* a leap second insertion,
-            // since that falls under case (2) above. However, when we fall under case (1), we need to execute an
-            // additional decrement to get the correct elapsed offset. For example, if leap seconds are inserted at
-            // seconds {100, 200, 300, 400}, we have:
-            //
-            //  UTC   sys   *_It
-            //   99    99    100
-            //  100     X    200
-            //  101   100    200
-            //  102   101    200
-            //  ...
-            //  199   198    200
-            //  200   199    300^
-            //  201     X    300
-            //  202   200    300
-            //  ...
-            //  299   297    300
-            //  300   298    400^
-            //  301   299    400^
-            //  302     X    400
-            //  303   300    400
-            //
-            //  ^_It points to 2nd leap second
+        // Where "target_ls" is the next leap second at or after _Time, _It either points to:
+        //    (1) The 2nd leap second after _Time if _Time_floor is in the range [target_ls - _Elapsed() - 1,
+        //    target_ls), or
+        //    (2) The leap second just after _Time otherwise.
+        // Note that we can always use prev(_It) to determine whether _Time is *during* a leap second insertion,
+        // since that falls under case (2) above. However, when we fall under case (1), we need to execute an
+        // additional decrement to get the correct elapsed offset. For example, if leap seconds are inserted at
+        // seconds {100, 200, 300, 400}, we have:
+        //
+        //  UTC   sys   *_It
+        //   99    99    100
+        //  100     X    200
+        //  101   100    200
+        //  102   101    200
+        //  ...
+        //  199   198    200
+        //  200   199    300^
+        //  201     X    300
+        //  202   200    300
+        //  ...
+        //  299   297    300
+        //  300   298    400^
+        //  301   299    400^
+        //  302     X    400
+        //  303   300    400
+        //
+        //  ^_It points to 2nd leap second
 
-            _It = _STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), sys_seconds{_Time_floor.time_since_epoch()});
-        } else {
-            seconds _Prev_elapsed{0};
-            for (_It = _Ls_vector.begin(); _It != _Ls_vector.end(); ++_It) {
-                // UTC time when leap second insertion begins. In all cases, _It->date() + _It->_Elapsed() is the *end*
-                // of the insertion. For a negative leap that's also the beginning, but for a positive one, insertion
-                // begins 1 second earlier.
-                const utc_seconds _This_ls_begin{
-                    _It->date().time_since_epoch() + (_It->_Positive() ? _Prev_elapsed : _It->_Elapsed())};
-                if (_This_ls_begin > _Time_floor) {
-                    break;
-                }
-                _Prev_elapsed = _It->_Elapsed();
-            }
-        }
+        auto _It = _STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), sys_seconds{_Time_floor.time_since_epoch()});
 
         if (_It == _Ls_vector.begin()) {
             return {false, seconds{0}};
@@ -2639,7 +2622,7 @@ namespace chrono {
             const auto& _Last_leap = *--_It;
             const utc_seconds _Utc_leap_second{_Last_leap.date().time_since_epoch() + _It->_Elapsed() - seconds{1}};
             const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
-            if (_Tzdb._All_ls_positive && _STD is_gt(_Leap_cmp)) { // Case (1)
+            if (_STD is_gt(_Leap_cmp)) { // Case (1)
                 --_It;
             }
             return {_Last_leap._Positive() && _STD is_eq(_Leap_cmp), _It->_Elapsed()};
