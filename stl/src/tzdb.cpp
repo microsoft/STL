@@ -12,8 +12,6 @@
 
 #include <Windows.h>
 
-#pragma comment(lib, "Advapi32")
-
 namespace {
     enum class _Icu_api_level : unsigned long {
         _Not_set,
