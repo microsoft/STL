@@ -2761,26 +2761,23 @@ namespace filesystem {
 
 #if _HAS_CXX20
         template <class _Duration>
-        _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
-            const chrono::file_time<_Duration>& _File_time) {
+        _NODISCARD static chrono::sys_time<common_type_t<_Duration, chrono::seconds>> to_sys(
+            const chrono::file_time<_Duration>& _File_time) noexcept /* strengthened */ {
             using namespace chrono;
             using _CommonType          = common_type_t<_Duration, seconds>;
             constexpr auto _Adjustment = _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
 
-            const auto _Ticks = _File_time.time_since_epoch() - _Adjustment;
-            return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
+            return sys_time<_CommonType>{_File_time.time_since_epoch() - _Adjustment};
         }
 
         template <class _Duration>
-        _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> from_utc(
-            const chrono::utc_time<_Duration>& _Utc_time) {
+        _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> from_sys(
+            const chrono::sys_time<_Duration>& _Sys_time) noexcept /* strengthened */ {
             using namespace chrono;
             using _CommonType          = common_type_t<_Duration, seconds>;
             constexpr auto _Adjustment = _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
 
-            file_time<_CommonType> _File_time{_Adjustment};
-            _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();
-            return _File_time;
+            return file_time<_CommonType>{_Sys_time.time_since_epoch() + _Adjustment};
         }
 #endif // ^^^ _HAS_CXX20 ^^^
     };
@@ -6013,9 +6010,8 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
-        const auto _Utc = _CHRONO file_clock::to_utc(_Val);
-        const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
-        return _Impl._Write(_Format_ctx, _Utc, _CHRONO _Fill_tm(_Sys));
+        const auto _Sys = _CHRONO file_clock::to_sys(_Val);
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
