@@ -3999,6 +3999,7 @@ _FwdIt1 _Find_longest_repeating_prefix(_FwdIt1 _First1, const _FwdIt1 _Last1, co
         }
 
         if (_Cur != _Last2) {
+            _Failed_work_counter = static_cast<_Count_type>(_STD distance(_First2, _Cur));
             return _Res;
         }
     }
