@@ -440,26 +440,6 @@ void test_utc_clock_to_sys(const leap_second& leap) {
     assert(utc_clock::from_sys(utc_clock::to_sys(u)) == u); // just after
 }
 
-template <class Duration>
-void test_file_clock_from_utc(const leap_second& leap) {
-    static_assert(is_same_v<filesystem::file_time_type::clock, file_clock>);
-
-    const auto file_leap = clock_cast<file_clock>(leap.date());
-
-    auto u = utc_clock::from_sys(leap.date() - Duration{1}); // just before leap second
-    assert(file_clock::to_utc(file_clock::from_utc(u)) == u);
-
-    if (leap.value() == 1s && leap.date() <= sys_days{1d / January / 2017y}) {
-        u += Duration{1};
-        assert(file_clock::from_utc(u) == file_leap - Duration{1}); // during
-    } else {
-        assert(file_clock::to_utc(file_clock::from_utc(u)) == u);
-    }
-
-    u += 1s;
-    assert(file_clock::to_utc(file_clock::from_utc(u)) == u); // just after
-}
-
 void test_utc_clock_from_sys(const leap_second& leap, seconds offset) {
     // Generalized from N4885 [time.clock.utc.members]/3 Example 1.
     auto t = leap.date() - 2ns;
@@ -480,40 +460,10 @@ void test_utc_clock_from_sys(const leap_second& leap, seconds offset) {
     assert(u.time_since_epoch() - t.time_since_epoch() == offset);
 }
 
-void test_file_clock_utc() {
-    const auto file_epoch{utc_clock::from_sys(sys_days{January / 1 / 1601})};
-    assert(file_clock::to_utc(file_time<seconds>{0s}) == file_epoch);
-    assert(file_clock::from_utc(file_epoch) == file_time<seconds>{0s});
-}
-
-void test_file_clock_to_utc(const leap_second& leap, seconds offset) {
-    // FILETIME counts leap seconds after 1 January 2017, so offset is constant thereafter.
-    constexpr sys_days file_time_cutoff{1d / January / 2017y};
-    auto t = clock_cast<file_clock>(leap.date()) - 2us;
-    if (leap > file_time_cutoff) {
-        offset = 27s;
-    }
-
-    offset -= duration_cast<seconds>(file_clock::duration{filesystem::__std_fs_file_time_epoch_adjustment});
-
-    auto u = file_clock::to_utc(t);
-    assert(u.time_since_epoch() - t.time_since_epoch() == offset);
-
-    t += 1us;
-    u = file_clock::to_utc(t);
-    assert(u.time_since_epoch() - t.time_since_epoch() == offset);
-
-    t += 1us;
-    u = file_clock::to_utc(t);
-    if (leap.date() <= file_time_cutoff) {
-        offset += leap.value();
-    }
-
-    assert(u.time_since_epoch() - t.time_since_epoch() == offset);
-
-    t += 1us;
-    u = file_clock::to_utc(t);
-    assert(u.time_since_epoch() - t.time_since_epoch() == offset);
+void test_file_clock_sys() {
+    const sys_days file_epoch{January / 1 / 1601};
+    assert(file_clock::to_sys(file_time<seconds>{0s}) == file_epoch);
+    assert(file_clock::from_sys(file_epoch) == file_time<seconds>{0s});
 }
 
 void test_gps_tai_clocks_utc() {
@@ -546,7 +496,7 @@ void test_clock_cast() {
     const auto ut = utc_clock::from_sys(st);
     const auto tt = tai_clock::from_utc(ut);
     const auto gt = gps_clock::from_utc(ut);
-    const auto ft = file_clock::from_utc(ut);
+    const auto ft = file_clock::from_sys(st);
 
     assert(clock_cast<utc_clock>(ut) == ut);
     assert(clock_cast<utc_clock>(st) == ut);
@@ -613,15 +563,12 @@ void test() {
         test_utc_clock_to_sys<seconds>(leap);
         test_utc_clock_to_sys<milliseconds>(leap);
         test_utc_clock_to_sys<duration<double>>(leap);
-        test_file_clock_from_utc<seconds>(leap);
-        test_file_clock_from_utc<milliseconds>(leap);
         test_utc_clock_from_sys(leap, offset);
-        test_file_clock_to_utc(leap, offset);
         offset += leap.value();
         assert(leap._Elapsed() == offset);
     }
     test_gps_tai_clocks_utc();
-    test_file_clock_utc();
+    test_file_clock_sys();
     test_clock_cast();
 
     // a negative leap second when the accumulated offset is positive
