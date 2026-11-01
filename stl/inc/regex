@@ -4587,7 +4587,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
 
                                 // corner case: difference type smaller than unsigned int
                                 if (_Sav._Loop_length < _Diff_type{}
-                                    && static_cast<unsigned int>(_Sav._Loop_length) != _Str_size) {
+                                    || static_cast<unsigned int>(_Sav._Loop_length) != _Str_size) {
                                     // pattern cannot match because it has more characters than input can be long
                                     // -> try tail only
                                     _Next   = _Node->_End_rep->_Next;
