@@ -1012,7 +1012,7 @@ void test_local_time_format_formatter() {
     // Implements N4885 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
     empty_braces_helper(ltf, STR("2021-04-19 01:02:03 Meow"));
 
-    assert(format(STR("{:%c, %x, %X}"), ltf) == STR("04/19/21 01:02:03, 04/19/21, 01:02:03"));
+    assert(format(STR("{:%c, %x, %X}"), ltf) == STR("Mon Apr 19 01:02:03 2021, 04/19/21, 01:02:03"));
     assert(format(STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}"), ltf)
            == STR("04/19/21 2021-04-19, 2021 20 21, Apr April Apr 04, 19 19, Mon Monday 1 1"));
     assert(format(STR("{:%H %I %M %S, %r, %R %T %p}"), ltf) == STR("01 01 02 03, 01:02:03 AM, 01:02 01:02:03 AM"));
@@ -1027,7 +1027,7 @@ void test_zoned_time_formatter() {
 
     empty_braces_helper(zt, STR("2021-04-19 08:16:17 PDT"), STR("2021-04-19 08:16:17 GMT-7"));
 
-    assert(format(STR("{:%c, %x, %X}"), zt) == STR("04/19/21 08:16:17, 04/19/21, 08:16:17"));
+    assert(format(STR("{:%c, %x, %X}"), zt) == STR("Mon Apr 19 08:16:17 2021, 04/19/21, 08:16:17"));
     assert(format(STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}"), zt)
            == STR("04/19/21 2021-04-19, 2021 20 21, Apr April Apr 04, 19 19, Mon Monday 1 1"));
     assert(format(STR("{:%H %I %M %S, %r, %R %T %p}"), zt) == STR("08 08 16 17, 08:16:17 AM, 08:16 08:16:17 AM"));
