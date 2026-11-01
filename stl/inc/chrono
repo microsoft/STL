@@ -2259,6 +2259,7 @@ namespace chrono {
 
         const_iterator erase_after(const_iterator _Where) noexcept /* strengthened */ {
             _Unique_lock _Lk(_Tzdb_mutex);
+            _STL_REPORT_ERROR("tzdb_list::erase_after() precondition violation, see N5054 [time.zone.db.list]/5");
             return _Tzdb_list.erase_after(_Where);
         }
 
