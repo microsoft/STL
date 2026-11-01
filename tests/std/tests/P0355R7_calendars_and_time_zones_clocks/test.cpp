@@ -11,7 +11,6 @@
 #include <iterator>
 #include <ratio>
 #include <type_traits>
-#include <utility>
 
 #include <is_permissive.hpp>
 #include <timezone_data.hpp>
@@ -325,9 +324,9 @@ constexpr bool test_leap_second() {
         }
     }
 
-    constexpr leap_second leap{sys_seconds{42s}, true, 0s};
+    constexpr leap_second leap{sys_seconds{42s}, 0s};
     leap_second leap2(leap); // copy construct
-    leap_second leap3{sys_seconds{41s}, true, 0s};
+    leap_second leap3{sys_seconds{41s}, 0s};
     leap3 = leap2; // copy assign
 
     constexpr sys_seconds smaller{41s};
@@ -372,20 +371,19 @@ constexpr bool test_leap_second() {
     static_assert(is_gteq(leap <=> equal));
     static_assert(noexcept(leap <=> equal));
 
-    static_assert(is_eq(leap <=> leap_second{equal, true, 0s}));
-    static_assert(is_lt(leap <=> leap_second{larger, true, 0s}));
-    static_assert(is_gt(leap <=> leap_second{smaller, true, 0s}));
-    static_assert(is_lteq(leap <=> leap_second{larger, true, 0s}));
-    static_assert(is_gteq(leap <=> leap_second{smaller, true, 0s}));
-    static_assert(is_lteq(leap <=> leap_second{equal, true, 0s}));
-    static_assert(is_gteq(leap <=> leap_second{equal, true, 0s}));
-    static_assert(noexcept(leap <=> leap_second{equal, true, 0s}));
+    static_assert(is_eq(leap <=> leap_second{equal, 0s}));
+    static_assert(is_lt(leap <=> leap_second{larger, 0s}));
+    static_assert(is_gt(leap <=> leap_second{smaller, 0s}));
+    static_assert(is_lteq(leap <=> leap_second{larger, 0s}));
+    static_assert(is_gteq(leap <=> leap_second{smaller, 0s}));
+    static_assert(is_lteq(leap <=> leap_second{equal, 0s}));
+    static_assert(is_gteq(leap <=> leap_second{equal, 0s}));
+    static_assert(noexcept(leap <=> leap_second{equal, 0s}));
 
     static_assert(noexcept(leap.date()));
     static_assert(noexcept(leap.value()));
-    static_assert(leap_second{sys_seconds{42s}, true, 0s}.date() == sys_seconds{42s});
-    static_assert(leap_second{sys_seconds{42s}, true, 0s}.value() == 1s);
-    static_assert(leap_second{sys_seconds{42s}, false, 0s}.value() == -1s);
+    static_assert(leap_second{sys_seconds{42s}, 0s}.date() == sys_seconds{42s});
+    static_assert(leap_second{sys_seconds{42s}, 0s}.value() == 1s);
 
     return true;
 }
@@ -396,9 +394,8 @@ constexpr bool operator==(const leap_second_info& lhs, const leap_second_info& r
 
 template <class DurationRep>
 void test_leap_second_info(const leap_second& leap, seconds accum) {
-    const bool is_positive = (leap.value() == 1s);
-    // First UTC time when leap is counted, before insertion of a positive leap, after insertion of a negative one.
-    const utc_time<duration<DurationRep>> utc_leap{leap.date().time_since_epoch() + accum + (is_positive ? 0s : -1s)};
+    // First UTC time when leap is counted, before insertion of a leap second.
+    const utc_time<duration<DurationRep>> utc_leap{leap.date().time_since_epoch() + accum};
 
     auto lsi = get_leap_second_info(utc_leap - 1s);
     assert(lsi == (leap_second_info{false, accum}));
@@ -408,10 +405,10 @@ void test_leap_second_info(const leap_second& leap, seconds accum) {
 
     accum += leap.value();
     lsi = get_leap_second_info(utc_leap);
-    assert(lsi == (leap_second_info{is_positive, accum}));
+    assert(lsi == (leap_second_info{true, accum}));
 
     lsi = get_leap_second_info(utc_leap + 500ms);
-    assert(lsi == (leap_second_info{is_positive, accum}));
+    assert(lsi == (leap_second_info{true, accum}));
 
     lsi = get_leap_second_info(utc_leap + 1s);
     assert(lsi == (leap_second_info{false, accum}));
@@ -429,12 +426,9 @@ void test_utc_clock_to_sys(const leap_second& leap) {
 
     auto u = utc_clock::from_sys(before_leap); // just before leap second
     assert(utc_clock::from_sys(utc_clock::to_sys(u)) == u);
-    if (leap.value() == 1s) {
-        u += Duration{1};
-        assert(utc_clock::to_sys(u) == before_leap); // during
-    } else {
-        assert(utc_clock::from_sys(utc_clock::to_sys(u)) == u);
-    }
+
+    u += Duration{1};
+    assert(utc_clock::to_sys(u) == before_leap); // during
 
     u += 1s;
     assert(utc_clock::from_sys(utc_clock::to_sys(u)) == u); // just after
@@ -533,19 +527,6 @@ void test_clock_cast() {
     assert(clock_cast<utc_clock>(sys_seconds{sys_days{2000y / January / 1}}).time_since_epoch() == 946'684'822s);
 }
 
-tzdb copy_tzdb() {
-    const auto& my_tzdb = get_tzdb_list().front();
-    vector<time_zone> zones;
-    vector<time_zone_link> links;
-    transform(my_tzdb.zones.begin(), my_tzdb.zones.end(), back_inserter(zones),
-        [](const auto& tz) { return time_zone{_Secret_time_zone_construct_tag{}, tz.name()}; });
-    transform(my_tzdb.links.begin(), my_tzdb.links.end(), back_inserter(links), [](const auto& link) {
-        return time_zone_link{_Secret_time_zone_link_construct_tag{}, link.name(), link.target()};
-    });
-
-    return {my_tzdb.version, move(zones), move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};
-}
-
 void test() {
     assert(test_leap_second());
     static_assert(test_leap_second());
@@ -570,59 +551,6 @@ void test() {
     test_gps_tai_clocks_utc();
     test_file_clock_sys();
     test_clock_cast();
-
-    // a negative leap second when the accumulated offset is positive
-    {
-        auto my_tzdb   = copy_tzdb();
-        auto& leap_vec = my_tzdb.leap_seconds;
-        leap_vec.erase(leap_vec.begin() + 27, leap_vec.end());
-        leap_vec.emplace_back(sys_days{1d / January / 2020y}, false, leap_vec.back()._Elapsed());
-        leap_vec.emplace_back(sys_days{1d / January / 2021y}, true, leap_vec.back()._Elapsed());
-        my_tzdb._All_ls_positive = false;
-        get_tzdb_list()._Emplace_front(move(my_tzdb));
-    }
-
-    offset = 0s;
-    for (const auto& leap : get_tzdb().leap_seconds) {
-        test_leap_second_info<long long>(leap, offset);
-        test_leap_second_info<double>(leap, offset);
-        test_utc_clock_to_sys<seconds>(leap);
-        test_utc_clock_to_sys<milliseconds>(leap);
-        test_utc_clock_to_sys<duration<double>>(leap);
-        test_file_clock_from_utc<seconds>(leap);
-        test_file_clock_from_utc<milliseconds>(leap);
-        test_utc_clock_from_sys(leap, offset);
-        test_file_clock_to_utc(leap, offset);
-        offset += leap.value();
-        assert(leap._Elapsed() == offset);
-    }
-
-    // positive and negative leap seconds when the accumulated offset is negative
-    {
-        auto my_tzdb   = copy_tzdb();
-        auto& leap_vec = my_tzdb.leap_seconds;
-        leap_vec.erase(leap_vec.begin() + 27, leap_vec.end());
-        for (int i = 0; i < 30; ++i) {
-            leap_vec.emplace_back(sys_days{1d / January / year{i + 2020}}, false, leap_vec.back()._Elapsed());
-        }
-        leap_vec.emplace_back(sys_days{1d / January / 2060y}, true, leap_vec.back()._Elapsed());
-        get_tzdb_list()._Emplace_front(move(my_tzdb));
-    }
-
-    offset = 0s;
-    for (const auto& leap : get_tzdb().leap_seconds) {
-        test_leap_second_info<long long>(leap, offset);
-        test_leap_second_info<double>(leap, offset);
-        test_utc_clock_to_sys<seconds>(leap);
-        test_utc_clock_to_sys<milliseconds>(leap);
-        test_utc_clock_to_sys<duration<double>>(leap);
-        test_file_clock_from_utc<seconds>(leap);
-        test_file_clock_from_utc<milliseconds>(leap);
-        test_utc_clock_from_sys(leap, offset);
-        test_file_clock_to_utc(leap, offset);
-        offset += leap.value();
-        assert(leap._Elapsed() == offset);
-    }
 }
 
 // LWG-4139 "[time.zone.leap] recursive constraint in <=>"
