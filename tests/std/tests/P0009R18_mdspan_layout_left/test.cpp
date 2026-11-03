@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if defined(_PREFAST_) && defined(_M_IX86) // TRANSITION, VSO-1639191
+int main() {}
+#else // ^^^ workaround / no workaround vvv
 #include <array>
 #include <cassert>
 #include <concepts>
@@ -340,6 +343,23 @@ constexpr void check_call_operator() {
         assert(m3(1, 2) == 11);
         assert(m3(4, 5) == 29);
     }
+
+    { // LWG-4314: Missing move in mdspan layout mapping::operator()
+        struct LwgIndex {
+            constexpr operator int() & noexcept {
+                return 0;
+            }
+
+            constexpr operator int() && noexcept {
+                return 1;
+            }
+        };
+
+        layout_left::mapping<extents<int, 2>> m;
+        LwgIndex idx;
+        assert(m(idx) == 1);
+        assert(m(LwgIndex{}) == 1);
+    }
 }
 
 constexpr void check_stride_function() {
@@ -476,3 +496,4 @@ int main() {
     static_assert(test());
     test();
 }
+#endif // ^^^ no workaround ^^^

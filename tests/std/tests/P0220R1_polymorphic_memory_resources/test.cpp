@@ -479,7 +479,8 @@ namespace {
         namespace is_equal {
             void test() {
                 {
-                    compare_resource<false> r1, r2;
+                    compare_resource<false> r1;
+                    compare_resource<false> r2;
                     // resources with the same address are equal regardless of what do_is_equal returns.
                     CHECK(r1 == r1);
                     CHECK(!(r1 != r1));
@@ -487,7 +488,8 @@ namespace {
                     CHECK(r2 != r1);
                 }
                 {
-                    compare_resource<true> r1, r2;
+                    compare_resource<true> r1;
+                    compare_resource<true> r2;
                     CHECK(r1 == r1);
                     CHECK(!(r1 != r1));
                     CHECK(r1 == r2);
@@ -496,7 +498,8 @@ namespace {
                     CHECK(!(r2 != r1));
                 }
                 {
-                    checked_resource r1, r2;
+                    checked_resource r1;
+                    checked_resource r2;
                     CHECK(r1 == r1);
                     CHECK(!(r1 != r1));
                     r1.ptr_ = &r2;
@@ -1451,7 +1454,8 @@ namespace {
         namespace is_equal {
             template <class PoolResource>
             void test_is_equal() {
-                PoolResource pr1, pr2;
+                PoolResource pr1;
+                PoolResource pr2;
                 CHECK(pr1 == pr1);
                 CHECK(!(pr1 != pr1));
                 CHECK(pr1.is_equal(pr1));

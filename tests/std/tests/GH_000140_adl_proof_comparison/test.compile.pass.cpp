@@ -25,9 +25,11 @@ using namespace std;
 template <class T>
 struct tagged_bool_like {
     bool val_;
+    template <class = void>
     constexpr operator bool() const noexcept {
         return val_;
     }
+    explicit operator bool() const = delete;
 };
 
 template <class T>
@@ -142,39 +144,38 @@ struct validating_iterator_provider<T>::iterator {
     }
 
     template <class OtherIter, enable_if_t<is_validating_iterator<OtherIter>, int> = 0>
-    friend constexpr auto operator==(iterator i, OtherIter j) noexcept //
+    friend constexpr auto operator==(iterator i, OtherIter j) noexcept
         -> decltype(pointer{} == typename OtherIter::pointer{} ? placeholder_addr : nullptr) {
         return i.operator->() == j.operator->() ? placeholder_addr : nullptr;
     }
     template <class OtherIter, enable_if_t<is_validating_iterator<OtherIter>, int> = 0>
-    friend constexpr auto operator!=(iterator i, OtherIter j) noexcept //
+    friend constexpr auto operator!=(iterator i, OtherIter j) noexcept
         -> decltype(pointer{} != typename OtherIter::pointer{} ? placeholder_addr : nullptr) {
         return i.operator->() != j.operator->() ? placeholder_addr : nullptr;
     }
 
     template <class OtherIter, enable_if_t<is_validating_iterator<OtherIter>, int> = 0>
-    friend constexpr auto operator<(iterator i, OtherIter j) noexcept //
+    friend constexpr auto operator<(iterator i, OtherIter j) noexcept
         -> decltype(pointer{} < typename OtherIter::pointer{} ? placeholder_addr : nullptr) {
         return i.operator->() < j.operator->() ? placeholder_addr : nullptr;
     }
     template <class OtherIter, enable_if_t<is_validating_iterator<OtherIter>, int> = 0>
-    friend constexpr auto operator>(iterator i, OtherIter j) noexcept //
+    friend constexpr auto operator>(iterator i, OtherIter j) noexcept
         -> decltype(pointer{} > typename OtherIter::pointer{} ? placeholder_addr : nullptr) {
         return i.operator->() > j.operator->() ? placeholder_addr : nullptr;
     }
     template <class OtherIter, enable_if_t<is_validating_iterator<OtherIter>, int> = 0>
-    friend constexpr auto operator<=(iterator i, OtherIter j) noexcept //
+    friend constexpr auto operator<=(iterator i, OtherIter j) noexcept
         -> decltype(pointer{} <= typename OtherIter::pointer{} ? placeholder_addr : nullptr) {
         return i.operator->() <= j.operator->() ? placeholder_addr : nullptr;
     }
     template <class OtherIter, enable_if_t<is_validating_iterator<OtherIter>, int> = 0>
-    friend constexpr auto operator>=(iterator i, OtherIter j) noexcept //
+    friend constexpr auto operator>=(iterator i, OtherIter j) noexcept
         -> decltype(pointer{} >= typename OtherIter::pointer{} ? placeholder_addr : nullptr) {
         return i.operator->() >= j.operator->() ? placeholder_addr : nullptr;
     }
 
-    template <class OtherIter, enable_if_t<!is_same_v<OtherIter, iterator> //
-                                               && is_validating_iterator<OtherIter> //
+    template <class OtherIter, enable_if_t<!is_same_v<OtherIter, iterator> && is_validating_iterator<OtherIter>
                                                && is_convertible_v<T*, typename OtherIter::pointer>,
                                    int> = 0>
     constexpr operator OtherIter() const noexcept {

@@ -241,8 +241,27 @@ void test_gh_5553() {
     }
 }
 
+void test_gh_6499() {
+    // GH-6499: Accelerate greedy single-character loops
+    //
+    // Test correct handling of collate mode
+    // for greedy single-character loops with custom regex traits.
+    const wstring pattern = L"b*";
+    const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> collating_b_star{
+        pattern, regex_constants::collate};
+    check_match(L"", pattern, collating_b_star);
+    check_match(L"bbbbbb", pattern, collating_b_star);
+    check_match(L"bcbcccbcb", pattern, collating_b_star);
+    check_no_match(L"bcbbcbcabcbc", pattern, collating_b_star);
+    check_search_match(L"bcbbcbcabcbc", L"bcbbcbc", pattern, collating_b_star);
+    check_no_match(L"bcbbdbcb", pattern, collating_b_star);
+    check_search_match(L"bcbbdbcb", L"bcbb", pattern, collating_b_star);
+    check_search_match(L"abcbbd", L"", pattern, collating_b_star);
+}
+
 int main() {
     test_gh_5553();
+    test_gh_6499();
 
     return g_regexTester.result();
 }

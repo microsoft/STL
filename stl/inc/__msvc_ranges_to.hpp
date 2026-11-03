@@ -65,10 +65,14 @@ namespace ranges {
                 is_nothrow_constructible_v<_Ty1, _ClosureLeft> && is_nothrow_constructible_v<_Ty2, _ClosureRight>)
                 : _Left(_STD forward<_Ty1>(_Val1)), _Right(_STD forward<_Ty2>(_Val2)) {}
 
-            void operator()(auto&&) &       = delete;
-            void operator()(auto&&) const&  = delete;
-            void operator()(auto&&) &&      = delete;
-            void operator()(auto&&) const&& = delete;
+            template <class _Ty>
+            void operator()(_Ty&&) & = delete;
+            template <class _Ty>
+            void operator()(_Ty&&) const& = delete;
+            template <class _Ty>
+            void operator()(_Ty&&) && = delete;
+            template <class _Ty>
+            void operator()(_Ty&&) const&& = delete;
 
             template <class _Ty>
             _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) & noexcept(
@@ -119,7 +123,7 @@ namespace ranges {
             requires (_Range_adaptor_closure_object<_Right> && range<_Left>)
         _NODISCARD constexpr decltype(auto) operator|(_Left&& __l, _Right&& __r)
             noexcept(noexcept(_STD forward<_Right>(__r)(_STD forward<_Left>(__l))))
-            requires requires { static_cast<_Right &&>(__r)(static_cast<_Left &&>(__l)); }
+            requires requires { static_cast<_Right&&>(__r)(static_cast<_Left&&>(__l)); }
         {
             return _STD forward<_Right>(__r)(_STD forward<_Left>(__l));
         }
@@ -402,10 +406,14 @@ namespace ranges {
             noexcept(conjunction_v<is_nothrow_constructible<_Types, _UTypes>...>)
             : _Captures(_STD forward<_UTypes>(_Args)...) {}
 
-        void operator()(auto&&) &       = delete;
-        void operator()(auto&&) const&  = delete;
-        void operator()(auto&&) &&      = delete;
-        void operator()(auto&&) const&& = delete;
+        template <class _Ty>
+        void operator()(_Ty&&) & = delete;
+        template <class _Ty>
+        void operator()(_Ty&&) const& = delete;
+        template <class _Ty>
+        void operator()(_Ty&&) && = delete;
+        template <class _Ty>
+        void operator()(_Ty&&) const&& = delete;
 
         using _Indices = index_sequence_for<_Types...>;
 
@@ -461,7 +469,7 @@ namespace ranges {
         template <_Different_from<ref_view> _OtherRng>
         constexpr ref_view(_OtherRng&& _Other)
             noexcept(noexcept(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))) // strengthened
-            requires convertible_to<_OtherRng, _Rng&> && requires { _Rvalue_poison(static_cast<_OtherRng &&>(_Other)); }
+            requires convertible_to<_OtherRng, _Rng&> && requires { _Rvalue_poison(static_cast<_OtherRng&&>(_Other)); }
             : _Range{_STD addressof(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))} {}
 
         _NODISCARD constexpr _Rng& base() const noexcept /* strengthened */ {
@@ -591,10 +599,10 @@ namespace ranges {
 
     namespace views {
         template <class _Rng>
-        concept _Can_ref_view = requires(_Rng&& __r) { ref_view{static_cast<_Rng &&>(__r)}; };
+        concept _Can_ref_view = requires(_Rng&& __r) { ref_view{static_cast<_Rng&&>(__r)}; };
 
         template <class _Rng>
-        concept _Ownable = requires(_Rng&& __r) { owning_view{static_cast<_Rng &&>(__r)}; };
+        concept _Ownable = requires(_Rng&& __r) { owning_view{static_cast<_Rng&&>(__r)}; };
 
         class _All_fn : public _Pipe::_Base<_All_fn> {
         private:
@@ -1047,7 +1055,7 @@ namespace ranges {
             template <viewable_range _Rng, class _Fn>
             _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Fn _Fun)
                 noexcept(noexcept(transform_view(_STD forward<_Rng>(_Range), _STD move(_Fun))))
-                requires requires { transform_view(static_cast<_Rng &&>(_Range), _STD move(_Fun)); }
+                requires requires { transform_view(static_cast<_Rng&&>(_Range), _STD move(_Fun)); }
             {
                 return transform_view(_STD forward<_Rng>(_Range), _STD move(_Fun));
             }
@@ -1090,7 +1098,8 @@ namespace ranges {
     concept _Can_push_back = requires(_Container& _Cont) { _Cont.push_back(_STD declval<_Reference>()); };
 
     template <class _Container, class _Reference>
-    concept _Can_emplace_end = requires(_Container& _Cont) { _Cont.emplace(_Cont.end(), _STD declval<_Reference>()); };
+    concept _Can_emplace_hint =
+        requires(_Container& _Cont) { _Cont.emplace_hint(_Cont.end(), _STD declval<_Reference>()); };
 
     template <class _Container, class _Reference>
     concept _Can_insert_end = requires(_Container& _Cont) { _Cont.insert(_Cont.end(), _STD declval<_Reference>()); };
@@ -1099,7 +1108,7 @@ namespace ranges {
     concept _Constructible_appendable = constructible_from<_Container, _Types...>
                                      && (_Can_emplace_back<_Container, range_reference_t<_Rng>>
                                          || _Can_push_back<_Container, range_reference_t<_Rng>>
-                                         || _Can_emplace_end<_Container, range_reference_t<_Rng>>
+                                         || _Can_emplace_hint<_Container, range_reference_t<_Rng>>
                                          || _Can_insert_end<_Container, range_reference_t<_Rng>>);
 
     _EXPORT_STD template <class _Container, input_range _Rng, class... _Types>
@@ -1131,8 +1140,8 @@ namespace ranges {
                         _Cont.emplace_back(_STD forward<_ElemTy>(_Elem));
                     } else if constexpr (_Can_push_back<_Container, _ElemTy>) {
                         _Cont.push_back(_STD forward<_ElemTy>(_Elem));
-                    } else if constexpr (_Can_emplace_end<_Container, _ElemTy>) {
-                        _Cont.emplace(_Cont.end(), _STD forward<_ElemTy>(_Elem));
+                    } else if constexpr (_Can_emplace_hint<_Container, _ElemTy>) {
+                        _Cont.emplace_hint(_Cont.end(), _STD forward<_ElemTy>(_Elem));
                     } else {
                         _STL_INTERNAL_STATIC_ASSERT(_Can_insert_end<_Container, _ElemTy>);
                         _Cont.insert(_Cont.end(), _STD forward<_ElemTy>(_Elem));

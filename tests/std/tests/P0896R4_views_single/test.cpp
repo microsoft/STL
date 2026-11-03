@@ -204,7 +204,7 @@ struct ConstSelection {
     int value = 0;
 };
 
-#ifndef __EDG__ // TRANSITION, VSO-1898912
+#ifndef __EDG__ // TRANSITION, EDG-274
 static_assert(is_trivially_copy_assignable_v<ranges::single_view<ConstSelection>>);
 #endif // ^^^ no workaround ^^^
 static_assert(!is_trivially_copy_assignable_v<ranges::single_view<const ConstSelection>>);

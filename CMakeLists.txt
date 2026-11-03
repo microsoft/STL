@@ -1,24 +1,25 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3.1)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.51.36223.2")
-    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.51.36223.2 or later. Follow the README instructions.")
+set(expected_msvc_compiler_version "19.53.36829")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS expected_msvc_compiler_version)
+    message(FATAL_ERROR "The STL must be built with MSVC Compiler ${expected_msvc_compiler_version} or later. Follow the README instructions.")
 endif()
 
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles([=[
 #include <sdkddkver.h>
-static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN11_GE, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
+static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN11_BR, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
 int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100) or later. Follow the README instructions.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.28000) or later. Follow the README instructions.")
 endif()
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
@@ -52,6 +53,7 @@ set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid confl
 option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
 option(STL_ASAN_BUILD "Build the STL with ASan enabled" OFF)
 
+set(VCLIBS_COMPILE_OPTIONS "")
 set(VCLIBS_EXPLICIT_MACHINE "")
 
 if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "x86")
@@ -70,6 +72,7 @@ elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
     set(VCLIBS_TARGET_ARCHITECTURE "arm64ec")
     set(VCLIBS_I386_OR_AMD64 "arm64ec")
     set(VCLIBS_X86_OR_X64 "arm64") # Yes, really: `%VCToolsInstallDir%lib\arm64ec` only contains the Link Options
+    set(VCLIBS_COMPILE_OPTIONS "/arm64EC")
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arm64EC>)
     set(VCLIBS_EXPLICIT_MACHINE "/machine:arm64ec")
 else()
@@ -88,16 +91,16 @@ set(STL_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR
 # Note that we set _WIN32_WINNT to a high level to make declarations available.
 add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
-    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_GE)
+    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_BR)
 
 if(STL_USE_ANALYZE)
-    # TRANSITION, Windows SDK 10.0.26100 emits
+    # TRANSITION, Windows SDK 10.0.28000 emits multiple warnings:
     # "warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9) does not apply to a value type."
     # Reported as OS-40109504 "Windows SDK: incorrect SAL annotations on functions the STL uses".
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
 
     if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
-        # TRANSITION, Windows SDK 10.0.26100 emits
+        # TRANSITION, Windows SDK 10.0.28000 emits
         # "warning C28301: No annotations for first declaration of 'meow'"
         # for various intrinsics when building for ARM64EC.
         add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/wd28301>")

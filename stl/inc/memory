@@ -530,7 +530,7 @@ namespace ranges {
     struct _Construct_at_fn {
         template <class _Ty, class... _Types>
             requires (!is_unbounded_array_v<_Ty>) && requires(_Ty* _Ptr, _Types&&... _Args) {
-                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types &&>(_Args)...); // per LWG-3888
+                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types&&>(_Args)...); // per LWG-3888
             }
         static constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) noexcept(
             noexcept(::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
@@ -1383,7 +1383,7 @@ protected:
     }
 
     template <class _Ty0>
-    friend class weak_ptr; // specifically, weak_ptr::lock()
+    friend class _STD weak_ptr; // specifically, weak_ptr::lock()
 
     template <class _Ty2>
     bool _Construct_from_weak(const weak_ptr<_Ty2>& _Other) noexcept {
@@ -1476,12 +1476,14 @@ private:
     _Ref_count_base* _Rep{nullptr};
 
     template <class _Ty0>
-    friend class _Ptr_base;
+    friend class _STD _Ptr_base;
 
     friend shared_ptr<_Ty>;
 
+#if _HAS_CXX20
     template <class _Ty0>
-    friend struct atomic;
+    friend struct _STD atomic;
+#endif // _HAS_CXX20
 
     friend _Exception_ptr_access;
 
@@ -3070,8 +3072,8 @@ _NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
     // make a shared_ptr to an unbounded array
     static_assert(is_unbounded_array_v<_Ty>);
     using _Refc             = conditional_t<_IsForOverwrite, //
-                    _Ref_count_unbounded_array_alloc_for_overwrite<remove_cv_t<_Ty>, _Alloc>,
-                    _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>>;
+        _Ref_count_unbounded_array_alloc_for_overwrite<remove_cv_t<_Ty>, _Alloc>,
+        _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>>;
     constexpr size_t _Align = alignof(_Refc);
     using _Storage          = _Alignas_storage_unit<_Align>;
     _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
@@ -3321,7 +3323,7 @@ protected:
 
 private:
     template <class _Yty>
-    friend class shared_ptr;
+    friend class _STD shared_ptr;
 
     mutable weak_ptr<_Ty> _Wptr;
 };
@@ -3371,6 +3373,11 @@ template <class, class = void>
 constexpr bool _Can_form_pointer = false;
 template <class _Ty>
 constexpr bool _Can_form_pointer<_Ty, void_t<_Ty*>> = true;
+
+template <class, class = void>
+constexpr bool _Can_dereference = false;
+template <class _Ty>
+constexpr bool _Can_dereference<_Ty, void_t<decltype(*_STD declval<_Ty>())>> = true;
 
 _EXPORT_STD template <class _Ty, class _Dx /* = default_delete<_Ty> */>
 class unique_ptr { // non-copyable pointer to an object
@@ -3474,13 +3481,12 @@ public:
         return _Mypair._Get_first();
     }
 
+    template <class _Ptr = pointer, enable_if_t<_Can_dereference<_Ptr>, int> = 0>
     _NODISCARD _CONSTEXPR23 add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
 #if _HAS_CXX23
-#ifdef __cpp_lib_reference_from_temporary // TRANSITION
         static_assert(
             !reference_converts_from_temporary_v<add_lvalue_reference_t<_Ty>, decltype(*_STD declval<pointer>())>,
             "Can't return a temporary object from unique_ptr::operator*(). (N5014 [unique.ptr.single.observers]/1)");
-#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX23
         return *_Mypair._Myval2;
     }
@@ -3513,7 +3519,7 @@ public:
 
 private:
     template <class, class>
-    friend class unique_ptr;
+    friend class _STD unique_ptr;
 
     _Compressed_pair<_Dx, pointer> _Mypair;
 };
@@ -3656,7 +3662,7 @@ public:
 
 private:
     template <class, class>
-    friend class unique_ptr;
+    friend class _STD unique_ptr;
 
     _Compressed_pair<_Dx, pointer> _Mypair;
 };
@@ -4530,56 +4536,48 @@ _NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
     }
 }
 
-#ifdef __cpp_lib_start_lifetime_as // TRANSITION
-template <class _Ty>
+#ifdef __cpp_lib_start_lifetime_as // TRANSITION, GH-6169
+_EXPORT_STD template <class _Ty>
 _Ty* start_lifetime_as(void* const _Ptr) noexcept {
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
-#endif // ^^^ no workaround ^^^
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
     return __builtin_start_lifetime_as<_Ty>(_Ptr);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 const _Ty* start_lifetime_as(const void* const _Ptr) noexcept {
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
-#endif // ^^^ no workaround ^^^
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
     return __builtin_start_lifetime_as<_Ty>(_Ptr);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 volatile _Ty* start_lifetime_as(volatile void* const _Ptr) noexcept {
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
-#endif // ^^^ no workaround ^^^
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
     return __builtin_start_lifetime_as<_Ty>(_Ptr);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 const volatile _Ty* start_lifetime_as(const volatile void* const _Ptr) noexcept {
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
-#endif // ^^^ no workaround ^^^
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
     return __builtin_start_lifetime_as<_Ty>(_Ptr);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty* start_lifetime_as_array(void* const _Ptr, const size_t _Nx) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
     return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 const _Ty* start_lifetime_as_array(const void* const _Ptr, const size_t _Nx) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
     return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 volatile _Ty* start_lifetime_as_array(volatile void* const _Ptr, const size_t _Nx) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
     return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 const volatile _Ty* start_lifetime_as_array(const volatile void* const _Ptr, const size_t _Nx) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
     return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);

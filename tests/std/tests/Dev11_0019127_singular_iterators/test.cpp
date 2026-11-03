@@ -36,8 +36,16 @@ void test_sequence() {
     c.push_back(22);
     c.push_back(33);
 
-    typename C::iterator i1 = c.begin(), i2 = c.begin(), i3 = c.begin(), i4 = c.begin();
-    typename C::iterator x1, x2, x3, x4, x5, x6;
+    typename C::iterator i1 = c.begin();
+    typename C::iterator i2 = c.begin();
+    typename C::iterator i3 = c.begin();
+    typename C::iterator i4 = c.begin();
+    typename C::iterator x1;
+    typename C::iterator x2;
+    typename C::iterator x3;
+    typename C::iterator x4;
+    typename C::iterator x5;
+    typename C::iterator x6;
 
     x1 = i1;
     assert(*x1 == 11);
@@ -63,8 +71,16 @@ void test_map() {
     m.insert(make_pair(22, 456));
     m.insert(make_pair(33, 789));
 
-    typename M::iterator i1 = m.find(22), i2 = m.find(22), i3 = m.find(22), i4 = m.find(22);
-    typename M::iterator x1, x2, x3, x4, x5, x6;
+    typename M::iterator i1 = m.find(22);
+    typename M::iterator i2 = m.find(22);
+    typename M::iterator i3 = m.find(22);
+    typename M::iterator i4 = m.find(22);
+    typename M::iterator x1;
+    typename M::iterator x2;
+    typename M::iterator x3;
+    typename M::iterator x4;
+    typename M::iterator x5;
+    typename M::iterator x6;
 
     x1 = i1;
     assert(x1->second == 456);
@@ -90,8 +106,16 @@ void test_set() {
     s.insert(22);
     s.insert(33);
 
-    typename S::iterator i1 = s.find(22), i2 = s.find(22), i3 = s.find(22), i4 = s.find(22);
-    typename S::iterator x1, x2, x3, x4, x5, x6;
+    typename S::iterator i1 = s.find(22);
+    typename S::iterator i2 = s.find(22);
+    typename S::iterator i3 = s.find(22);
+    typename S::iterator i4 = s.find(22);
+    typename S::iterator x1;
+    typename S::iterator x2;
+    typename S::iterator x3;
+    typename S::iterator x4;
+    typename S::iterator x5;
+    typename S::iterator x6;
 
     x1 = i1;
     assert(*x1 == 22);
@@ -131,8 +155,16 @@ int main() {
         f.push_front(22);
         f.push_front(11);
 
-        forward_list<int>::iterator i1 = f.begin(), i2 = f.begin(), i3 = f.begin(), i4 = f.begin();
-        forward_list<int>::iterator x1, x2, x3, x4, x5, x6;
+        forward_list<int>::iterator i1 = f.begin();
+        forward_list<int>::iterator i2 = f.begin();
+        forward_list<int>::iterator i3 = f.begin();
+        forward_list<int>::iterator i4 = f.begin();
+        forward_list<int>::iterator x1;
+        forward_list<int>::iterator x2;
+        forward_list<int>::iterator x3;
+        forward_list<int>::iterator x4;
+        forward_list<int>::iterator x5;
+        forward_list<int>::iterator x6;
 
         x1 = i1;
         assert(*x1 == 11);
@@ -154,8 +186,16 @@ int main() {
     {
         array<int, 3> a = {{11, 22, 33}};
 
-        array<int, 3>::iterator i1 = a.begin(), i2 = a.begin(), i3 = a.begin(), i4 = a.begin();
-        array<int, 3>::iterator x1, x2, x3, x4, x5, x6;
+        array<int, 3>::iterator i1 = a.begin();
+        array<int, 3>::iterator i2 = a.begin();
+        array<int, 3>::iterator i3 = a.begin();
+        array<int, 3>::iterator i4 = a.begin();
+        array<int, 3>::iterator x1;
+        array<int, 3>::iterator x2;
+        array<int, 3>::iterator x3;
+        array<int, 3>::iterator x4;
+        array<int, 3>::iterator x5;
+        array<int, 3>::iterator x6;
 
         x1 = i1;
         assert(*x1 == 11);
@@ -177,8 +217,16 @@ int main() {
     {
         string s("meow");
 
-        string::iterator i1 = s.begin(), i2 = s.begin(), i3 = s.begin(), i4 = s.begin();
-        string::iterator x1, x2, x3, x4, x5, x6;
+        string::iterator i1 = s.begin();
+        string::iterator i2 = s.begin();
+        string::iterator i3 = s.begin();
+        string::iterator i4 = s.begin();
+        string::iterator x1;
+        string::iterator x2;
+        string::iterator x3;
+        string::iterator x4;
+        string::iterator x5;
+        string::iterator x6;
 
         x1 = i1;
         assert(*x1 == 'm');
@@ -202,8 +250,15 @@ int main() {
         const regex r("\\w+");
 
         sregex_iterator i1(s.begin(), s.end(), r);
-        sregex_iterator i2(i1), i3(i1), i4(i1);
-        sregex_iterator x1, x2, x3, x4, x5, x6;
+        sregex_iterator i2(i1);
+        sregex_iterator i3(i1);
+        sregex_iterator i4(i1);
+        sregex_iterator x1;
+        sregex_iterator x2;
+        sregex_iterator x3;
+        sregex_iterator x4;
+        sregex_iterator x5;
+        sregex_iterator x6;
 
         x1 = i1;
         assert((*x1)[0] == "cute");
@@ -227,8 +282,15 @@ int main() {
         const regex r("\\w+");
 
         sregex_token_iterator i1(s.begin(), s.end(), r);
-        sregex_token_iterator i2(i1), i3(i1), i4(i1);
-        sregex_token_iterator x1, x2, x3, x4, x5, x6;
+        sregex_token_iterator i2(i1);
+        sregex_token_iterator i3(i1);
+        sregex_token_iterator i4(i1);
+        sregex_token_iterator x1;
+        sregex_token_iterator x2;
+        sregex_token_iterator x3;
+        sregex_token_iterator x4;
+        sregex_token_iterator x5;
+        sregex_token_iterator x6;
 
         x1 = i1;
         assert(*x1 == "cute");
@@ -253,8 +315,16 @@ int main() {
         v.push_back(22);
         v.push_back(33);
 
-        vector<int>::reverse_iterator i1 = v.rbegin(), i2 = v.rbegin(), i3 = v.rbegin(), i4 = v.rbegin();
-        vector<int>::reverse_iterator x1, x2, x3, x4, x5, x6;
+        vector<int>::reverse_iterator i1 = v.rbegin();
+        vector<int>::reverse_iterator i2 = v.rbegin();
+        vector<int>::reverse_iterator i3 = v.rbegin();
+        vector<int>::reverse_iterator i4 = v.rbegin();
+        vector<int>::reverse_iterator x1;
+        vector<int>::reverse_iterator x2;
+        vector<int>::reverse_iterator x3;
+        vector<int>::reverse_iterator x4;
+        vector<int>::reverse_iterator x5;
+        vector<int>::reverse_iterator x6;
 
         x1 = i1;
         assert(*x1 == 33);

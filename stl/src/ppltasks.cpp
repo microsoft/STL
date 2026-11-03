@@ -11,16 +11,16 @@
 #ifndef UNDOCKED_WINDOWS_UCRT
 #pragma warning(push)
 #pragma warning(disable : 4265) // non-virtual destructor in base class
-#endif
+#endif // ^^^ !defined(UNDOCKED_WINDOWS_UCRT) ^^^
 #include <wrl.h>
 #ifndef UNDOCKED_WINDOWS_UCRT
 #pragma warning(pop)
-#endif
+#endif // ^^^ !defined(UNDOCKED_WINDOWS_UCRT) ^^^
 #include <ctxtcall.h>
 #include <functional>
 #include <stdexcept>
 #include <windows.foundation.diagnostics.h>
-#endif
+#endif // ^^^ defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT) ^^^
 
 namespace Concurrency {
 

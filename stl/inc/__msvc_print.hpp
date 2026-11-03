@@ -39,24 +39,21 @@ struct __std_unicode_console_retrieval_result {
     //
     //   - __std_win_error::_Not_supported: The FILE* provided does not actually have an associated output stream. In
     //     this case, the entire print can safely be elided, thanks to the "as-if" rule.
-    //     (We haven't observed this happening in practice. Console applications with stdout redirected to NUL
-    //     and Windows applications both appear to activate the __std_win_error::_File_not_found "valid, but
-    //     not a unicode console" codepath.)
     //
     //   - __std_win_error::_Invalid_parameter: The FILE* provided is invalid. A std::system_error exception should be
     //     thrown if this value is returned within the FILE* overload of vprint_unicode().
     __std_win_error _Error;
 };
 
-_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result
-    __stdcall __std_get_unicode_console_handle_from_file_stream(_In_ FILE* _Stream) noexcept;
+_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result __stdcall
+    __std_get_unicode_console_handle_from_file_stream(_In_ FILE* _Stream) noexcept;
 
-_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_print_to_unicode_console(_In_ __std_unicode_console_handle _Console_handle,
-        _In_reads_(_Str_size) const char* _Str, _In_ size_t _Str_size) noexcept;
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_print_to_unicode_console(
+    _In_ __std_unicode_console_handle _Console_handle, _In_reads_(_Str_size) const char* _Str,
+    _In_ size_t _Str_size) noexcept;
 
-_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_print_newline_only_to_unicode_console(_In_ __std_unicode_console_handle _Console_handle) noexcept;
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
+    __std_print_newline_only_to_unicode_console(_In_ __std_unicode_console_handle _Console_handle) noexcept;
 
 } // extern "C"
 

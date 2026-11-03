@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <__msvc_int128.hpp>
 #include <cassert>
 #include <compare>
 #include <concepts>
@@ -91,6 +92,14 @@ concept has_member_difference_type = requires { typename T::difference_type; };
 template <class T>
 concept has_iter_diff = requires { typename std::iter_difference_t<T>; };
 
+#if _HAS_CXX23
+struct prvalue_only_to_bool {
+    operator bool(this prvalue_only_to_bool);
+    prvalue_only_to_bool(const prvalue_only_to_bool&)            = delete;
+    prvalue_only_to_bool& operator=(const prvalue_only_to_bool&) = delete;
+};
+#endif // _HAS_CXX23
+
 template <class T>
 struct arrow_base {
     T operator->() const;
@@ -112,6 +121,20 @@ struct simple_input_iter {
     simple_input_iter operator++(int);
 
     bool operator==(simple_input_iter const&) const = default;
+};
+
+struct empty_list_input_iter {
+    using value_type      = double;
+    using difference_type = long;
+
+    // not default constructible, although initializable with {}
+    explicit empty_list_input_iter(std::initializer_list<int>);
+
+    value_type operator*() const;
+    empty_list_input_iter& operator++();
+    empty_list_input_iter operator++(int);
+
+    bool operator==(const empty_list_input_iter&) const = default;
 };
 
 template <class Base = empty_type>
@@ -192,6 +215,21 @@ public:
     friend simple_contiguous_iter operator+(D, const simple_contiguous_iter&);
 
     static simple_contiguous_iter pointer_to(element_type&) noexcept;
+
+#if _HAS_CXX23
+    friend prvalue_only_to_bool operator==(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator==(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator!=(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator!=(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator<(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator<(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator<=(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator<=(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator>(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator>(const V*, simple_contiguous_iter);
+    friend prvalue_only_to_bool operator>=(simple_contiguous_iter, const V*);
+    friend prvalue_only_to_bool operator>=(const V*, simple_contiguous_iter);
+#endif // _HAS_CXX23
 };
 
 template <class Base>
@@ -371,6 +409,9 @@ struct increment_ops {
         requires (I < 8 || I >= 10);
     Post operator++(int)
         requires (I != 10);
+    Post operator++(int)
+        requires (I == 10)
+    = delete;
 };
 
 template <std::size_t I>
@@ -415,6 +456,9 @@ struct iterator_archetype : weakly_incrementable_archetype<I> {
         requires (I > 9);
     void operator++(int)
         requires (I != 10);
+    void operator++(int)
+        requires (I == 10)
+    = delete;
 
     void operator*()
         requires (I == 11);
@@ -942,6 +986,7 @@ namespace iterator_traits_test {
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
     // * 3.2.3.4 "... Otherwise, iterator_category names... input_iterator_tag."
     static_assert(check<simple_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
+    static_assert(check<empty_list_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
 
     // N4928 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
@@ -1109,7 +1154,7 @@ namespace iterator_cust_move_test {
         return i + 1;
     }
     static_assert(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
-    static_assert(ranges::iter_move(&f)(42) == 43);
+    static_assert(ranges::iter_move (&f)(42) == 43);
     static_assert(noexcept(ranges::iter_move(&f)));
 
     struct ref_is_lvalue {
@@ -1204,7 +1249,8 @@ namespace iterator_cust_swap_test {
         // This test notably executes both at runtime and at compiletime.
         static_assert(bullet2<int*>);
 
-        int i0 = 42, i1 = 13;
+        int i0 = 42;
+        int i1 = 13;
         static_assert(same_as<decltype(ranges::iter_swap(&i0, &i1)), void>);
         ranges::iter_swap(&i0, &i1);
         assert(i0 == 13);
@@ -1454,9 +1500,7 @@ namespace iterator_concept_winc_test {
     constexpr bool test(std::index_sequence<Is...>) {
         static_assert(
             std::same_as<std::index_sequence<Is...>, std::make_index_sequence<weakly_incrementable_archetype_max>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!weakly_incrementable<weakly_incrementable_archetype<Is>> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(weakly_incrementable<weakly_incrementable_archetype<weakly_incrementable_archetype_max>>);
         return true;
     }
@@ -1495,9 +1539,7 @@ namespace iterator_concept_iterator_test {
     template <std::size_t... Is>
     constexpr bool test(std::index_sequence<Is...>) {
         static_assert(std::same_as<std::index_sequence<Is...>, std::make_index_sequence<iterator_archetype_max>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!input_or_output_iterator<iterator_archetype<Is>> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(input_or_output_iterator<iterator_archetype<iterator_archetype_max>>);
         return true;
     }
@@ -1527,10 +1569,8 @@ namespace iterator_concept_sentinel_test {
 
     template <std::size_t I, std::size_t J>
     constexpr bool test_one_pair() {
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         constexpr bool expected = I >= sentinel_archetype_max && J >= iterator_archetype_max;
         static_assert(sentinel_for<sentinel_archetype<I>, iterator_archetype<J>> == expected);
-#endif // ^^^ no workaround ^^^
         return true;
     }
 
@@ -1557,10 +1597,8 @@ namespace iterator_concept_sizedsentinel_test {
 
     template <std::size_t I, std::size_t J>
     constexpr bool test_one_pair() {
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         constexpr bool expected = I >= sized_sentinel_archetype_max && J >= iterator_archetype_max;
         static_assert(sized_sentinel_for<sized_sentinel_archetype<I>, iterator_archetype<J>> == expected);
-#endif // ^^^ no workaround ^^^
         return true;
     }
 
@@ -1586,9 +1624,7 @@ namespace iterator_concept_input_test {
     template <std::size_t... Is>
     constexpr bool test(std::index_sequence<Is...>) {
         static_assert(std::same_as<std::index_sequence<Is...>, std::make_index_sequence<input_iterator_archetype_max>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!input_iterator<input_iterator_archetype<Is>> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(input_iterator<input_iterator_archetype<input_iterator_archetype_max>>);
         return true;
     }
@@ -1611,12 +1647,10 @@ namespace iterator_concept_output_test {
     constexpr bool test(std::index_sequence<Is...>) {
         static_assert(
             std::same_as<std::index_sequence<Is...>, std::make_index_sequence<output_iterator_archetype_max>>);
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!output_iterator<output_iterator_archetype<Is>, int> && ...));
         static_assert((!output_iterator<output_iterator_archetype<Is>, int const> && ...));
         static_assert((!output_iterator<output_iterator_archetype<Is>, int&> && ...));
         static_assert((!output_iterator<output_iterator_archetype<Is>, int const&> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int>);
         static_assert(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int const>);
         static_assert(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int&>);
@@ -1773,7 +1807,7 @@ namespace incomplete_test {
         };
 
         static_assert(std::sentinel_for<validating_base*, validating_derived*>);
-#ifndef __EDG__ // TRANSITION, DevCom-10581519
+#ifndef __EDG__ // TRANSITION, EDG-269
         static_assert(!std::sized_sentinel_for<validating_base*, validating_derived*>);
 #endif // ^^^ no workaround ^^^
 
@@ -1864,9 +1898,7 @@ namespace unreachable_sentinel_test {
         static_assert(42 != unreachable_sentinel);
         static_assert(noexcept(42 != unreachable_sentinel));
 
-#ifndef _M_CEE // TRANSITION, VSO-1665674
         static_assert((!Comparable<weakly_incrementable_archetype<Is>> && ...));
-#endif // ^^^ no workaround ^^^
         static_assert(Comparable<weakly_incrementable_archetype<weakly_incrementable_archetype_max>>);
 
         return true;
@@ -3282,6 +3314,44 @@ namespace reverse_iterator_test {
     static_assert(!has_greater_eq<reverse_iterator<int*>, reverse_iterator<string*>>);
     static_assert(!three_way_comparable_with<reverse_iterator<int*>, reverse_iterator<string*>>);
 
+    static_assert(!has_eq<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_neq<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_less<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_greater<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_less_eq<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!has_greater_eq<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+    static_assert(!three_way_comparable_with<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
+
+#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-10817483 (CWG-2813)
+    static_assert(has_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_neq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_neq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_less<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_less<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_less_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_less_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_greater<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_greater<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(has_greater_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_greater_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+#else // ^^^ _HAS_CXX23 (and no workaround) / !_HAS_CXX23 (or workaround) vvv
+    static_assert(!has_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_neq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_neq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_less<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_less<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_less_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_less_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_greater<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_greater<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+    static_assert(!has_greater_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_greater_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+#endif // ^^^ !_HAS_CXX23 (or workaround) ^^^
+    static_assert(!three_way_comparable_with<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
+    static_assert(!three_way_comparable_with<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
+
     constexpr bool test() {
         // Validate iter_move
         int count = 0;
@@ -3328,7 +3398,7 @@ namespace reverse_iterator_test {
 namespace move_iterator_test {
     using std::bidirectional_iterator_tag, std::default_sentinel_t, std::forward_iterator_tag, std::input_iterator_tag,
         std::move_iterator, std::move_sentinel, std::random_access_iterator_tag, std::same_as, std::string,
-        std::three_way_comparable, std::three_way_comparable_with;
+        std::three_way_comparable, std::three_way_comparable_with, std::default_initializable;
 
     template <bool CanCopy>
     struct input_iter {
@@ -3417,6 +3487,8 @@ namespace move_iterator_test {
     static_assert(same_as<move_iterator<simple_forward_iter<>>::iterator_category, forward_iterator_tag>);
     static_assert(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     static_assert(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
+    static_assert(same_as<move_iterator<empty_list_input_iter>::iterator_concept, input_iterator_tag>);
+    static_assert(same_as<move_iterator<empty_list_input_iter>::iterator_category, input_iterator_tag>);
     static_assert(same_as<move_iterator<input_iter<true>>::iterator_concept, input_iterator_tag>);
     static_assert(same_as<move_iterator<xvalue_random_iter>::iterator_concept, random_access_iterator_tag>);
     static_assert(same_as<move_iterator<xvalue_random_iter>::iterator_category, random_access_iterator_tag>);
@@ -3476,6 +3548,44 @@ namespace move_iterator_test {
     static_assert(!has_greater_eq<move_iterator<int*>, move_iterator<string*>>);
     static_assert(!three_way_comparable_with<move_iterator<int*>, move_iterator<string*>>);
 
+    static_assert(!has_eq<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_neq<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_less<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_greater<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_less_eq<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!has_greater_eq<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+    static_assert(!three_way_comparable_with<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
+
+#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-10817483 (CWG-2813)
+    static_assert(has_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_neq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_neq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_less<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_less<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_less_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_less_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_greater<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_greater<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(has_greater_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(has_greater_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+#else // ^^^ _HAS_CXX23 (and no workaround) / !_HAS_CXX23 (or workaround) vvv
+    static_assert(!has_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_neq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_neq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_less<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_less<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_less_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_less_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_greater<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_greater<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+    static_assert(!has_greater_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!has_greater_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+#endif // ^^^ !_HAS_CXX23 (or workaround) ^^^
+    static_assert(!three_way_comparable_with<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
+    static_assert(!three_way_comparable_with<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
+
     // Validate that move_sentinel requires a semiregular template argument, and models semiregular
     template <class T>
     concept CanMoveSentinel = requires { typename move_sentinel<T>; };
@@ -3521,6 +3631,14 @@ namespace move_iterator_test {
         !has_greater_eq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
     static_assert(!three_way_comparable<move_iterator<simple_random_iter<sentinel_base>>,
         move_sentinel<std::default_sentinel_t>>);
+
+    // LWG-4125 "move_iterator's default constructor should be constrained"
+    // Validate default-constructibility
+    static_assert(!default_initializable<move_iterator<simple_input_iter>>);
+    static_assert(!default_initializable<move_iterator<empty_list_input_iter>>);
+    static_assert(default_initializable<move_iterator<input_iter<true>>>);
+    static_assert(default_initializable<move_iterator<input_iter<false>>>);
+    static_assert(default_initializable<move_iterator<int*>>);
 
     // GH-3014 "<ranges>: list-initialization is misused"
     void test_gh_3014() { // COMPILE-ONLY
@@ -3676,6 +3794,33 @@ namespace lwg3420 {
     static_assert(!has_member_difference_type<std::iterator_traits<X>>);
     static_assert(!has_member_value_type<std::iterator_traits<X>>);
 } // namespace lwg3420
+
+namespace lwg4510 {
+    // Test LWG-4510
+    // "Ambiguity of std::ranges::advance and std::ranges::next when the difference type is also a sentinel type"
+    template <class T>
+    struct IterType {
+        using difference_type = int;
+
+        IterType& operator++();
+        IterType operator++(int);
+        IterType& operator*() const;
+
+        friend bool operator==(const IterType&, const IterType&);
+    };
+
+    struct AnyType {
+        template <class T>
+        AnyType(const T&);
+
+        friend bool operator==(const AnyType&, const AnyType&);
+    };
+
+    static_assert(std::input_or_output_iterator<IterType<AnyType>>);
+    static_assert(std::sentinel_for<IterType<AnyType>, IterType<AnyType>>);
+    static_assert(!std::sentinel_for<int, IterType<AnyType>>);
+    static_assert(!std::sentinel_for<std::_Unsigned128, IterType<AnyType>>);
+} // namespace lwg4510
 
 namespace vso1121031 {
     // Validate that indirectly_readable_traits accepts type arguments with both value_type and element_type nested

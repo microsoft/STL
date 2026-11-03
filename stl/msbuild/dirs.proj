@@ -1,0 +1,20 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\crt-common.settings.targets" />
+
+    <ItemGroup>
+        <ProjectFile Include="stl_asan\stl_asan.vcxproj" />
+        <ProjectFile Include="stl_base\dirs.proj" />
+        <ProjectFile Include="stl_1\dirs.proj" />
+        <ProjectFile Include="stl_2\dirs.proj" />
+        <ProjectFile Include="stl_atomic_wait\dirs.proj" />
+        <ProjectFile Include="stl_codecvt_ids\dirs.proj" />
+        <ProjectFile Include="stl_post\dirs.proj" />
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Traversal.targets))" />
+</Project>

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <benchmark/benchmark.h>
+
 #include <cstddef>
 #include <regex>
 #include <string>
@@ -9,7 +10,8 @@
 using namespace std;
 using namespace regex_constants;
 
-void bm_match_sequence_of_as(benchmark::State& state, const char* pattern, syntax_option_type syntax = ECMAScript) {
+void bm_match_sequence_of_as(benchmark::State& state, const char* pattern, syntax_option_type syntax = ECMAScript,
+    match_flag_type match_options = match_default) {
     string input(static_cast<size_t>(state.range()), 'a');
     regex re{pattern, syntax};
 
@@ -18,7 +20,7 @@ void bm_match_sequence_of_as(benchmark::State& state, const char* pattern, synta
         const char* pos = input.data();
         const char* end = input.data() + input.size();
         cmatch match;
-        regex_match(pos, end, match, re);
+        regex_match(pos, end, match, re, match_options);
     }
 }
 
@@ -43,9 +45,17 @@ void common_args(benchmark::Benchmark* bm) {
     bm->Arg(100)->Arg(200)->Arg(400);
 }
 
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*", "a*")->Apply(common_args);
+void large_args(benchmark::Benchmark* bm) {
+    bm->Arg(1000)->Arg(10000)->Arg(100000);
+}
+
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*" ecma, "a*")->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*" posix longest, "a*", extended)->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*" collate, "a*", regex_constants::collate)->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "A*" icase, "A*", icase)->Apply(large_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*?", "a*?")->Apply(common_args);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:a)*", "(?:a)*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:a)*", "(?:a)*")->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:aa)*", "(?:aa)*")->Apply(large_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)*", "(a)*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)*?", "(a)*?")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:b|a)*", "(?:b|a)*")->Apply(common_args);
@@ -53,6 +63,9 @@ BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(b|a)*", "(b|a)*")->Apply(common_arg
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*", "(a)(?:b|a)*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(b|a)*", "(a)(b|a)*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*c", "(a)(?:b|a)*c")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, ".*" ecma, ".*")->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, ".*" posix any, ".*", extended, match_any)->Apply(large_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, ".*" posix longest, ".*", extended)->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_9a1b, "(?:a*b)*", "(?:a*b)*")->Apply(common_args);
 
 BENCHMARK_MAIN();

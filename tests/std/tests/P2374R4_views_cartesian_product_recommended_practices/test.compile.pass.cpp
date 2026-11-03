@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if !(defined(_PREFAST_) && defined(_M_IX86)) // TRANSITION, VSO-1639191
 // Check MSVC-STL internal machinery
 
 #include <array>
@@ -493,3 +494,4 @@ constexpr bool test() {
 }
 
 static_assert(test());
+#endif // ^^^ no workaround ^^^

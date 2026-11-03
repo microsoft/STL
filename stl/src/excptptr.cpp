@@ -27,10 +27,10 @@
 #include <Windows.h>
 
 // Pre-V4 managed exception code
-#define MANAGED_EXCEPTION_CODE 0XE0434F4D
+#define MANAGED_EXCEPTION_CODE 0xE0434F4D
 
 // V4 and later managed exception code
-#define MANAGED_EXCEPTION_CODE_V4 0XE0434352
+#define MANAGED_EXCEPTION_CODE_V4 0xE0434352
 
 extern "C" _CRTIMP2 void* __cdecl __AdjustPointer(void*, const PMD&); // defined in frame.cpp
 

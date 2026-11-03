@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <benchmark/benchmark.h>
+
 #include <cstdint>
 #include <random>
 
@@ -30,6 +31,16 @@ void BM_lcg(benchmark::State& state) {
     }
 }
 BENCHMARK(BM_lcg);
+
+/// Test independent_bits_engine
+
+void BM_ibe(benchmark::State& state) {
+    std::independent_bits_engine<std::mt19937, 47, std::uint64_t> gen;
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(gen());
+    }
+}
+BENCHMARK(BM_ibe);
 
 /// Test discard()
 

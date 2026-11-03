@@ -455,11 +455,14 @@ struct _NODISCARD _Allocation_guard {
     }
 };
 
+template <class _Alloc>
+class _Vb_val;
+
 _EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
     template <class>
-    friend class _Vb_val;
+    friend class _STD _Vb_val;
     friend _Tidy_guard<vector>;
 
     using _Alty        = _Rebind_alloc_t<_Alloc, _Ty>;
@@ -514,11 +517,9 @@ private:
         _STL_INTERNAL_CHECK(_New_last_ != nullptr);
 
         if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
+            if (_STD _Is_constant_evaluated()) {
                 return;
             }
-#endif // _HAS_CXX20
 
             if (!_Asan_vector_should_annotate) {
                 return;
@@ -612,14 +613,14 @@ private:
 #define _ASAN_VECTOR_CREATE_GUARD    _Asan_create_guard _Annotator(*this)
 #define _ASAN_VECTOR_EXTEND_GUARD(n) _Asan_extend_guard _Annotator(this, (n))
 #define _ASAN_VECTOR_RELEASE_GUARD   _Annotator._Release()
-#else // ^^^ _INSERT_VECTOR_ANNOTATION / !_INSERT_VECTOR_ANNOTATION vvv
+#else // ^^^ defined(_INSERT_VECTOR_ANNOTATION) / !defined(_INSERT_VECTOR_ANNOTATION) vvv
 #define _ASAN_VECTOR_MODIFY(n)
 #define _ASAN_VECTOR_REMOVE
 #define _ASAN_VECTOR_CREATE
 #define _ASAN_VECTOR_CREATE_GUARD
 #define _ASAN_VECTOR_EXTEND_GUARD(n)
 #define _ASAN_VECTOR_RELEASE_GUARD
-#endif // ^^^ !_INSERT_VECTOR_ANNOTATION ^^^
+#endif // ^^^ !defined(_INSERT_VECTOR_ANNOTATION) ^^^
 
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer>>>;
@@ -1343,10 +1344,7 @@ public:
         pointer& _Mylast  = _My_data._Mylast;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD _Is_constant_evaluated()) {
             const auto _Valptr = _STD addressof(_Val);
             _STL_VERIFY(!(_Unfancy(_Myfirst) <= _Valptr && _Valptr < _Unfancy(_Mylast)),
                 "assignment value cannot be a reference into the container");
@@ -1449,10 +1447,7 @@ private:
         if (_Newsize > _Oldsize) {
             bool _Copied = false;
             if constexpr (_Iter_copy_cat<_Iter, pointer>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-                if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-                {
+                if (!_STD _Is_constant_evaluated()) {
                     _Copy_memmove_n(_First, static_cast<size_t>(_Oldsize), _Myfirst);
                     _First += _Oldsize;
                     _Copied = true;
@@ -1923,8 +1918,8 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()), //
-            _Alty_traits::max_size(_Getal()));
+        constexpr auto _Diff_max = static_cast<size_type>(_STD _Max_limit<difference_type>());
+        return (_STD min) (_Diff_max, _Alty_traits::max_size(_Getal()));
     }
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
@@ -3211,7 +3206,6 @@ public:
         constexpr auto _Diff_max  = static_cast<size_type>(_STD _Max_limit<difference_type>());
         const size_type _Ints_max = this->_Myvec.max_size();
 
-        // Use a const bool to avoid warning C4127 "conditional expression is constant" with Defect Report P2280R4
         const bool _Would_overflow = _Ints_max > _Diff_max / _VBITS;
         if (_Would_overflow) { // max_size bound by difference_type limits
             return _Diff_max;
@@ -3871,7 +3865,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
         return _DestEnd;
     } else if (_IsSingleBlockDest) {
         const auto _SourceShift = _IsRightShift ? _First._Myoff - _Dest._Myoff : _Dest._Myoff - _First._Myoff;
-        const auto _SourceVal   = _IsRightShift ? (*_VbFirst & _FirstSourceMask) >> _SourceShift //
+        const auto _SourceVal   = _IsRightShift ? (*_VbFirst & _FirstSourceMask) >> _SourceShift
                                                 : (*_VbFirst & _FirstSourceMask) << _SourceShift;
 
         const auto _DestMask = _FirstDestMask | (_DestEnd._Myoff == 0 ? 0 : _LastDestMask);

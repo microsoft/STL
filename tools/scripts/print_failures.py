@@ -4,10 +4,10 @@
 # This script prints the output of test failures that were recorded by `stl-lit.py -o TEST_LOG_FILENAME`
 # or `stl-lit.py --xunit-xml-output=TEST_RESULTS.xml`.
 
-import json
+lazy import json
 import os
 import sys
-import xml.dom.minidom
+lazy import xml.dom.minidom
 
 
 if __name__ == "__main__":
@@ -29,12 +29,12 @@ if __name__ == "__main__":
         else:
             test_log = json.load(file)
             for result in test_log["tests"]:
-                if not result["code"] in ["PASS", "UNSUPPORTED", "XFAIL"]:
+                if result["code"] not in ["PASS", "UNSUPPORTED", "XFAIL"]:
                     print(f"code: {result['code']}")
                     # Ignore result["elapsed"].
                     print(f"name: {result['name']}")
                     # The JSON contains embedded CRLFs (which aren't affected by opening the file in text mode).
                     # If we don't replace these CRLFs with LFs here, this script will appear to be okay in the console,
                     # but redirecting it to a file will result in ugly double newlines.
-                    print("output: {}".format(result["output"].replace("\r\n", "\n")))
+                    print(f"output: {result["output"].replace("\r\n", "\n")}")
                     print("==================================================")

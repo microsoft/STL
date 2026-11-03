@@ -1177,7 +1177,7 @@ public:
     }
 
     _Default_sentinel _Unchecked_end() const noexcept {
-        return {};
+        return _Default_sentinel{};
     }
 
     _Unchecked_const_iterator _Unchecked_end_iter() const noexcept {
@@ -1221,8 +1221,8 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()), //
-            _Alnode_traits::max_size(_Getal()));
+        constexpr auto _Diff_max = static_cast<size_type>(_STD _Max_limit<difference_type>());
+        return (_STD min) (_Diff_max, _Alnode_traits::max_size(_Getal()));
     }
 
     _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
@@ -1856,7 +1856,7 @@ public:
     }
 
     template <class>
-    friend class _Tree;
+    friend class _STD _Tree;
 
     template <class _Other_traits>
     void merge(_Tree<_Other_traits>& _That) {

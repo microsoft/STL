@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if defined(_PREFAST_) && defined(_M_IX86) // TRANSITION, VSO-1639191
+int main() {}
+#else // ^^^ workaround / no workaround vvv
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -472,7 +475,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             if constexpr ((random_access_range<VFirst> && ...
                               && random_access_range<all_t<Rest>>) ) { // Check 3way comparisons
                 using Cat              = common_comparison_category_t<compare_three_way_result_t<iterator_t<VFirst>>,
-                                 compare_three_way_result_t<iterator_t<all_t<Rest>>>...>;
+                    compare_three_way_result_t<iterator_t<all_t<Rest>>>...>;
                 auto i2                = r.begin();
                 same_as<Cat> auto cmp1 = i <=> i2;
                 assert(cmp1 == Cat::equivalent);
@@ -859,9 +862,7 @@ struct instantiator {
     template <class R>
     static constexpr void call() {
         typename R::template type<const int> r0{get<0>(some_ranges)};
-#ifndef __EDG__ // TRANSITION, VSO-1900293
         test_one(expected_result_0, r0);
-#endif // ^^^ no workaround ^^^
 
         if constexpr (ranges::forward_range<typename R::template type<const int>>) {
             typename R::template type<const int> r1{get<1>(some_ranges)};
@@ -948,7 +949,6 @@ constexpr void test_gh_4425() {
 
 int main() {
     // Check views
-#ifndef __EDG__ // TRANSITION, VSO-1900293
     { // ... copyable
         constexpr span<const int> s{get<0>(some_ranges)};
         static_assert(test_one(expected_result_0, s));
@@ -960,11 +960,10 @@ int main() {
         span<int> s{arr};
         test_one(expected_result_0, s);
     }
-#endif // ^^^ no workaround ^^^
 
     { // ... move-only
         using test::Common, test::Sized;
-        test_one(expected_result_3, //
+        test_one(expected_result_3,
             move_only_view<int, input_iterator_tag, Common::no, Sized::yes>{get<0>(some_ranges)},
             move_only_view<int, forward_iterator_tag, Common::no, Sized::yes>{get<1>(some_ranges)},
             move_only_view<char, bidirectional_iterator_tag, Common::no, Sized::yes>{get<2>(some_ranges)},
@@ -974,11 +973,11 @@ int main() {
             move_only_view<int, forward_iterator_tag, Common::no, Sized::no>{get<1>(some_ranges)},
             move_only_view<char, bidirectional_iterator_tag, Common::no, Sized::no>{get<2>(some_ranges)},
             move_only_view<string_view, random_access_iterator_tag, Common::no, Sized::no>{get<3>(some_ranges)});
-        test_one(expected_result_2, //
+        test_one(expected_result_2,
             move_only_view<int, forward_iterator_tag, Common::yes, Sized::yes>{get<0>(some_ranges)},
             move_only_view<int, bidirectional_iterator_tag, Common::yes, Sized::yes>{get<1>(some_ranges)},
             move_only_view<char, random_access_iterator_tag, Common::yes, Sized::yes>{get<2>(some_ranges)});
-        test_one(expected_result_2, //
+        test_one(expected_result_2,
             move_only_view<int, forward_iterator_tag, Common::yes, Sized::no>{get<0>(some_ranges)},
             move_only_view<int, bidirectional_iterator_tag, Common::yes, Sized::no>{get<1>(some_ranges)},
             move_only_view<char, random_access_iterator_tag, Common::yes, Sized::no>{get<2>(some_ranges)});
@@ -987,10 +986,8 @@ int main() {
     // Check non-views
     {
         constexpr auto& r0 = get<0>(some_ranges);
-#ifndef __EDG__ // TRANSITION, VSO-1900293
         static_assert(test_one(expected_result_0, r0));
         test_one(expected_result_0, r0);
-#endif // ^^^ no workaround ^^^
 
         auto r1 = get<1>(some_ranges) | ranges::to<vector>();
         test_one(expected_result_1, r0, r1);
@@ -1013,3 +1010,4 @@ int main() {
     static_assert((test_gh_4425(), true));
     test_gh_4425();
 }
+#endif // ^^^ no workaround ^^^

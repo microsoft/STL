@@ -17,10 +17,13 @@
 
 extern "C" void* __GetPlatformExceptionInfo(int*);
 
+#endif // ^^^ defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT) ^^^
+
 namespace Concurrency {
     namespace details {
 
         _CRTIMP2 void __thiscall _ExceptionHolder::ReportUnhandledError() {
+#if defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
             if (_M_stdException) {
                 try {
                     std::rethrow_exception(_M_stdException);
@@ -31,9 +34,7 @@ namespace Concurrency {
                     if (!isBadAlloc && info != nullptr) {
                         auto restrictedInfo(static_cast<IRestrictedErrorInfo*>(info->restrictedInfo));
                         if (restrictedInfo != nullptr) {
-#ifndef _M_ARM64 // CRT_REFACTOR TODO
                             ::RoReportUnhandledError(restrictedInfo);
-#endif // !defined(_M_ARM64)
 
                             // IRestrictedErrorInfo should be put back
                             // to make sure that RoFailFastWithErrorContext can extract the information
@@ -43,19 +44,8 @@ namespace Concurrency {
                     }
                 }
             }
+#endif // ^^^ defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT) ^^^
         }
 
     } // namespace details
 } // namespace Concurrency
-
-#else // defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
-
-namespace Concurrency {
-    namespace details {
-
-        _CRTIMP2 void __thiscall _ExceptionHolder::ReportUnhandledError() {}
-
-    } // namespace details
-} // namespace Concurrency
-
-#endif // defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)

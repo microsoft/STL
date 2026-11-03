@@ -89,8 +89,13 @@ constexpr int fe_overflow = FE_OVERFLOW;
 // "major" floating point exceptions, excluding underflow and inexact
 constexpr int fe_major_except = FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW;
 
-bool check_feexcept(const int expected_excepts, const int except_mask = fe_major_except) {
+bool check_feexcept(
+    [[maybe_unused]] const int expected_excepts, [[maybe_unused]] const int except_mask = fe_major_except) {
+#if defined(_M_ARM64) || defined(_M_ARM64EC) // TRANSITION, GH-5685
+    return true;
+#else // ^^^ workaround / no workaround vvv
     return fetestexcept(except_mask) == (expected_excepts & except_mask);
+#endif // ^^^ no workaround ^^^
 }
 #else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
 class ExceptGuard {
@@ -1049,9 +1054,7 @@ void test_gh_1917() {
         ExceptGuard except;
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC) // TRANSITION, GH-5685
         assert(check_feexcept(0));
-#endif // ^^^ no workaround ^^^
     }
 #ifdef _M_FP_STRICT
     {
@@ -1066,9 +1069,7 @@ void test_gh_1917() {
         RoundGuard round{FE_UPWARD};
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC) // TRANSITION, GH-5685
         assert(check_feexcept(0));
-#endif // ^^^ no workaround ^^^
     }
     {
         ExceptGuard except;
@@ -1082,9 +1083,7 @@ void test_gh_1917() {
         RoundGuard round{FE_DOWNWARD};
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC) // TRANSITION, GH-5685
         assert(check_feexcept(0));
-#endif // ^^^ no workaround ^^^
     }
     {
         ExceptGuard except;
@@ -1098,9 +1097,7 @@ void test_gh_1917() {
         RoundGuard round{FE_TOWARDZERO};
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC) // TRANSITION, GH-5685
         assert(check_feexcept(0));
-#endif // ^^^ no workaround ^^^
     }
     {
         ExceptGuard except;

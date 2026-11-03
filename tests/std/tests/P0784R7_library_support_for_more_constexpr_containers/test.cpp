@@ -588,7 +588,7 @@ static_assert(!CanDestroyN<const char*>);
 static_assert(!CanDestroyN<volatile char*>);
 static_assert(!CanDestroyN<const volatile char*>);
 
-#ifdef __clang__ // TRANSITION, DevCom-10642767 (MSVC), DevCom-10896316 (EDG)
+#ifndef __EDG__ // TRANSITION, EDG-271
 // Test that destroy, destroy_at, and destroy_n properly destroy trivially destructible objects
 // during constant evaluation.
 // After such destruction, further access will cause core language undefined behavior,
@@ -675,14 +675,8 @@ constexpr bool test_construct_at_array() {
 
     test_std_construct_at_array<string, 1>();
     test_ranges_construct_at_array<string, 1>();
-
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, DevCom-11012299
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        test_std_construct_at_array<string, 42>();
-        test_ranges_construct_at_array<string, 42>();
-    }
+    test_std_construct_at_array<string, 42>();
+    test_ranges_construct_at_array<string, 42>();
 
     return true;
 }

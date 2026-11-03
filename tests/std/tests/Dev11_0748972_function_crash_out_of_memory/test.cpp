@@ -78,7 +78,11 @@ void test(const int num) {
         memset(pv, 0xCC, sizeof(bits));
 
         vector<int> v(10, 1729);
-        long long a = 0, b = 0, c = 0, d = 0, e = 0;
+        long long a     = 0;
+        long long b     = 0;
+        long long c     = 0;
+        long long d     = 0;
+        long long e     = 0;
         auto big_lambda = [v, a, b, c, d, e] {
             (void) v;
             (void) a;

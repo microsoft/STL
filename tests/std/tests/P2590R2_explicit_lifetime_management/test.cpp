@@ -6,7 +6,7 @@
 #include <memory>
 using namespace std;
 
-#ifdef __cpp_lib_start_lifetime_as // TRANSITION
+#ifdef __cpp_lib_start_lifetime_as // TRANSITION, GH-6169
 struct Point {
     int x;
     int y;

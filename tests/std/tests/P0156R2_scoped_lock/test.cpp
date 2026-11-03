@@ -65,7 +65,7 @@ class ownership_tracking_mutex {
     const char* name;
 
 public:
-    explicit ownership_tracking_mutex(const char* name) : mtx(), owningId(thread::id()), name(name) {
+    explicit ownership_tracking_mutex(const char* name_) : mtx(), owningId(thread::id()), name(name_) {
         // Purposely empty
     }
 

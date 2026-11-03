@@ -14,10 +14,9 @@ class CustomTestFormat(STLTestFormat):
         outputDir, _ = test.getTempPaths()
         dllOutput = os.path.join(outputDir, 'TestDll.DLL')
 
-        cmd = [test.cxx, dllSource, *test.flags, *test.compileFlags, '/Fe' + dllOutput,
+        cmd = [test.cxx, dllSource, *test.flags, *test.compileFlags, f'/Fe{dllOutput}',
                '/link', '/DLL', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
 
-        for step in super().getBuildSteps(test, litConfig, shared):
-            yield step
+        yield from super().getBuildSteps(test, litConfig, shared)

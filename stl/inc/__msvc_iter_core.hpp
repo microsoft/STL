@@ -263,7 +263,7 @@ struct _Iter_traits_pointer<_Itraits_pointer_strategy::_Use_decltype> {
 };
 
 template <class _Ty>
-concept _Has_member_arrow = requires(_Ty&& __t) { static_cast<_Ty &&>(__t).operator->(); };
+concept _Has_member_arrow = requires(_Ty&& __t) { static_cast<_Ty&&>(__t).operator->(); };
 
 template <bool _Has_member_typedef>
 struct _Iter_traits_reference {
@@ -406,7 +406,8 @@ concept input_or_output_iterator = requires(_It __i) {
 } && weakly_incrementable<_It>;
 
 _EXPORT_STD template <class _Se, class _It>
-concept sentinel_for = semiregular<_Se> && input_or_output_iterator<_It> && _Weakly_equality_comparable_with<_Se, _It>;
+concept sentinel_for = semiregular<_Se> && !_Integer_like<_Se> && input_or_output_iterator<_It>
+                    && _Weakly_equality_comparable_with<_Se, _It>;
 
 _EXPORT_STD template <class _Se, class _It> // specializations allowed by N5014 [iterator.concept.sizedsentinel]/3
 constexpr bool disable_sized_sentinel_for = false;

@@ -24,14 +24,13 @@ steps:
       if (Test-Path -LiteralPath "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}") {
           Remove-Item -LiteralPath "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}" -Recurse -Force
       }
-      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      & "$(launchVsDevShell)" -Preview -NoLogo -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
       cmake -G Ninja `
       -DCMAKE_CXX_COMPILER=${{ parameters.compiler }} `
       -DCMAKE_BUILD_TYPE=Release `
       -DSTL_BINARY_DIR="$(buildOutputLocation)" `
       -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} `
       -S $(Build.SourcesDirectory)/benchmarks -B "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
-  timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   # TRANSITION, we currently only build the benchmarks with Clang for x64
   condition: >
@@ -45,9 +44,8 @@ steps:
     targetType: inline
     script: |
       $PSNativeCommandUseErrorActionPreference = $true
-      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      & "$(launchVsDevShell)" -Preview -NoLogo -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
       cmake --build "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
-  timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   # TRANSITION, we currently only build the benchmarks with Clang for x64
   condition: >
