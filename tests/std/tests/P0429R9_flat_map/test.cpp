@@ -1534,7 +1534,8 @@ void test_operator_subscript() {
     {
         flat_map<int, char> fm;
 
-        fm[10] = 'm';
+        const int lvalue_key = 10;
+        fm[lvalue_key]       = 'm';
         assert(fm[10] == 'm');
         assert(fm.size() == 1);
 
@@ -1542,7 +1543,7 @@ void test_operator_subscript() {
         assert(fm[70] == 'e');
         assert(fm.size() == 2);
 
-        fm[10] = 'z';
+        fm[lvalue_key] = 'z';
         assert(fm[10] == 'z');
         assert(fm.size() == 2);
 
@@ -1738,11 +1739,21 @@ void test_emplace() {
     }
 }
 
+struct TransparentDereferenceCompare {
+    using is_transparent = void;
+
+    template <class T, class U>
+    bool operator()(const unique_ptr<T>& lhs, const unique_ptr<U>& rhs) const {
+        return *lhs < *rhs;
+    }
+};
+
 void test_try_emplace() {
     {
         flat_map<int, string> fm;
 
-        const auto [it1, ins1] = fm.try_emplace(10, "hello");
+        const int key          = 10;
+        const auto [it1, ins1] = fm.try_emplace(key, "hello");
         assert(it1->first == 10);
         assert(it1->second == "hello");
         assert(ins1);
@@ -1752,7 +1763,7 @@ void test_try_emplace() {
         assert(it2->second == "xxx");
         assert(ins2);
 
-        const auto [it3, ins3] = fm.try_emplace(10, "world");
+        const auto [it3, ins3] = fm.try_emplace(key, "world");
         assert(it3->first == 10);
         assert(it3->second == "hello");
         assert(!ins3);
@@ -1779,7 +1790,8 @@ void test_try_emplace() {
     {
         flat_map<int, char> fm{{1, 'a'}, {5, 'e'}, {10, 'j'}};
 
-        const auto it1 = fm.try_emplace(fm.end(), 20, 't');
+        const int key  = 20;
+        const auto it1 = fm.try_emplace(fm.end(), key, 't');
         assert(it1->first == 20);
         assert(it1->second == 't');
 
@@ -1787,7 +1799,8 @@ void test_try_emplace() {
         assert(it2->first == 0);
         assert(it2->second == 'z');
 
-        const auto it3 = fm.try_emplace(fm.find(5), 5, 'X');
+        const int duplicate_key = 5;
+        const auto it3          = fm.try_emplace(fm.find(5), duplicate_key, 'X');
         assert(it3->first == 5);
         assert(it3->second == 'e');
 
@@ -1807,31 +1820,52 @@ void test_try_emplace() {
     }
 
     {
-        flat_map<Packaged<int>, char, TransparentPackagedCompare<int>> fm;
+        flat_map<unique_ptr<const int>, char, TransparentDereferenceCompare> fm;
 
-        const auto [it1, ins1] = fm.try_emplace(5, 'a');
+        auto key1              = make_unique<int>(5);
+        const auto [it1, ins1] = fm.try_emplace(move(key1), 'a');
         assert(ins1);
-        assert(it1->first == Packaged<int>(5));
+        assert(!key1);
+        assert(*it1->first == 5);
         assert(it1->second == 'a');
 
-        const auto [it2, ins2] = fm.try_emplace(10, 'b');
+        auto key2              = make_unique<int>(10);
+        const auto [it2, ins2] = fm.try_emplace(move(key2), 'b');
         assert(ins2);
+        assert(!key2);
+        assert(*it2->first == 10);
+        assert(it2->second == 'b');
 
-        const auto [it3, ins3] = fm.try_emplace(5, 'X');
+        auto duplicate_key     = make_unique<int>(5);
+        const auto [it3, ins3] = fm.try_emplace(move(duplicate_key), 'X');
         assert(!ins3);
+        // Conversion to key_type before lookup would consume duplicate_key.
+        assert(duplicate_key);
+        assert(*duplicate_key == 5);
+        assert(*it3->first == 5);
         assert(it3->second == 'a');
 
         assert(fm.size() == 2);
     }
 
     {
-        flat_map<Packaged<int>, char, TransparentPackagedCompare<int>> fm;
-        fm.try_emplace(5, 'a');
-        fm.try_emplace(10, 'b');
+        flat_map<unique_ptr<const int>, char, TransparentDereferenceCompare> fm;
+        fm.try_emplace(make_unique<int>(5), 'a');
+        fm.try_emplace(make_unique<int>(10), 'b');
 
-        const auto it = fm.try_emplace(fm.end(), 20, 'c');
-        assert(it->first == Packaged<int>(20));
+        auto key      = make_unique<int>(20);
+        const auto it = fm.try_emplace(fm.end(), move(key), 'c');
+        assert(!key);
+        assert(*it->first == 20);
         assert(it->second == 'c');
+        assert(fm.size() == 3);
+
+        auto duplicate_key   = make_unique<int>(20);
+        const auto duplicate = fm.try_emplace(fm.end(), move(duplicate_key), 'X');
+        assert(duplicate_key);
+        assert(*duplicate_key == 20);
+        assert(*duplicate->first == 20);
+        assert(duplicate->second == 'c');
         assert(fm.size() == 3);
     }
 }
