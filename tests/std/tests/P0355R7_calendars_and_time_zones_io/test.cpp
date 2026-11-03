@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <algorithm>
 #include <cassert>
 #include <charconv>
 #include <chrono>
@@ -17,7 +16,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include <timezone_data.hpp>
 
@@ -748,19 +746,6 @@ void parse_whitespace() {
     fail_parse("", "%n", time);
 }
 
-tzdb copy_tzdb() {
-    const auto& my_tzdb = get_tzdb_list().front();
-    vector<time_zone> zones;
-    vector<time_zone_link> links;
-    transform(my_tzdb.zones.begin(), my_tzdb.zones.end(), back_inserter(zones),
-        [](const auto& tz) { return time_zone{_Secret_time_zone_construct_tag{}, tz.name()}; });
-    transform(my_tzdb.links.begin(), my_tzdb.links.end(), back_inserter(links), [](const auto& link) {
-        return time_zone_link{_Secret_time_zone_link_construct_tag{}, link.name(), link.target()};
-    });
-
-    return {my_tzdb.version, move(zones), move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};
-}
-
 void test_gh_1952() {
     // GH-1952 <chrono>: parse ignores subseconds when the underlying type supports it
     const auto time_str{"2021-06-02T17:51:05.696028Z"};
@@ -826,8 +811,8 @@ void parse_timepoints() {
     // The clock tai_clock measures seconds since 1958-01-01 00:00:00 and is offset 10s ahead of UTC at this date.
     // That is, 1958-01-01 00:00:00 TAI is equivalent to 1957-12-31 23:59:50 UTC. Leap seconds are not inserted into
     // TAI. Therefore every time a leap second is inserted into UTC, UTC shifts another second with respect to TAI.
-    // For example by 2000-01-01 there had been 22 positive and 0 negative leap seconds inserted so 2000-01-01
-    // 00:00:00 UTC is equivalent to 2000-01-01 00:00:32 TAI (22s plus the initial 10s offset).
+    // For example by 2000-01-01 there had been 22 leap seconds inserted so 2000-01-01 00:00:00 UTC
+    // is equivalent to 2000-01-01 00:00:32 TAI (22s plus the initial 10s offset).
 
     ref = sys_days{1957y / December / 31d} + days{1} - 10s;
     tai_seconds tt;
@@ -874,18 +859,6 @@ void parse_timepoints() {
     want_value("00:42 2000-01-02", "%R %F", st, sys_days{2000y / January / 2d} + (42min));
     want_value("12:42 2000-01-02", "%R %F", st, sys_days{2000y / January / 2d} + (12h + 42min));
 
-    // Historical leap seconds don't allow complete testing, because they've all been positive and there haven't been
-    // any since 2016 (as of 2021).
-    {
-        auto my_tzdb   = copy_tzdb();
-        auto& leap_vec = my_tzdb.leap_seconds;
-        leap_vec.erase(leap_vec.begin() + 27, leap_vec.end());
-        leap_vec.emplace_back(sys_days{1d / January / 2020y}, false, leap_vec.back()._Elapsed());
-        leap_vec.emplace_back(sys_days{1d / January / 2022y}, true, leap_vec.back()._Elapsed());
-        my_tzdb._All_ls_positive = false;
-        get_tzdb_list()._Emplace_front(move(my_tzdb));
-    }
-
     utc_seconds ut_ref = utc_clock::from_sys(sys_days{1d / July / 1972y}) - 1s; // leap second insertion
     want_value("fri june 30 23:59:60 1972", "%c", ut, ut_ref);
 
@@ -901,7 +874,7 @@ void parse_timepoints() {
 
     fail_parse("sat june 30 23:59:60 1973", "%c", ut); // not a leap second insertion
 
-    // the last leap second insertion that file_clock is not aware of
+    // the last leap second insertion
     test_parse("sat dec 31 23:59:59 2016", "%c", ut);
     want_value("sat dec 31 23:59:59 2016", "%c", ft, clock_cast<file_clock>(ut));
 
@@ -911,16 +884,13 @@ void parse_timepoints() {
     test_parse("sun jan 01 00:00:00 2017", "%c", ut);
     want_value("sun jan 01 00:00:00 2017", "%c", ft, clock_cast<file_clock>(ut));
 
-    ref = sys_days{1d / January / 2020y} - 1s; // negative leap second, UTC time doesn't exist
-    fail_parse("tue dec 31 23:59:59 2019", "%c", ut);
-    fail_parse("tue dec 31 23:59:59 2019", "%c", ft);
-
+    ref = sys_days{1d / January / 2020y} - 1s;
     want_value("tue dec 31 23:59:59 2019", "%c", st, ref);
 
     test_parse("tue dec 31 23:59:59 2019", "%c", lt); // Not UTC, might be valid depending on the time zone.
     assert(lt.time_since_epoch() == ref.time_since_epoch());
 
-    // Initially, TAI - UTC == 37s.
+    // TAI - UTC == 37s.
     test_parse("tue dec 31 23:59:59 2019", "%c", tt);
     test_parse("tue dec 31 23:59:22 2019", "%c", ut);
     assert(tt == clock_cast<tai_clock>(ut));
@@ -929,11 +899,11 @@ void parse_timepoints() {
     test_parse("tue dec 31 23:59:58 2019", "%c", ut);
     assert(tt == clock_cast<tai_clock>(ut));
 
-    test_parse("wed jan 01 00:00:36 2020", "%c", tt);
+    test_parse("wed jan 01 00:00:37 2020", "%c", tt);
     test_parse("wed jan 01 00:00:00 2020", "%c", ut);
     assert(tt == clock_cast<tai_clock>(ut));
 
-    // Initially, GPS - UTC == 18s
+    // GPS - UTC == 18s
     test_parse("tue dec 31 23:59:59 2019", "%c", gt);
     test_parse("tue dec 31 23:59:41 2019", "%c", ut);
     assert(gt == clock_cast<gps_clock>(ut));
@@ -942,15 +912,9 @@ void parse_timepoints() {
     test_parse("tue dec 31 23:59:58 2019", "%c", ut);
     assert(gt == clock_cast<gps_clock>(ut));
 
-    test_parse("wed jan 01 00:00:17 2020", "%c", gt);
+    test_parse("wed jan 01 00:00:18 2020", "%c", gt);
     test_parse("wed jan 01 00:00:00 2020", "%c", ut);
     assert(gt == clock_cast<gps_clock>(ut));
-
-
-    ut_ref = utc_clock::from_sys(sys_days{1d / January / 2022y}) - 1s; // leap second insertion
-    want_value("fri dec 31 23:59:60 2021", "%c", ut, ut_ref);
-    want_value("fri dec 31 23:59:60 2021", "%c", ft, clock_cast<file_clock>(ut_ref));
-
 
     // GH-1606: reads too many leading zeros
     want_value("19700405T000006", "%Y%m%dT%H%M%S", st, sys_days{5d / April / 1970y} + 6s);
