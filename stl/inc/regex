@@ -4581,7 +4581,11 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                         const auto _Rep_subtype = _Node->_Flags & _Fl_rep_subtype_mask;
                         if (_Greedy && _Rep_subtype != 0 && _Rep_subtype <= _Fl_rep_known_subtype) {
                             _It _Cur = _Tgt_state._Cur;
-                            if (_Rep_subtype <= _Fl_rep_str_default) {
+
+                            const bool _Is_any_rep_str = _Rep_subtype == _Fl_rep_str_icase
+                                                      || _Rep_subtype == _Fl_rep_str_collate
+                                                      || _Rep_subtype == _Fl_rep_str_default;
+                            if (_Is_any_rep_str) {
                                 const auto _Nstr             = static_cast<const _Node_str<_Elem>*>(_Next);
                                 const unsigned int _Str_size = _Nstr->_Data._Size();
                                 _Sav._Loop_length            = static_cast<_Diff_type>(_Str_size);
@@ -4610,7 +4614,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
 
                             _Diff_type _Failed_work_count{};
 
-                            if (_Rep_subtype <= _Fl_rep_str_default) {
+                            if (_Is_any_rep_str) {
                                 const auto _Nstr      = static_cast<const _Node_str<_Elem>*>(_Next);
                                 const auto _Str_first = _Nstr->_Data._Str();
                                 const auto _Str_last  = _Str_first + _Nstr->_Data._Size();
