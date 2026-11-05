@@ -3993,10 +3993,18 @@ _FwdIt1 _Find_longest_repeating_prefix(_FwdIt1 _First1, const _FwdIt1 _Last1, co
         _FwdIt2 _Cur       = _First2;
         for (;; ++_First1, (void) ++_Cur) {
             if (_Cur == _Last2) {
+                if (_Cur != _Last2) {
+                    _Failed_work_counter = static_cast<_Count_type>(_STD distance(_First2, _Cur));
+                    return _Res;
+                }
                 break;
             }
 
             if (_First1 == _Last1) {
+                if (_Cur != _Last2) {
+                    _Failed_work_counter = static_cast<_Count_type>(_STD distance(_First2, _Cur));
+                    return _Res;
+                }
                 break;
             }
 
@@ -4004,11 +4012,6 @@ _FwdIt1 _Find_longest_repeating_prefix(_FwdIt1 _First1, const _FwdIt1 _Last1, co
                 _Failed_work_counter = static_cast<_Count_type>(_STD distance(_First2, _Cur));
                 return _Res;
             }
-        }
-
-        if (_Cur != _Last2) {
-            _Failed_work_counter = static_cast<_Count_type>(_STD distance(_First2, _Cur));
-            return _Res;
         }
     }
 }
