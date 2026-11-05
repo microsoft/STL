@@ -3256,9 +3256,9 @@ void test_gh_6506() {
         g_regexTester.should_not_match("aAaB", pattern, icase);
 
         {
-            test_regex greedy_aa_star(&g_regexTester, pattern, icase);
-            greedy_aa_star.should_search_match("aaAaaAAAaA", "aaAaaAAAaA");
-            greedy_aa_star.should_search_match("aaAaaAAAa", "aaAaaAAA");
+            test_regex greedy_aa_plus(&g_regexTester, pattern, icase);
+            greedy_aa_plus.should_search_match("aaAaaAAAaA", "aaAaaAAAaA");
+            greedy_aa_plus.should_search_match("aaAaaAAAa", "aaAaaAAA");
         }
     }
 
