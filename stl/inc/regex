@@ -4574,8 +4574,6 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     if constexpr (_Is_cpp17_random_iter_v<_It>) {
                         const auto _Rep_subtype = _Node->_Flags & _Fl_rep_subtype_mask;
                         if (_Greedy && _Rep_subtype != 0 && _Rep_subtype <= _Fl_rep_known_subtype) {
-                            _It _Cur = _Tgt_state._Cur;
-
                             const bool _Is_any_rep_str = _Rep_subtype == _Fl_rep_str_icase
                                                       || _Rep_subtype == _Fl_rep_str_collate
                                                       || _Rep_subtype == _Fl_rep_str_default;
@@ -4597,6 +4595,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                                 _Sav._Loop_length = static_cast<_Diff_type>(1);
                             }
 
+                            _It _Cur  = _Tgt_state._Cur;
                             _It _Last = _End;
                             if (_Node->_Max != -1) {
                                 const auto _Dist = _STD distance(_Cur, _Last) / _Sav._Loop_length;
