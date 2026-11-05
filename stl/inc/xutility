@@ -5236,10 +5236,12 @@ namespace ranges {
                 return _STD pair<_It, _ULast_t>{_STD move(_UFirst), _STD move(_ULast)};
             } else if constexpr (same_as<_Distance, _Distance_unknown>) {
                 const auto _Range_size = _RANGES _Idl_distance(_Range);
-                auto _Final            = _RANGES _Get_final_iterator_unwrapped(_UFirst, _Range_size);
+                auto _Final = _RANGES _Get_final_iterator_unwrapped(
+                    _UFirst, static_cast<iter_difference_t<_It>>(_Range_size));
                 return _STD pair<_It, _It>{_STD move(_UFirst), _STD move(_Final)};
             } else {
-                auto _Final = _RANGES _Get_final_iterator_unwrapped(_UFirst, _Count);
+                auto _Final = _RANGES _Get_final_iterator_unwrapped(
+                    _UFirst, static_cast<iter_difference_t<_It>>(_Count));
                 return _STD pair<_It, _It>{_STD move(_UFirst), _STD move(_Final)};
             }
         } else {
