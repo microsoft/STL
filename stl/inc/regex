@@ -3992,7 +3992,7 @@ _FwdIt1 _Find_longest_repeating_prefix(_FwdIt1 _First1, const _FwdIt1 _Last1, co
         const _FwdIt1 _Res = _First1;
         _FwdIt2 _Cur       = _First2;
         for (;; ++_First1, (void) ++_Cur) {
-            if (!(_First1 != _Last1 && _Cur != _Last2)) {
+            if (_First1 == _Last1 || _Cur == _Last2) {
                 break;
             }
 
