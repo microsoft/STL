@@ -12,9 +12,8 @@
 // int __cdecl __crtCompareStringA - Get type information about an ANSI string.
 //
 // Purpose:
-//   Internal support function. Assumes info in ANSI string format. Tries
-//   to use NLS API call CompareStringA if available and uses CompareStringW
-//   if it must. If neither is available it fails and returns 0.
+//   Internal support function. Converts ANSI strings to wide strings
+//   and calls the NLS API CompareStringEx.
 //
 // Entry:
 //   LPCWSTR  LocaleName  - locale context for the comparison.
