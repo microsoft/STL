@@ -119,5 +119,4 @@ if(STL_ASAN_BUILD)
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-fsanitize=address;-fno-sanitize-address-vcasan-lib>")
 endif()
 
-add_subdirectory(boost-math)
 add_subdirectory(stl)
