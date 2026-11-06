@@ -28,8 +28,7 @@ extern "C" {
 #endif // ^^^ !defined(_DEBUG) ^^^
 
 // TRANSITION, ABI: preserved for binary compatibility
-enum class __stl_sync_api_modes_enum { normal, win7, vista, concrt };
-_CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum) noexcept {}
+_CRTIMP2 void __cdecl __set_stl_sync_api_mode(int) noexcept {}
 
 [[nodiscard]] static PSRWLOCK get_srw_lock(_Mtx_t mtx) noexcept {
     return reinterpret_cast<PSRWLOCK>(&mtx->_Critical_section._M_srw_lock);
