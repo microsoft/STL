@@ -173,7 +173,7 @@ extern "C" {
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_open_handle(_Out_ __std_fs_file_handle* const _Handle,
     _In_z_ const wchar_t* const _File_name, _In_ const __std_access_rights _Desired_access,
-    _In_ const __std_fs_file_flags _Flags) noexcept { // calls CreateFile2 or CreateFileW
+    _In_ const __std_fs_file_flags _Flags) noexcept { // calls CreateFile2
     const HANDLE _Result = __vcp_CreateFile(_File_name, static_cast<unsigned long>(_Desired_access),
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
         static_cast<unsigned long>(_Flags), nullptr);
