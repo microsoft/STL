@@ -937,12 +937,6 @@ public:
 template <class _Ty>
 constexpr bool _Is_unqual_fp = _Is_any_of_v<_Ty, float, double, long double>;
 
-template <class _Ty>
-struct _Complex_value {
-    enum { _Re = 0, _Im = 1 };
-    _Ty _Val[2];
-};
-
 template <class _Ty, class _Valbase>
 class _Complex_base : public _Valbase {
 private:
