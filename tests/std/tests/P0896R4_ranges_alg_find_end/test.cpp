@@ -113,7 +113,7 @@ constexpr void test_devcom_1559808() {
 }
 
 int main() {
-#if !defined(_PREFAST_) && !defined(__EDG__) // TRANSITION, GH-1030 and GH-3567
+#ifndef _PREFAST_ // TRANSITION, GH-1030 and GH-3567
     test_fwd_fwd<instantiator, const pair<int, int>, const int>();
 #endif // ^^^ no workaround ^^^
 

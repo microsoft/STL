@@ -209,9 +209,9 @@ class test_regex {
     const std::regex r;
 
 public:
-    test_regex(regex_fixture* fixture, const std::string& pattern,
-        std::regex_constants::syntax_option_type syntax = std::regex_constants::ECMAScript)
-        : fixture(fixture), pattern(pattern), syntax(syntax), r(pattern, syntax) {}
+    test_regex(regex_fixture* fixture_, const std::string& pattern_,
+        std::regex_constants::syntax_option_type syntax_ = std::regex_constants::ECMAScript)
+        : fixture(fixture_), pattern(pattern_), syntax(syntax_), r(pattern_, syntax_) {}
 
     test_regex(const test_regex&)            = delete;
     test_regex& operator=(const test_regex&) = delete;
@@ -361,9 +361,9 @@ class test_wregex {
     const std::wregex r;
 
 public:
-    test_wregex(regex_fixture* fixture, const std::wstring& pattern,
-        std::regex_constants::syntax_option_type syntax = std::regex_constants::ECMAScript)
-        : fixture(fixture), pattern(pattern), syntax(syntax), r(pattern, syntax) {}
+    test_wregex(regex_fixture* fixture_, const std::wstring& pattern_,
+        std::regex_constants::syntax_option_type syntax_ = std::regex_constants::ECMAScript)
+        : fixture(fixture_), pattern(pattern_), syntax(syntax_), r(pattern_, syntax_) {}
 
     test_wregex(const test_wregex&)            = delete;
     test_wregex& operator=(const test_wregex&) = delete;

@@ -241,12 +241,12 @@ int main() {
     test_istream_iterator<int>();
     test_istream_iterator<string>();
     test_istream_iterator<int, wchar_t>();
-    test_istream_iterator<string, wchar_t>();
+    test_istream_iterator<wstring, wchar_t>();
 
     test_ostream_iterator<int>(cout);
     test_ostream_iterator<string>(cout);
     test_ostream_iterator<int>(wcout);
-    test_ostream_iterator<string>(wcout);
+    test_ostream_iterator<wstring>(wcout);
 
     test_istreambuf_iterator<char>();
     test_istreambuf_iterator<wchar_t>();

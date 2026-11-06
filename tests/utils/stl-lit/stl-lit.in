@@ -33,7 +33,7 @@ def assert_same_platform_for_build_and_test():
     build_platform = '$ENV{VSCMD_ARG_TGT_ARCH}'
     test_platform = os.getenv('VSCMD_ARG_TGT_ARCH', default='')
     if build_platform != '' and test_platform != '' and build_platform != test_platform:
-        exit(f'Target platform mismatch: the STL was built for {build_platform} but tested for {test_platform}.')
+        sys.exit(f'Target platform mismatch: the STL was built for {build_platform} but tested for {test_platform}.')
 
 if __name__=='__main__':
     assert_same_platform_for_build_and_test()

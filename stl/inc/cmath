@@ -11,14 +11,14 @@
 #include <cstdlib>
 #include <type_traits>
 
-// MSVC provides constexpr builtins in C++23 and later, except when /Zc:cmath- opts out of constexpr.
-#if defined(__clang__) || defined(__cpp_lib_constexpr_cmath)
+// Clang and MSVC /Zc:cmath provide builtins.
+#if defined(__clang__) || defined(_MSVC_LIBC_MATH)
 #define _HAS_CMATH_BUILTINS 1
 #else // ^^^ builtins available / builtins unavailable vvv
 #define _HAS_CMATH_BUILTINS 0
 #endif // ^^^ builtins unavailable ^^^
 
-// When constexpr builtins are unavailable, fall back to intrinsics for better codegen.
+// When builtins are unavailable, fall back to intrinsics for better codegen.
 #if !_HAS_CMATH_BUILTINS && !defined(_M_CEE) // TRANSITION, VSO-1663104
 #define _HAS_CMATH_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
@@ -41,7 +41,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float acos(_In_ float _Xx) noexcept
     return _CSTD acosf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float acosh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float acosh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD acoshf(_Xx);
 }
 
@@ -49,7 +49,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float asin(_In_ float _Xx) noexcept
     return _CSTD asinf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float asinh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float asinh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD asinhf(_Xx);
 }
 
@@ -57,7 +57,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float atan(_In_ float _Xx) noexcept
     return _CSTD atanf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float atanh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float atanh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD atanhf(_Xx);
 }
 
@@ -94,15 +94,15 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float cos(_In_ float _Xx) noexcept 
     return _CSTD cosf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float cosh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float cosh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD coshf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float erf(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float erf(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD erff(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float erfc(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float erfc(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD erfcf(_Xx);
 }
 
@@ -110,7 +110,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float exp(_In_ float _Xx) noexcept 
     return _CSTD expf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float exp2(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float exp2(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD exp2f(_Xx);
 }
 
@@ -169,7 +169,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float ldexp(_In_ float _Xx, _In_ in
     return _CSTD ldexpf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline float lgamma(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float lgamma(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD lgammaf(_Xx);
 }
 
@@ -267,7 +267,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float sin(_In_ float _Xx) noexcept 
     return _CSTD sinf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float sinh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float sinh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD sinhf(_Xx);
 }
 
@@ -279,11 +279,11 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float tan(_In_ float _Xx) noexcept 
     return _CSTD tanf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float tanh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float tanh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD tanhf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float tgamma(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float tgamma(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD tgammaf(_Xx);
 }
 
@@ -301,7 +301,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double acos(_In_ long double _
     return _CSTD acosl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double acosh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double acosh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD acoshl(_Xx);
 }
 
@@ -309,7 +309,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double asin(_In_ long double _
     return _CSTD asinl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double asinh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double asinh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD asinhl(_Xx);
 }
 
@@ -317,7 +317,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double atan(_In_ long double _
     return _CSTD atanl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double atanh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double atanh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD atanhl(_Xx);
 }
 
@@ -356,15 +356,15 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double cos(_In_ long double _X
     return _CSTD cosl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double cosh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double cosh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD coshl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double erf(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double erf(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD erfl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double erfc(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double erfc(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD erfcl(_Xx);
 }
 
@@ -372,7 +372,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double exp(_In_ long double _X
     return _CSTD expl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double exp2(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double exp2(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD exp2l(_Xx);
 }
 
@@ -438,7 +438,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double ldexp(_In_ long double 
     return _CSTD ldexpl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double lgamma(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double lgamma(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD lgammal(_Xx);
 }
 
@@ -541,7 +541,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double sin(_In_ long double _X
     return _CSTD sinl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double sinh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double sinh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD sinhl(_Xx);
 }
 
@@ -553,11 +553,11 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double tan(_In_ long double _X
     return _CSTD tanl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double tanh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double tanh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD tanhl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double tgamma(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double tgamma(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD tgammal(_Xx);
 }
 
@@ -573,10 +573,12 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double trunc(_In_ long double 
 _END_EXTERN_CXX_WORKAROUND
 
 _STD_BEGIN
-template <class _Ty1, class _Ty2>
-using _Common_float_type_t = conditional_t<is_same_v<_Ty1, long double> || is_same_v<_Ty2, long double>, long double,
-    conditional_t<is_same_v<_Ty1, float> && is_same_v<_Ty2, float>, float,
-        double>>; // find type for two-argument math function
+template <class _Ty1, class _Ty2, class _Ty3 = _Ty2>
+using _Common_float_type_t =
+    conditional_t<is_same_v<_Ty1, long double> || is_same_v<_Ty2, long double> || is_same_v<_Ty3, long double>,
+        long double,
+        conditional_t<is_same_v<_Ty1, float> && is_same_v<_Ty2, float> && is_same_v<_Ty3, float>, float,
+            double>>; // find type for two-argument or three-argument math function
 _STD_END
 
 _EXTERN_CXX_WORKAROUND
@@ -599,9 +601,9 @@ _NODISCARD _CONSTEXPR_CMATH26 _STD _Common_float_type_t<_Ty1, _Ty2> pow(_Ty1 _Le
 
 template <class _Ty1, class _Ty2, class _Ty3,
     _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2> && _STD is_arithmetic_v<_Ty3>, int> = 0>
-_NODISCARD _CONSTEXPR_CMATH23 _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>> fma(
+_NODISCARD _CONSTEXPR_CMATH23 _STD _Common_float_type_t<_Ty1, _Ty2, _Ty3> fma(
     _Ty1 _Left, _Ty2 _Middle, _Ty3 _Right) noexcept /* strengthened */ {
-    using _Common = _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>>;
+    using _Common = _STD _Common_float_type_t<_Ty1, _Ty2, _Ty3>;
     if constexpr (_STD is_same_v<_Common, float>) {
         return _CSTD fmaf(static_cast<_Common>(_Left), static_cast<_Common>(_Middle), static_cast<_Common>(_Right));
     } else if constexpr (_STD is_same_v<_Common, double>) {
@@ -874,7 +876,7 @@ _GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, cosh)
 _GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, sinh)
 _GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, tanh)
 _GENERIC_MATH1(_CONSTEXPR_CMATH26, exp)
-_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, exp2)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, exp2)
 _GENERIC_MATH1(_CONSTEXPR_CMATH26, expm1)
 // frexp() is hand-crafted
 _GENERIC_MATH1R(_CONSTEXPR_CMATH23, ilogb, int)
@@ -1608,7 +1610,7 @@ _EXPORT_STD _NODISCARD inline long double sph_neumannl(const unsigned int _Arg1,
     _EXPORT_STD template <class _Ty1, class _Ty2, class _Ty3,                                                          \
         enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>                 \
     _NODISCARD auto NAME(const _Ty1 _Arg1, const _Ty2 _Arg2, const _Ty3 _Arg3) noexcept /* strengthened */ {           \
-        using _Common = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>;                                  \
+        using _Common = _Common_float_type_t<_Ty1, _Ty2, _Ty3>;                                                        \
         if constexpr (is_same_v<_Common, float>) {                                                                     \
             return __std_smf_##NAME##f(_Arg1, _Arg2, _Arg3);                                                           \
         } else {                                                                                                       \
@@ -1692,22 +1694,21 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, con
     // N4950 [cmath.syn]/3 "Sufficient additional overloads"
     // Note that this template is selected by overload resolution only when at least one
     // argument is double/long double/integral but not all three are double or long double.
-    using _Common      = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>; // TRANSITION, fold expressions
+    using _Common      = _Common_float_type_t<_Ty1, _Ty2, _Ty3>;
     const auto _Result = __std_smf_hypot3(static_cast<double>(_Dx), static_cast<double>(_Dy), static_cast<double>(_Dz));
     return static_cast<_Common>(_Result);
 }
 
 #if _HAS_CXX20
-_EXPORT_STD _NODISCARD constexpr inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
+_EXPORT_STD _NODISCARD constexpr float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-_EXPORT_STD _NODISCARD constexpr inline double lerp(
-    const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
+_EXPORT_STD _NODISCARD constexpr double lerp(const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-_EXPORT_STD _NODISCARD constexpr inline long double lerp(
+_EXPORT_STD _NODISCARD constexpr long double lerp(
     const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
     return _Common_lerp(static_cast<double>(_ArgA), static_cast<double>(_ArgB), static_cast<double>(_ArgT));
 }
@@ -1715,7 +1716,7 @@ _EXPORT_STD _NODISCARD constexpr inline long double lerp(
 _EXPORT_STD template <class _Ty1, class _Ty2, class _Ty3>
     requires is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>
 _NODISCARD constexpr auto lerp(const _Ty1 _ArgA, const _Ty2 _ArgB, const _Ty3 _ArgT) noexcept {
-    using _Common = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>;
+    using _Common = _Common_float_type_t<_Ty1, _Ty2, _Ty3>;
     return static_cast<_Common>(
         _Common_lerp(static_cast<double>(_ArgA), static_cast<double>(_ArgB), static_cast<double>(_ArgT)));
 }

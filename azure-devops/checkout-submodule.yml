@@ -6,8 +6,6 @@ parameters:
   type: boolean
 - name: path
   type: string
-- name: url
-  type: string
 steps:
 - task: PowerShell@2
   displayName: 'Checkout ${{ parameters.path }} Submodule'
@@ -15,20 +13,5 @@ steps:
   retryCountOnTaskFailure: 4
   inputs:
     pwsh: true
-    targetType: inline
-    script: |
-      $PSNativeCommandUseErrorActionPreference = $true
-      $submodule = '${{ parameters.path }}'
-      $rawStatus = git submodule status --cached $submodule
-      $sha = $rawStatus -creplace '^[ \-+]([0-9a-f]+) .*$', '$1'
-      cd $submodule
-      git init
-      if ((git remote) -eq $null) {
-        git remote add submodule-upstream ${{ parameters.url }}
-      }
-      git fetch --filter=tree:0 --depth=1 submodule-upstream $sha
-      if ($submodule -ceq 'llvm-project') {
-        git sparse-checkout set --sparse-index libcxx/test libcxx/utils/libcxx llvm/utils/lit
-      }
-      git reset --quiet --hard FETCH_HEAD
-      git clean --quiet -x -d -f -f
+    filePath: azure-devops/checkout-submodule.ps1
+    arguments: -submodule ${{ parameters.path }}

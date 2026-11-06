@@ -1137,26 +1137,16 @@ public:
     using result_type = _UIntType;
     using _Eres       = typename _Engine::result_type;
 
-    independent_bits_engine() {
-        _Init();
-    }
+    independent_bits_engine() {}
 
-    explicit independent_bits_engine(const _Engine& _Ex) : _Eng(_Ex) {
-        _Init();
-    }
+    explicit independent_bits_engine(const _Engine& _Ex) : _Eng(_Ex) {}
 
-    explicit independent_bits_engine(_Engine&& _Ex) : _Eng(_STD move(_Ex)) {
-        _Init();
-    }
+    explicit independent_bits_engine(_Engine&& _Ex) : _Eng(_STD move(_Ex)) {}
 
-    explicit independent_bits_engine(result_type _Xx0) : _Eng(static_cast<_Eres>(_Xx0)) {
-        _Init();
-    }
+    explicit independent_bits_engine(result_type _Xx0) : _Eng(static_cast<_Eres>(_Xx0)) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, independent_bits_engine, _Engine> = 0>
-    explicit independent_bits_engine(_Seed_seq& _Seq) : _Eng(_Seq) {
-        _Init();
-    }
+    explicit independent_bits_engine(_Seed_seq& _Seq) : _Eng(_Seq) {}
 
     void seed() { // seed engine from default value
         _Eng.seed();
@@ -1184,6 +1174,12 @@ public:
     }
 
     _NODISCARD result_type operator()() {
+        constexpr size_t _Nx0 = _Computed._Nx0;
+        constexpr size_t _Nx  = _Computed._Nx;
+        constexpr size_t _Wx0 = _Computed._Wx0;
+        constexpr _Eres _Yx0  = _Computed._Yx0;
+        constexpr _Eres _Yx1  = _Computed._Yx1;
+
         result_type _Mask = ((result_type{1} << (_Wx0 - 1)) << 1) - 1;
         _Eres _Val;
 
@@ -1192,21 +1188,24 @@ public:
         } while (_Val > _Yx0);
         result_type _Res = static_cast<result_type>(_Val) & _Mask;
 
-        size_t _Idx = 1;
-        for (; _Idx < _Nx0; ++_Idx) { // pack _Wx0-bit values
-            do {
-                _Val = _Eng() - (_Engine::min) ();
-            } while (_Val > _Yx0);
-            _Res = (_Res << _Wx0) | (static_cast<result_type>(_Val) & _Mask);
+        if constexpr (_Nx > 1) {
+            size_t _Idx = 1;
+            for (; _Idx < _Nx0; ++_Idx) { // pack _Wx0-bit values
+                do {
+                    _Val = _Eng() - (_Engine::min) ();
+                } while (_Val > _Yx0);
+                _Res = (_Res << _Wx0) | (static_cast<result_type>(_Val) & _Mask);
+            }
+
+            _Mask = (_Mask << 1) | 1;
+            for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
+                do {
+                    _Val = _Eng() - (_Engine::min) ();
+                } while (_Val > _Yx1);
+                _Res = (_Res << (_Wx0 + 1)) | (static_cast<result_type>(_Val) & _Mask);
+            }
         }
 
-        _Mask = (_Mask << 1) | 1;
-        for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
-            do {
-                _Val = _Eng() - (_Engine::min) ();
-            } while (_Val > _Yx1);
-            _Res = (_Res << (_Wx0 + 1)) | (static_cast<result_type>(_Val) & _Mask);
-        }
         return _Res;
     }
 
@@ -1239,45 +1238,56 @@ public:
     }
 
 private:
-    void _Init() { // compute values for operator()
-        size_t _Mx = 0;
-        _Eres _Rx  = (_Engine::max) () - (_Engine::min) () + 1;
+    struct _Computed_values {
+        constexpr _Computed_values() { // compute values for operator()
+            size_t _Mx          = 0;
+            constexpr _Eres _Rx = (_Engine::max) () - (_Engine::min) () + 1;
 
-        _Eres _Tmp = _Rx;
-        if (_Tmp == 0) { // all bits used, make _Rx finite
-            _Mx = 1;
-            --_Tmp;
-        }
-        for (; 1 < _Tmp; _Tmp >>= 1) {
-            ++_Mx; // compute _Mx = floor(log2(_Rx))
-        }
-
-        for (size_t _Nfix = 0;; ++_Nfix) { // compute consistent set of parameters
-            _Nx  = (_Wx + _Mx - 1) / _Mx + _Nfix; // trial _Nx
-            _Wx0 = _Wx / _Nx;
-            _Nx0 = _Nx - _Wx % _Nx;
-            if (_Wx0 < sizeof(_Eres) * CHAR_BIT) {
-                _Yx0 = (_Rx >> _Wx0) << _Wx0;
-                _Yx1 = (((_Rx >> _Wx0) >> 1) << _Wx0) << 1;
-            } else {
-                _Yx0 = 0;
-                _Yx1 = 0;
+            _Eres _Tmp = _Rx;
+            if (_Tmp == 0) { // all bits used, make _Mx finite
+                _Mx = 1;
+                --_Tmp;
+            }
+            for (; 1 < _Tmp; _Tmp >>= 1) {
+                ++_Mx; // compute _Mx = floor(log2(_Rx))
             }
 
-            if (_Nfix == 1 || _Rx - _Yx0 <= _Yx0 / _Nx) {
-                break; // also works if _Rx == 0 (_Mx == all bits)
+            for (size_t _Nfix = 0;; ++_Nfix) { // compute consistent set of parameters
+                _Nx  = (_Wx + _Mx - 1) / _Mx + _Nfix; // trial _Nx
+                _Wx0 = _Wx / _Nx;
+                _Nx0 = _Nx - _Wx % _Nx;
+                if (_Wx0 < sizeof(_Eres) * CHAR_BIT) {
+                    _Yx0 = (_Rx >> _Wx0) << _Wx0;
+                    _Yx1 = (((_Rx >> _Wx0) >> 1) << _Wx0) << 1;
+                } else {
+                    _Yx0 = 0;
+                    _Yx1 = 0;
+                }
+
+                if (_Nfix == 1 || _Rx - _Yx0 <= _Yx0 / _Nx) {
+                    break; // also works if _Rx == 0 (_Mx == all bits)
+                }
             }
+            --_Yx0;
+            --_Yx1;
         }
-        --_Yx0;
-        --_Yx1;
-    }
+
+        size_t _Nx0{}; // number of smaller packing words
+        size_t _Nx{}; // total number of packing words
+        size_t _Wx0{}; // bits per smaller packing word
+        _Eres _Yx0{}; // max value for smaller packing word
+        _Eres _Yx1{}; // max value for larger packing word
+    };
+
+    static constexpr _Computed_values _Computed{};
 
     _Engine _Eng; // the stored engine
-    size_t _Nx0; // number of smaller packing words
-    size_t _Nx; // total number of packing words
-    size_t _Wx0; // bits per smaller packing word
-    _Eres _Yx0; // max value for smaller packing word
-    _Eres _Yx1; // max value for larger packing word
+
+    size_t _Unused_Nx0 = _Computed._Nx0; // TRANSITION, ABI: unused
+    size_t _Unused_Nx  = _Computed._Nx; // TRANSITION, ABI: unused
+    size_t _Unused_Wx0 = _Computed._Wx0; // TRANSITION, ABI: unused
+    _Eres _Unused_Yx0  = _Computed._Yx0; // TRANSITION, ABI: unused
+    _Eres _Unused_Yx1  = _Computed._Yx1; // TRANSITION, ABI: unused
 };
 
 _EXPORT_STD template <class _Engine, size_t _Kx>
@@ -1641,7 +1651,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -1802,7 +1812,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const geometric_distribution& _Left, const geometric_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -1970,7 +1980,7 @@ public:
 
     _NODISCARD friend bool operator==(const poisson_distribution& _Left, const poisson_distribution& _Right) noexcept
     /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -2142,7 +2152,7 @@ public:
 
     _NODISCARD friend bool operator==(const binomial_distribution& _Left, const binomial_distribution& _Right) noexcept
     /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -2463,7 +2473,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const exponential_distribution& _Left, const exponential_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -2604,7 +2614,7 @@ public:
 
     _NODISCARD friend bool operator==(const normal_distribution& _Left, const normal_distribution& _Right) noexcept
     /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -2791,7 +2801,7 @@ public:
 
     _NODISCARD friend bool operator==(const gamma_distribution& _Left, const gamma_distribution& _Right) noexcept
     /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -2980,7 +2990,7 @@ public:
 
     _NODISCARD friend bool operator==(const weibull_distribution& _Left, const weibull_distribution& _Right) noexcept
     /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -3114,7 +3124,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const extreme_value_distribution& _Left, const extreme_value_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -3248,7 +3258,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const lognormal_distribution& _Left, const lognormal_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -3372,7 +3382,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const chi_squared_distribution& _Left, const chi_squared_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -3502,7 +3512,7 @@ public:
 
     _NODISCARD friend bool operator==(const cauchy_distribution& _Left, const cauchy_distribution& _Right) noexcept
     /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -3696,7 +3706,7 @@ public:
 
     _NODISCARD friend bool operator==(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) noexcept
     /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -3831,7 +3841,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const student_t_distribution& _Left, const student_t_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -3977,7 +3987,7 @@ public:
 
     _NODISCARD friend bool operator==(const negative_binomial_distribution& _Left,
         const negative_binomial_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -4190,7 +4200,7 @@ public:
     }
 
     _NODISCARD friend bool operator==(const discrete_distribution& _Left, const discrete_distribution& _Right) {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -4353,7 +4363,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const piecewise_constant_distribution& _Left, const piecewise_constant_distribution& _Right) {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -4628,7 +4638,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const piecewise_linear_distribution& _Left, const piecewise_linear_distribution& _Right) {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
