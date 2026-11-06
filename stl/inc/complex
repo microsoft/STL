@@ -939,52 +939,51 @@ constexpr bool _Is_unqual_fp = _Is_any_of_v<_Ty, float, double, long double>;
 
 template <class _Ty, class _Valbase>
 class _Complex_base : public _Valbase {
-private:
-    static constexpr bool _Is_for_standard_complex = _Is_any_of_v<_Complex_base, _Complex_base<float, _Fcomplex_value>,
-        _Complex_base<double, _Dcomplex_value>, _Complex_base<long double, _Lcomplex_value>>;
-
 public:
+    static_assert(_Is_any_of_v<_Complex_base, _Complex_base<float, _Fcomplex_value>,
+                      _Complex_base<double, _Dcomplex_value>, _Complex_base<long double, _Lcomplex_value>>,
+        "_Complex_base is an STL-internal type.");
+
     using _Myctraits = _Ctraits<_Ty>;
     using value_type = _Ty;
 
-    constexpr _Complex_base(const _Ty& _Realval, const _Ty& _Imagval) noexcept(_Is_for_standard_complex)
-        : _Valbase{{_Realval, _Imagval}} {}
+    constexpr _Complex_base(const _Ty& _Realval, const _Ty& _Imagval) noexcept : _Valbase{{_Realval, _Imagval}} {}
 
-    _CONSTEXPR20 void real(const _Ty& _Right) noexcept(_Is_for_standard_complex) /* strengthened */ {
+    _CONSTEXPR20 void real(const _Ty& _Right) noexcept /* strengthened */ {
         // set real component
         this->_Val[_RE] = _Right;
     }
 
-    _CONSTEXPR20 void imag(const _Ty& _Right) noexcept(_Is_for_standard_complex) /* strengthened */ {
+    _CONSTEXPR20 void imag(const _Ty& _Right) noexcept /* strengthened */ {
         // set imaginary component
         this->_Val[_IM] = _Right;
     }
 
-    _NODISCARD constexpr _Ty real() const noexcept(_Is_for_standard_complex) /* strengthened */ {
+    _NODISCARD constexpr _Ty real() const noexcept /* strengthened */ {
         // return real component
         return this->_Val[_RE];
     }
 
-    _NODISCARD constexpr _Ty imag() const noexcept(_Is_for_standard_complex) /* strengthened */ {
+    _NODISCARD constexpr _Ty imag() const noexcept /* strengthened */ {
         // return imaginary component
         return this->_Val[_IM];
     }
 
 protected:
     template <class _Other>
-    _CONSTEXPR20 void _Add(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Add(const complex<_Other>& _Right) noexcept(_Is_unqual_fp<_Other>) {
         this->_Val[_RE] = this->_Val[_RE] + static_cast<_Ty>(_Right.real());
         this->_Val[_IM] = this->_Val[_IM] + static_cast<_Ty>(_Right.imag());
     }
 
     template <class _Other>
-    _CONSTEXPR20 void _Sub(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Sub(const complex<_Other>& _Right) noexcept(_Is_unqual_fp<_Other>) {
         this->_Val[_RE] = this->_Val[_RE] - static_cast<_Ty>(_Right.real());
         this->_Val[_IM] = this->_Val[_IM] - static_cast<_Ty>(_Right.imag());
     }
 
     template <class _Other>
-    _CONSTEXPR20 void _Mul(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Mul(const complex<_Other>& _Right) noexcept(_Is_unqual_fp<_Other>) {
         _Ty _Rightreal = static_cast<_Ty>(_Right.real());
         _Ty _Rightimag = static_cast<_Ty>(_Right.imag());
 
@@ -994,7 +993,7 @@ protected:
     }
 
     template <class _Other>
-    _CONSTEXPR20 void _Div(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Div(const complex<_Other>& _Right) noexcept(_Is_unqual_fp<_Other>) {
         using _Myctraits = _Ctraits<_Ty>;
 
         _Ty _Rightreal = static_cast<_Ty>(_Right.real());
