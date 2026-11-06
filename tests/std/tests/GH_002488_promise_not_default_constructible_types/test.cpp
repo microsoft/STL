@@ -139,7 +139,7 @@ void run_tests() {
             return std::thread([&, n] {
                 try {
                     p.set_value(T(n));
-                } catch (std::future_error) {
+                } catch (const std::future_error&) {
                     ++failures;
                     return;
                 }
