@@ -164,6 +164,15 @@ std/utilities/memory/specialized.algorithms/uninitialized.construct.default/pstl
 std/utilities/memory/specialized.algorithms/uninitialized.construct.value/pstl.uninitialized_value_construct_n.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.fill.n/pstl.uninitialized_fill_n.pass.cpp FAIL
 
+# LLVM-239851: [libc++][test] `std::complex` tests should avoid unspecified behavior with integral types
+std/numerics/complex.number/cmplx.over/imag.pass.cpp FAIL
+std/numerics/complex.number/cmplx.over/real.pass.cpp FAIL
+std/numerics/complex.number/complex.member.ops/divide_equal_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.member.ops/minus_equal_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.member.ops/plus_equal_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.member.ops/times_equal_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.members/real_imag.pass.cpp FAIL
+
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
