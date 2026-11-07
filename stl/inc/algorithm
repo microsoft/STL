@@ -967,7 +967,14 @@ namespace ranges {
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         _NODISCARD static constexpr range_difference_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) {
-            return _Count_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _STD _Pass_fn(_Proj));
+            auto _Ufirst = _Ubegin(_Range);
+            if constexpr (sized_range<_Rng> && random_access_iterator<decltype(_Ufirst)>
+                          && !sized_sentinel_for<decltype(_Uend(_Range)), decltype(_Ufirst)>) {
+                const auto _Ulast = _Ufirst + _RANGES distance(_Range);
+                return _Count_unchecked(_Ufirst, _Ulast, _Val, _STD _Pass_fn(_Proj));
+            } else {
+                return _Count_unchecked(_STD move(_Ufirst), _Uend(_Range), _Val, _STD _Pass_fn(_Proj));
+            }
         }
 
     private:
