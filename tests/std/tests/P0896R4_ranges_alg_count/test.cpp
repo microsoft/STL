@@ -92,7 +92,6 @@ constexpr bool test_sized_range_unsized_sentinel() {
 }
 
 void test_sized_range_unsized_sentinel_vectorized() {
-
     vector<int> input(200);
     for (size_t i = 0; i != input.size(); ++i) {
         input[i] = static_cast<int>(i % 3 == 0);
@@ -113,5 +112,4 @@ int main() {
     static_assert(test_sized_range_unsized_sentinel());
     assert(test_sized_range_unsized_sentinel());
     test_sized_range_unsized_sentinel_vectorized();
-
 }
