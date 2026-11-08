@@ -999,7 +999,7 @@ namespace {
     return {false, _Last_error};
 }
 
-// TRANSITION, ABI: __std_fs_create_directory_template() is preserved for binary compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 [[nodiscard]] __std_fs_create_directory_result __stdcall __std_fs_create_directory_template(
     _In_z_ const wchar_t* const _Template_directory, _In_z_ const wchar_t* const _New_directory) noexcept {
     if (CreateDirectoryExW(_Template_directory, _New_directory, nullptr)) {
