@@ -2765,7 +2765,7 @@ namespace filesystem {
             const chrono::file_time<_Duration>& _File_time) noexcept /* strengthened */ {
             using namespace chrono;
             using _Common              = common_type_t<_Duration, seconds>;
-            constexpr auto _Adjustment = _CHRONO duration_cast<_Common>(duration{__std_fs_file_time_epoch_adjustment});
+            constexpr auto _Adjustment = _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
 
             return sys_time<_Common>{_File_time.time_since_epoch() - _Adjustment};
         }
@@ -2775,7 +2775,7 @@ namespace filesystem {
             const chrono::sys_time<_Duration>& _Sys_time) noexcept /* strengthened */ {
             using namespace chrono;
             using _Common              = common_type_t<_Duration, seconds>;
-            constexpr auto _Adjustment = _CHRONO duration_cast<_Common>(duration{__std_fs_file_time_epoch_adjustment});
+            constexpr auto _Adjustment = _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
 
             return file_time<_Common>{_Sys_time.time_since_epoch() + _Adjustment};
         }
