@@ -210,7 +210,7 @@ unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long lo
 
 // TRANSITION, ABI: preserved for binary compatibility
 unsigned long __stdcall __std_atomic_set_api_level(unsigned long) noexcept {
-    return 3;
+    return 3; // previously, this was an enumerator indicating the availability of WaitOnAddress
 }
 
 #pragma warning(push)
