@@ -21,19 +21,6 @@
 static_assert(__std_code_page::_Utf8 == __std_code_page{CP_UTF8});
 
 namespace {
-    HANDLE __stdcall __vcp_CreateFile(const wchar_t* const _File_name, const unsigned long _Desired_access,
-        const unsigned long _Share, SECURITY_ATTRIBUTES* const _Security_attributes,
-        const unsigned long _Creation_disposition, const unsigned long _Flags_and_attributes,
-        const HANDLE _Template_file) noexcept {
-        CREATEFILE2_EXTENDED_PARAMETERS _Create_file_parameters{};
-        _Create_file_parameters.dwSize               = sizeof(_Create_file_parameters);
-        _Create_file_parameters.dwFileAttributes     = _Flags_and_attributes & 0x0000FFFFU;
-        _Create_file_parameters.dwFileFlags          = _Flags_and_attributes & 0xFFFF0000U;
-        _Create_file_parameters.lpSecurityAttributes = _Security_attributes;
-        _Create_file_parameters.hTemplateFile        = _Template_file;
-        return CreateFile2(_File_name, _Desired_access, _Share, _Creation_disposition, &_Create_file_parameters);
-    }
-
     [[nodiscard]] __std_win_error __stdcall _Translate_CreateFile_last_error(const HANDLE _Handle) {
         if (_Handle != INVALID_HANDLE_VALUE) {
             return __std_win_error::_Success;
@@ -174,9 +161,13 @@ extern "C" {
 [[nodiscard]] __std_win_error __stdcall __std_fs_open_handle(_Out_ __std_fs_file_handle* const _Handle,
     _In_z_ const wchar_t* const _File_name, _In_ const __std_access_rights _Desired_access,
     _In_ const __std_fs_file_flags _Flags) noexcept { // calls CreateFile2
-    const HANDLE _Result = __vcp_CreateFile(_File_name, static_cast<unsigned long>(_Desired_access),
-        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
-        static_cast<unsigned long>(_Flags), nullptr);
+    CREATEFILE2_EXTENDED_PARAMETERS _Create_file_parameters{};
+    _Create_file_parameters.dwSize           = sizeof(_Create_file_parameters);
+    _Create_file_parameters.dwFileAttributes = static_cast<unsigned long>(_Flags) & 0x0000FFFFU;
+    _Create_file_parameters.dwFileFlags      = static_cast<unsigned long>(_Flags) & 0xFFFF0000U;
+
+    const HANDLE _Result = CreateFile2(_File_name, static_cast<unsigned long>(_Desired_access),
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, OPEN_EXISTING, &_Create_file_parameters);
     *_Handle             = static_cast<__std_fs_file_handle>(reinterpret_cast<intptr_t>(_Result));
     return _Translate_CreateFile_last_error(_Result);
 }
@@ -340,15 +331,18 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
                 _Share_mode |= FILE_SHARE_WRITE;
             }
 
+            CREATEFILE2_EXTENDED_PARAMETERS _Create_file_parameters{};
+            _Create_file_parameters.dwSize = sizeof(_Create_file_parameters);
+
             const _STD _Fs_file _Source_handle(
-                __vcp_CreateFile(_Source, FILE_READ_ATTRIBUTES, _Share_mode, nullptr, OPEN_EXISTING, 0, nullptr));
+                CreateFile2(_Source, FILE_READ_ATTRIBUTES, _Share_mode, OPEN_EXISTING, &_Create_file_parameters));
             __std_win_error _Last_error = _Translate_CreateFile_last_error(_Source_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 return {false, _Last_error};
             }
 
             const _STD _Fs_file _Target_handle(
-                __vcp_CreateFile(_Target, FILE_READ_ATTRIBUTES, _Share_mode, nullptr, OPEN_EXISTING, 0, nullptr));
+                CreateFile2(_Target, FILE_READ_ATTRIBUTES, _Share_mode, OPEN_EXISTING, &_Create_file_parameters));
             _Last_error = _Translate_CreateFile_last_error(_Target_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 return {false, _Last_error};
