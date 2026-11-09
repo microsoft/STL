@@ -331,18 +331,15 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
                 _Share_mode |= FILE_SHARE_WRITE;
             }
 
-            CREATEFILE2_EXTENDED_PARAMETERS _Create_file_parameters{};
-            _Create_file_parameters.dwSize = sizeof(_Create_file_parameters);
-
             const _STD _Fs_file _Source_handle(
-                CreateFile2(_Source, FILE_READ_ATTRIBUTES, _Share_mode, OPEN_EXISTING, &_Create_file_parameters));
+                CreateFile2(_Source, FILE_READ_ATTRIBUTES, _Share_mode, OPEN_EXISTING, nullptr));
             __std_win_error _Last_error = _Translate_CreateFile_last_error(_Source_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 return {false, _Last_error};
             }
 
             const _STD _Fs_file _Target_handle(
-                CreateFile2(_Target, FILE_READ_ATTRIBUTES, _Share_mode, OPEN_EXISTING, &_Create_file_parameters));
+                CreateFile2(_Target, FILE_READ_ATTRIBUTES, _Share_mode, OPEN_EXISTING, nullptr));
             _Last_error = _Translate_CreateFile_last_error(_Target_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 return {false, _Last_error};
