@@ -78,7 +78,7 @@ $PythonPath = [uri]::new($PythonUrl).Segments[-1] -ireplace '(python-\d+\.\d+\.\
 
 # https://developer.nvidia.com/cuda-toolkit
 if ($Provisioning_x64) {
-  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.4.3/local_installers/cuda_13.4.3_windows_x86_64.exe'
+  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.5.0/local_installers/cuda_13.5.0_windows_x86_64.exe'
 } else {
   $CudaUrl = 'CUDA supports ARM64, but is not yet installed here'
 }
