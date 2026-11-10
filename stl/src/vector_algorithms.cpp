@@ -6962,7 +6962,7 @@ namespace {
                     return _Last1;
                 }
 
-                const size_t _Sve_vl_bytes    = svcntb();
+                const size_t _Sve_vl_bytes    = _Get_sve_vl_bytes();
                 const void* _Stop1            = _First1;
                 const size_t _Haystack_length = _Byte_length(_First1, _Last1);
                 _Advance_bytes(_Stop1, _Haystack_length & ~(_Sve_vl_bytes - 1));
@@ -9766,7 +9766,7 @@ namespace {
             // Arm Architecture Reference Manual for A-profile architecture,
             // B1.4.2 "Configurable SVE vector lengths":
             // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
-            const size_t _Sve_vl_bytes  = svcntb();
+            const size_t _Sve_vl_bytes  = _Get_sve_vl_bytes();
             const size_t _Size_bytes    = _Byte_length(_First, _Last);
             const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl_bytes - 1};
 
@@ -12112,7 +12112,7 @@ namespace {
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) void _Impl_sve_1(char* const _Dest, const void* _Src, const size_t _Size_bits,
             const char _Elem0, const char _Elem1) noexcept {
-            const size_t _Step_size_bits = svcntb();
+            const size_t _Step_size_bits = _Get_sve_vl_bytes();
             const size_t _Step_bytes     = _Step_size_bits / 8;
             size_t _Remaining_bits       = _Size_bits;
             if (_Size_bits >= _Step_size_bits) {
@@ -12139,7 +12139,7 @@ namespace {
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) void _Impl_sve_2(wchar_t* const _Dest, const void* _Src, const size_t _Size_bits,
             const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
-            const size_t _Step_size_bits = svcntb();
+            const size_t _Step_size_bits = _Get_sve_vl_bytes();
             const size_t _Step_bytes     = _Step_size_bits / 8;
             size_t _Remaining_bits       = _Size_bits;
             if (_Size_bits >= _Step_size_bits) {
@@ -12534,7 +12534,7 @@ namespace {
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_1(void* const _Dest, const char* const _Src, const size_t _Size_bytes,
             const size_t _Size_convert, const size_t _Size_chars, const char _Elem0, const char _Elem1) noexcept {
-            const size_t _Step_in    = svcntb();
+            const size_t _Step_in    = _Get_sve_vl_bytes();
             const size_t _Step_out   = _Step_in / 8;
             const char* _Src_end     = _Src + _Size_convert;
             uint8_t* _Dest_bytes     = static_cast<uint8_t*>(_Dest);
@@ -12568,7 +12568,7 @@ namespace {
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_2(void* const _Dest, const wchar_t* const _Src, const size_t _Size_bytes,
             const size_t _Size_convert, const size_t _Size_chars, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
-            const size_t _Step_in    = svcntb();
+            const size_t _Step_in    = _Get_sve_vl_bytes();
             const size_t _Step_out   = _Step_in / 8;
             const size_t _Half_step  = _Step_in / 2;
             const wchar_t* _Src_end  = _Src + _Size_convert;
