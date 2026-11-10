@@ -10256,7 +10256,7 @@ namespace {
             using _Vec_t = svuint64_t;
 
             static size_t _Step() noexcept {
-                return svcntd();
+                return _Get_sve_vl_bytes() / 8; // i.e. svcntd()
             }
 
             static svbool_t _Whilelt(const size_t _Op1, const size_t _Op2) noexcept {
@@ -10302,7 +10302,7 @@ namespace {
             using _Vec_t = svuint32_t;
 
             static size_t _Step() noexcept {
-                return svcntw();
+                return _Get_sve_vl_bytes() / 4; // i.e. svcntw()
             }
 
             static svbool_t _Whilelt(const size_t _Op1, const size_t _Op2) noexcept {
