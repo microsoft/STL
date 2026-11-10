@@ -67,10 +67,8 @@ namespace {
         return (__processor_features_0_63 & _Mask_sve2) != 0;
     }
 
-    // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
-    // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
-    __declspec(noinline) size_t _Get_sve_vl_bytes() noexcept {
-        return svcntb();
+    size_t _Get_sve_vl_bytes() noexcept {
+        return __arm64_sve_vl; // records the result of svcntb()
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
