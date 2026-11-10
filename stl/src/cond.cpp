@@ -41,13 +41,13 @@ _CRTIMP2_PURE void __cdecl _Cnd_destroy(const _Cnd_t cond) noexcept { // clean u
     }
 }
 
-// TRANSITION, ABI: should be in an unnamed namespace; dllexported for binary compatibility
+// TRANSITION, ABI: should have internal linkage; dllexported for binary compatibility
 _CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t mtx) noexcept { // set owner to nobody
     mtx->_Thread_id = -1;
     --mtx->_Count;
 }
 
-// TRANSITION, ABI: should be in an unnamed namespace; dllexported for binary compatibility
+// TRANSITION, ABI: should have internal linkage; dllexported for binary compatibility
 _CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) noexcept { // set owner to current thread
     mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
     ++mtx->_Count;
