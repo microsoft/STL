@@ -9766,9 +9766,9 @@ namespace {
             // Arm Architecture Reference Manual for A-profile architecture,
             // B1.4.2 "Configurable SVE vector lengths":
             // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
-            const size_t _Sve_vl        = svcntb();
+            const size_t _Sve_vl_bytes  = svcntb();
             const size_t _Size_bytes    = _Byte_length(_First, _Last);
-            const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl - 1};
+            const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl_bytes - 1};
 
             const void* _Stop_at = _First;
             _Advance_bytes(_Stop_at, _Full_vl_bytes);
@@ -9781,10 +9781,10 @@ namespace {
                 const auto _Data = _Traits::_Load(_True, _First);
                 const auto _Mask = _Traits::_Cmp(_True, _Data, _Comparand);
                 _Traits::_Store(_Mask, _First, _Replacement);
-                _Advance_bytes(_First, _Sve_vl);
+                _Advance_bytes(_First, _Sve_vl_bytes);
             }
 
-            if (const size_t _Tail_length = _Size_bytes & size_t{_Sve_vl - 1}; _Tail_length != 0) {
+            if (const size_t _Tail_length = _Size_bytes & size_t{_Sve_vl_bytes - 1}; _Tail_length != 0) {
                 const auto _Tail_mask = svwhilelt_b8(size_t{0}, _Tail_length);
                 const auto _Data      = _Traits::_Load(_Tail_mask, _First);
                 const auto _Mask      = _Traits::_Cmp(_Tail_mask, _Data, _Comparand);
