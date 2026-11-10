@@ -67,6 +67,10 @@ namespace {
         return (__processor_features_0_63 & _Mask_sve2) != 0;
     }
 
+    // If _Use_FEAT_SVE() is false, _Get_sve_vl_bytes() is zero.
+    // Otherwise, the SVE vector length is always a power of two.
+    // Arm Architecture Reference Manual for A-profile architecture, B1.4.2 "Configurable SVE vector lengths":
+    // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
     size_t _Get_sve_vl_bytes() noexcept {
         return __arm64_sve_vl; // records the result of svcntb()
     }
@@ -9761,9 +9765,6 @@ namespace {
         template <class _Traits, class _Ty>
         __declspec(noalias) __declspec(noinline) void __stdcall _Replace_sve(
             void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
-            // Arm Architecture Reference Manual for A-profile architecture,
-            // B1.4.2 "Configurable SVE vector lengths":
-            // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
             const size_t _Sve_vl_bytes  = _Get_sve_vl_bytes();
             const size_t _Size_bytes    = _Byte_length(_First, _Last);
             const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl_bytes - 1};
