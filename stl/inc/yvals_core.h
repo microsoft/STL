@@ -554,14 +554,6 @@
 #error _STL_WARNING_LEVEL cannot be greater than 4.
 #endif // _STL_WARNING_LEVEL > 4
 
-#ifndef __has_cpp_attribute
-#define _FALLTHROUGH
-#elif __has_cpp_attribute(fallthrough) >= 201603L // TRANSITION, VSO-2696854
-#define _FALLTHROUGH [[fallthrough]]
-#else
-#define _FALLTHROUGH
-#endif
-
 // vcruntime.h defines _NODISCARD to [[nodiscard]]
 
 #define _NODISCARD_REMOVE_ALG                                                                                 \

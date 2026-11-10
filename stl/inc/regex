@@ -4959,7 +4959,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                             -_Sav._Loop_length);
                     }
                 }
-                _FALLTHROUGH;
+                [[fallthrough]];
 
             case _Rx_unwind_ops::_Loop_simple_greedy_lastrep:
                 {
@@ -4990,7 +4990,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     _Tgt_state._Cur = _Frame._Pos;
                     _Failed         = false;
                 }
-                _FALLTHROUGH;
+                [[fallthrough]];
 
             case _Rx_unwind_ops::_Loop_restore_vals:
                 { // restore loop vals after processing of a rep is completed
@@ -5030,7 +5030,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                 { // restore end of capturing group that was previously unmatched
                     _Tgt_state._Grp_valid._Clear(_Frame._Capture_idx);
                 }
-                _FALLTHROUGH;
+                [[fallthrough]];
 
             case _Rx_unwind_ops::_Capture_restore_matched_end:
                 { // restore end of capturing group that was already matched
@@ -6186,7 +6186,7 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                 _Outer_rep->_Simple_loop = 0;
                 _Outer_rep->_Flags &= ~_Fl_rep_branchless;
             }
-            _FALLTHROUGH;
+            [[fallthrough]];
 
         case _N_neg_assert:
             // visit the assertion body
