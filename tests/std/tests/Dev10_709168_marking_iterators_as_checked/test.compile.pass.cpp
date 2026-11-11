@@ -4,21 +4,30 @@
 #include <array>
 #include <cstddef>
 #include <deque>
-#include <filesystem>
-#include <flat_map>
-#include <flat_set>
 #include <forward_list>
 #include <iterator>
 #include <list>
 #include <map>
 #include <set>
-#include <span>
 #include <string>
-#include <string_view>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#if _HAS_CXX17
+#include <filesystem>
+#include <string_view>
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20
+#include <span>
+#endif // _HAS_CXX20
+
+#if _HAS_CXX23
+#include <flat_map>
+#include <flat_set>
+#endif // _HAS_CXX23
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
