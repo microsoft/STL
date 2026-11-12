@@ -3677,8 +3677,8 @@ struct _Scan_decoupled_lookback {
             if constexpr (_Scan_reuse_output<_Ty, _FwdIt>) {
                 *_First = _Reduce_op(_Preceding, _STD move(*_First));
             } else {
-                ++_First2;
                 *_First = _Reduce_op(_Preceding, _STD move(*_First2));
+                ++_First2;
             }
         }
     }
@@ -3695,6 +3695,11 @@ struct _Scan_decoupled_lookback {
             if constexpr (_Scan_reuse_output<_Ty, _FwdIt>) {
                 *_First = _Reduce_op(_Preceding, _STD move(*_First));
             } else {
+                if (_STD _Next_iter(_First) == _Last) {
+                    *_First = _Sum._Ref();
+                    break;
+                }
+
                 *_First = _Reduce_op(_Preceding, _STD move(*_First2));
                 ++_First2;
             }
