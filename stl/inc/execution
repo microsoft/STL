@@ -535,7 +535,7 @@ struct alignas(_Ty) alignas(size_t) alignas(_Atomic_counter_t) _Circular_buffer 
 
         const size_t _Result_bytes = _Count * sizeof(_Ty) + sizeof(_Circular_buffer);
         static_assert(alignof(_Ty) <= alignof(max_align_t), "incapable of supporting the requested alignment");
-        const auto _Result  = static_cast<_Circular_buffer*>(::operator new(_Result_bytes));
+        const auto _Result  = static_cast<_Circular_buffer*>(_Parallelism_allocate_traits::_Allocate(_Result_bytes));
         _Result->_Log_size  = _New_log_size;
         _Result->_Ref_count = 1;
         return _Result;
