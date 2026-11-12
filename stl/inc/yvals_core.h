@@ -554,14 +554,6 @@
 #error _STL_WARNING_LEVEL cannot be greater than 4.
 #endif // _STL_WARNING_LEVEL > 4
 
-#ifndef __has_cpp_attribute
-#define _FALLTHROUGH
-#elif __has_cpp_attribute(fallthrough) >= 201603L // TRANSITION, VSO-2696854
-#define _FALLTHROUGH [[fallthrough]]
-#else
-#define _FALLTHROUGH
-#endif
-
 // vcruntime.h defines _NODISCARD to [[nodiscard]]
 
 #define _NODISCARD_REMOVE_ALG                                                                                 \
@@ -903,8 +895,8 @@
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 4)
-_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.4 or newer.");
+#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 5)
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.5 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
