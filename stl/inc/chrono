@@ -2012,22 +2012,15 @@ namespace chrono {
         leap_second(const leap_second&)            = default;
         leap_second& operator=(const leap_second&) = default;
 
-        constexpr leap_second(
-            const sys_seconds& _Date_, const bool _Is_positive_, const seconds& _Prev_elapsed) noexcept
-            : _Date{_Date_}, _Is_positive{_Is_positive_} {
-            _Elapsed_offset = _Prev_elapsed + value();
-        }
+        constexpr leap_second(const sys_seconds& _Date_, const seconds& _Prev_elapsed) noexcept
+            : _Date{_Date_}, _Elapsed_offset{_Prev_elapsed + seconds{1}} {}
 
         _NODISCARD constexpr sys_seconds date() const noexcept {
             return _Date;
         }
 
         _NODISCARD constexpr seconds value() const noexcept {
-            return _Is_positive ? seconds{1} : seconds{-1};
-        }
-
-        _NODISCARD constexpr bool _Positive() const noexcept {
-            return _Is_positive;
+            return seconds{1};
         }
 
         _NODISCARD constexpr seconds _Elapsed() const noexcept {
@@ -2100,7 +2093,7 @@ namespace chrono {
 
     private:
         sys_seconds _Date;
-        bool _Is_positive;
+        bool _Is_positive{true}; // TRANSITION, ABI: Always true
         seconds _Elapsed_offset;
     };
 
@@ -2165,7 +2158,7 @@ namespace chrono {
         vector<time_zone> zones;
         vector<time_zone_link> links;
         vector<leap_second> leap_seconds;
-        bool _All_ls_positive;
+        bool _All_ls_positive{true}; // TRANSITION, ABI: Always true
 
         _NODISCARD const time_zone* locate_zone(string_view _Tz_name) const {
             auto _Tz = _CHRONO _Locate_zone_impl(zones, _Tz_name);
@@ -2207,86 +2200,6 @@ namespace chrono {
         return {_Info->_Version, _STD move(_Time_zones), _STD move(_Time_zone_links)};
     }
 
-    _NODISCARD inline pair<vector<leap_second>, bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
-        // Returns empty vector if no new leap seconds are found.
-        static constexpr leap_second _Known_leap_seconds[]{
-            {sys_seconds{seconds{78796800}}, true, seconds{0}},
-            {sys_seconds{seconds{94694400}}, true, seconds{1}},
-            {sys_seconds{seconds{126230400}}, true, seconds{2}},
-            {sys_seconds{seconds{157766400}}, true, seconds{3}},
-            {sys_seconds{seconds{189302400}}, true, seconds{4}},
-            {sys_seconds{seconds{220924800}}, true, seconds{5}},
-            {sys_seconds{seconds{252460800}}, true, seconds{6}},
-            {sys_seconds{seconds{283996800}}, true, seconds{7}},
-            {sys_seconds{seconds{315532800}}, true, seconds{8}},
-            {sys_seconds{seconds{362793600}}, true, seconds{9}},
-            {sys_seconds{seconds{394329600}}, true, seconds{10}},
-            {sys_seconds{seconds{425865600}}, true, seconds{11}},
-            {sys_seconds{seconds{489024000}}, true, seconds{12}},
-            {sys_seconds{seconds{567993600}}, true, seconds{13}},
-            {sys_seconds{seconds{631152000}}, true, seconds{14}},
-            {sys_seconds{seconds{662688000}}, true, seconds{15}},
-            {sys_seconds{seconds{709948800}}, true, seconds{16}},
-            {sys_seconds{seconds{741484800}}, true, seconds{17}},
-            {sys_seconds{seconds{773020800}}, true, seconds{18}},
-            {sys_seconds{seconds{820454400}}, true, seconds{19}},
-            {sys_seconds{seconds{867715200}}, true, seconds{20}},
-            {sys_seconds{seconds{915148800}}, true, seconds{21}},
-            {sys_seconds{seconds{1136073600}}, true, seconds{22}},
-            {sys_seconds{seconds{1230768000}}, true, seconds{23}},
-            {sys_seconds{seconds{1341100800}}, true, seconds{24}},
-            {sys_seconds{seconds{1435708800}}, true, seconds{25}},
-            {sys_seconds{seconds{1483228800}}, true, seconds{26}},
-        };
-
-        // __std_tzdb_get_leap_seconds gets leap second (LS) data from the registry, but only if it contains more
-        // LSs than we already know about. The registry only contains LSs after 2018, so we need to tell it how many of
-        // *those* we already know about. The *total* number of LSs known at this point is a combination of what the
-        // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
-        constexpr size_t _Pre_2018_count = 27;
-        const size_t _Known_post_2018_ls_size =
-            (_STD max) (_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
-
-        size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
-        unique_ptr<__std_tzdb_leap_info[], _Tzdb_deleter<__std_tzdb_leap_info[]>> _Reg_ls_data{
-            ::__std_tzdb_get_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size)};
-
-        if (_Reg_post_2018_ls_size > _Known_post_2018_ls_size && !_Reg_ls_data) {
-            _STD _Xbad_alloc(); // registry has new data, but failed to allocate storage
-        } else if (_Reg_post_2018_ls_size == 0 && _Reg_ls_data) {
-            _STD _XGetLastError(); // allocated storage for registry data, but failed to read
-        }
-
-        const size_t _New_size = _Pre_2018_count + _Reg_post_2018_ls_size; // total size with registry data
-        vector<leap_second> _Leap_sec_info;
-        bool _All_ls_positive = true;
-
-        if (_New_size > _Current_size) {
-            _Leap_sec_info.reserve(_New_size);
-            _Leap_sec_info.assign(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
-
-            for (size_t _Idx = 0; _Idx < _Reg_post_2018_ls_size; ++_Idx) {
-                // Leap seconds occur at _Ls._Hour:59:59. We store the next second after, so we need to add an entire
-                // hour.
-                const auto& _Ls = _Reg_ls_data[_Idx];
-                const auto _Date =
-                    static_cast<sys_days>(year_month_day{year{_Ls._Year}, month{_Ls._Month}, day{_Ls._Day}})
-                    + hours{_Ls._Hour + 1};
-                _Leap_sec_info.emplace_back(_Date, !_Ls._Negative, _Leap_sec_info.back()._Elapsed());
-                _All_ls_positive = _All_ls_positive && !_Ls._Negative;
-            }
-        }
-
-        return {_STD move(_Leap_sec_info), _All_ls_positive};
-    }
-
-    _NODISCARD inline string _Tzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
-        string _Icu_version{_Version.substr(0, _Version.find_last_of('.'))};
-        _Icu_version += '.';
-        _Icu_version += _STD to_string(_Num_leap_seconds);
-        return _Icu_version;
-    }
-
     struct _Secret_tzdb_list_construct_tag {
         explicit _Secret_tzdb_list_construct_tag() = default;
     };
@@ -2302,11 +2215,41 @@ namespace chrono {
         tzdb_list& operator=(const tzdb_list&) = delete;
 
         explicit tzdb_list(_Secret_tzdb_list_construct_tag) {
+            static constexpr leap_second _Known_leap_seconds[]{
+                {sys_seconds{seconds{78796800}}, seconds{0}},
+                {sys_seconds{seconds{94694400}}, seconds{1}},
+                {sys_seconds{seconds{126230400}}, seconds{2}},
+                {sys_seconds{seconds{157766400}}, seconds{3}},
+                {sys_seconds{seconds{189302400}}, seconds{4}},
+                {sys_seconds{seconds{220924800}}, seconds{5}},
+                {sys_seconds{seconds{252460800}}, seconds{6}},
+                {sys_seconds{seconds{283996800}}, seconds{7}},
+                {sys_seconds{seconds{315532800}}, seconds{8}},
+                {sys_seconds{seconds{362793600}}, seconds{9}},
+                {sys_seconds{seconds{394329600}}, seconds{10}},
+                {sys_seconds{seconds{425865600}}, seconds{11}},
+                {sys_seconds{seconds{489024000}}, seconds{12}},
+                {sys_seconds{seconds{567993600}}, seconds{13}},
+                {sys_seconds{seconds{631152000}}, seconds{14}},
+                {sys_seconds{seconds{662688000}}, seconds{15}},
+                {sys_seconds{seconds{709948800}}, seconds{16}},
+                {sys_seconds{seconds{741484800}}, seconds{17}},
+                {sys_seconds{seconds{773020800}}, seconds{18}},
+                {sys_seconds{seconds{820454400}}, seconds{19}},
+                {sys_seconds{seconds{867715200}}, seconds{20}},
+                {sys_seconds{seconds{915148800}}, seconds{21}},
+                {sys_seconds{seconds{1136073600}}, seconds{22}},
+                {sys_seconds{seconds{1230768000}}, seconds{23}},
+                {sys_seconds{seconds{1341100800}}, seconds{24}},
+                {sys_seconds{seconds{1435708800}}, seconds{25}},
+                {sys_seconds{seconds{1483228800}}, seconds{26}},
+            };
+
             auto [_Icu_version, _Zones, _Links] = _CHRONO _Tzdb_generate_time_zones();
-            auto [_Leap_sec, _All_ls_positive]  = _CHRONO _Tzdb_generate_leap_seconds(0);
-            auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
-            _Tzdb_list.emplace_front(
-                _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive);
+            vector<leap_second> _Leap_sec(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
+
+            static_assert(_STD size(_Known_leap_seconds) == 27);
+            _Tzdb_list.emplace_front(_Icu_version + ".27", _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec));
         }
 
         _NODISCARD const tzdb& front() const noexcept {
@@ -2316,6 +2259,7 @@ namespace chrono {
 
         const_iterator erase_after(const_iterator _Where) noexcept /* strengthened */ {
             _Unique_lock _Lk(_Tzdb_mutex);
+            _STL_REPORT_ERROR("tzdb_list::erase_after() precondition violation, see N5054 [time.zone.db.list]/5");
             return _Tzdb_list.erase_after(_Where);
         }
 
@@ -2335,38 +2279,6 @@ namespace chrono {
 
         _NODISCARD const_iterator cend() const noexcept {
             return _Tzdb_list.cend(); // no lock necessary for forward_list::cend()
-        }
-
-        template <class... _ArgsTy>
-        void _Emplace_front(_ArgsTy&&... _Args) {
-            _Unique_lock _Lk(_Tzdb_mutex);
-            _Tzdb_list.emplace_front(_STD forward<_ArgsTy>(_Args)...);
-        }
-
-        const tzdb& _Reload() {
-            _Unique_lock _Lk(_Tzdb_mutex);
-            auto [_Leap_sec, _All_ls_positive] =
-                _CHRONO _Tzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
-            if (!_Leap_sec.empty()) {
-                const auto& _Tzdb = _Tzdb_list.front();
-
-                vector<time_zone> _Zones;
-                _Zones.reserve(_Tzdb.zones.size());
-                for (const auto& _Tz : _Tzdb.zones) {
-                    _Zones.emplace_back(_Secret_time_zone_construct_tag{}, _Tz.name());
-                }
-
-                vector<time_zone_link> _Links;
-                _Links.reserve(_Tzdb.links.size());
-                for (const auto& _Link : _Tzdb.links) {
-                    _Links.emplace_back(_Secret_time_zone_link_construct_tag{}, _Link.name(), _Link.target());
-                }
-
-                auto _Version = _CHRONO _Tzdb_update_version(_Tzdb.version, _Leap_sec.size());
-                _Tzdb_list.emplace_front(
-                    _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive);
-            }
-            return _Tzdb_list.front();
         }
 
     private:
@@ -2452,22 +2364,11 @@ namespace chrono {
     }
 
     _EXPORT_STD inline const tzdb& reload_tzdb() {
-        _TRY_BEGIN
-        return _CHRONO get_tzdb_list()._Reload();
-        _CATCH(const runtime_error&)
-        _RERAISE;
-        _CATCH(const exception& _Except)
-#if _HAS_EXCEPTIONS
-        _STD _Xruntime_error(_Except.what());
-#endif // _HAS_EXCEPTIONS
-        _CATCH_END
+        return _CHRONO get_tzdb();
     }
 
     _EXPORT_STD _NODISCARD inline string remote_version() {
-        const auto& _Tzdb                = _CHRONO get_tzdb();
-        const auto& _Version             = _Tzdb.version;
-        const auto [_Leap_sec, _Ignored] = _CHRONO _Tzdb_generate_leap_seconds(_Tzdb.leap_seconds.size());
-        return _Leap_sec.empty() ? _Version : _CHRONO _Tzdb_update_version(_Version, _Leap_sec.size());
+        return _CHRONO get_tzdb().version;
     }
 
     // [time.zone.zonedtraits]
@@ -2672,51 +2573,35 @@ namespace chrono {
         const auto& _Ls_vector        = _Tzdb.leap_seconds;
 
         // Find first leap second after _Time.
-        vector<leap_second>::const_iterator _It;
-        if (_Tzdb._All_ls_positive) {
-            // Where "target_ls" is the next leap second at or after _Time, _It either points to:
-            //    (1) The 2nd leap second after _Time if _Time_floor is in the range [target_ls - _Elapsed() - 1,
-            //    target_ls), or
-            //    (2) The leap second just after _Time otherwise.
-            // Note that we can always use prev(_It) to determine whether _Time is *during* a leap second insertion,
-            // since that falls under case (2) above. However, when we fall under case (1), we need to execute an
-            // additional decrement to get the correct elapsed offset. For example, if leap seconds are inserted at
-            // seconds {100, 200, 300, 400}, we have:
-            //
-            //  UTC   sys   *_It
-            //   99    99    100
-            //  100     X    200
-            //  101   100    200
-            //  102   101    200
-            //  ...
-            //  199   198    200
-            //  200   199    300^
-            //  201     X    300
-            //  202   200    300
-            //  ...
-            //  299   297    300
-            //  300   298    400^
-            //  301   299    400^
-            //  302     X    400
-            //  303   300    400
-            //
-            //  ^_It points to 2nd leap second
+        // Where "target_ls" is the next leap second at or after _Time, _It either points to:
+        //    (1) The 2nd leap second after _Time if _Time_floor is in the range [target_ls - _Elapsed() - 1,
+        //    target_ls), or
+        //    (2) The leap second just after _Time otherwise.
+        // Note that we can always use prev(_It) to determine whether _Time is *during* a leap second insertion,
+        // since that falls under case (2) above. However, when we fall under case (1), we need to execute an
+        // additional decrement to get the correct elapsed offset. For example, if leap seconds are inserted at
+        // seconds {100, 200, 300, 400}, we have:
+        //
+        //  UTC   sys   *_It
+        //   99    99    100
+        //  100     X    200
+        //  101   100    200
+        //  102   101    200
+        //  ...
+        //  199   198    200
+        //  200   199    300^
+        //  201     X    300
+        //  202   200    300
+        //  ...
+        //  299   297    300
+        //  300   298    400^
+        //  301   299    400^
+        //  302     X    400
+        //  303   300    400
+        //
+        //  ^_It points to 2nd leap second
 
-            _It = _STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), sys_seconds{_Time_floor.time_since_epoch()});
-        } else {
-            seconds _Prev_elapsed{0};
-            for (_It = _Ls_vector.begin(); _It != _Ls_vector.end(); ++_It) {
-                // UTC time when leap second insertion begins. In all cases, _It->date() + _It->_Elapsed() is the *end*
-                // of the insertion. For a negative leap that's also the beginning, but for a positive one, insertion
-                // begins 1 second earlier.
-                const utc_seconds _This_ls_begin{
-                    _It->date().time_since_epoch() + (_It->_Positive() ? _Prev_elapsed : _It->_Elapsed())};
-                if (_This_ls_begin > _Time_floor) {
-                    break;
-                }
-                _Prev_elapsed = _It->_Elapsed();
-            }
-        }
+        auto _It = _STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), sys_seconds{_Time_floor.time_since_epoch()});
 
         if (_It == _Ls_vector.begin()) {
             return {false, seconds{0}};
@@ -2725,10 +2610,10 @@ namespace chrono {
             const auto& _Last_leap = *--_It;
             const utc_seconds _Utc_leap_second{_Last_leap.date().time_since_epoch() + _It->_Elapsed() - seconds{1}};
             const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
-            if (_Tzdb._All_ls_positive && _STD is_gt(_Leap_cmp)) { // Case (1)
+            if (_STD is_gt(_Leap_cmp)) { // Case (1)
                 --_It;
             }
-            return {_Last_leap._Positive() && _STD is_eq(_Leap_cmp), _It->_Elapsed()};
+            return {_STD is_eq(_Leap_cmp), _It->_Elapsed()};
         }
     }
 
@@ -2875,41 +2760,24 @@ namespace filesystem {
         }
 
 #if _HAS_CXX20
-        // Assumes that FILETIME counts leap seconds since 2018-06-01 (i.e., after the first 27 leap seconds), even
-        // though systems can opt out of this behavior.
-        static constexpr chrono::seconds _Skipped_filetime_leap_seconds{27};
-        static constexpr chrono::sys_days _Cutoff{
-            chrono::year_month_day{chrono::year{2018}, chrono::June, chrono::day{1}}};
-
         template <class _Duration>
-        _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
-            const chrono::file_time<_Duration>& _File_time) {
+        _NODISCARD static chrono::sys_time<common_type_t<_Duration, chrono::seconds>> to_sys(
+            const chrono::file_time<_Duration>& _File_time) noexcept /* strengthened */ {
             using namespace chrono;
-            using _CommonType = common_type_t<_Duration, seconds>;
-            const auto _Ticks = _File_time.time_since_epoch()
-                              - _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
+            using _Common              = common_type_t<_Duration, seconds>;
+            constexpr auto _Adjustment = _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
 
-            if (_Ticks < _Cutoff.time_since_epoch()) {
-                return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
-            } else {
-                return utc_time<_CommonType>{_Ticks + _Skipped_filetime_leap_seconds};
-            }
+            return sys_time<_Common>{_File_time.time_since_epoch() - _Adjustment};
         }
 
         template <class _Duration>
-        _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> from_utc(
-            const chrono::utc_time<_Duration>& _Utc_time) {
+        _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> from_sys(
+            const chrono::sys_time<_Duration>& _Sys_time) noexcept /* strengthened */ {
             using namespace chrono;
-            file_time<common_type_t<_Duration, seconds>> _File_time{
-                _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
+            using _Common              = common_type_t<_Duration, seconds>;
+            constexpr auto _Adjustment = _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
 
-            if (_Utc_time < utc_seconds{_Cutoff.time_since_epoch()} + _Skipped_filetime_leap_seconds) {
-                _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();
-            } else {
-                _File_time += _Utc_time.time_since_epoch() - _Skipped_filetime_leap_seconds;
-            }
-
-            return _File_time;
+            return file_time<_Common>{_Sys_time.time_since_epoch() + _Adjustment};
         }
 #endif // ^^^ _HAS_CXX20 ^^^
     };
@@ -3653,22 +3521,15 @@ namespace chrono {
         }
 
         enum class _Leap_second_rep : unsigned int {
-            _None, // system_clock, tai_clock, gps_clock; oblivious to leap seconds
-            _All, // utc_clock
-            _File_time // _None before 2018-06-01, _All afterwards.
+            _None, // system_clock, tai_clock, gps_clock, file_clock, local_t; oblivious to leap seconds
+            _All // utc_clock
         };
 
-        template <class _DurationType>
-        _NODISCARD bool _Make_time_point(_DurationType& _Dur, _Leap_second_rep _Leap) {
+        template <_Leap_second_rep _Leap, class _DurationType>
+        _NODISCARD bool _Make_time_point(_DurationType& _Dur) {
             const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields() && _Calculate_ymd()};
             if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
-            }
-
-            const _Leap_second_rep _Original_leap{_Leap};
-            if (_Leap == _Leap_second_rep::_File_time) {
-                _Leap =
-                    _Dur < file_clock::_Cutoff.time_since_epoch() ? _Leap_second_rep::_None : _Leap_second_rep::_All;
             }
 
             if (_Second > (_Leap == _Leap_second_rep::_All ? 60 : 59)) {
@@ -3676,18 +3537,17 @@ namespace chrono {
             }
 
             // A distinction has to be made here between clocks that always count 86,400 seconds/day (system_clock,
-            // tai_clock, and gps_clock) and ones that count leap seconds (utc_clock and, since 2018-06-01, file_clock).
+            // tai_clock, gps_clock, and file_clock) and ones that count leap seconds (utc_clock).
             // The correct tick count for the clocks that always count 86,400 seconds/day can be determined without
-            // knowing whether any leap seconds have occurred, and there aren't any invalid times due to negative leap
-            // second deletions.
+            // knowing whether any leap seconds have occurred.
 
-            if (_Leap == _Leap_second_rep::_All) {
+            if constexpr (_Leap == _Leap_second_rep::_All) {
                 if constexpr (!_Can_represent<_DurationType, seconds>()) {
                     // Error if _Dur can't represent the adjustment below.
                     return false;
                 } else {
-                    // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
-                    // leap second insertion or (b) _Seconds >= 59 and there *is* a leap second deletion.
+                    // It's possible that the parsed time doesn't exist because _Second == 60 and there *isn't* a
+                    // leap second insertion.
                     const auto& _Tzdb{_CHRONO get_tzdb()};
 
                     const bool _Possible_insertion{_Second == 60};
@@ -3695,27 +3555,16 @@ namespace chrono {
                         _CHRONO floor<seconds>(_Dur) - (_Possible_insertion ? seconds{1} : seconds{0})};
                     const auto& _Ls_vector{_Tzdb.leap_seconds};
                     const auto _It{_STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
-                    const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time + seconds{1}};
 
-                    if (_Match_leap) {
-                        if (!_It->_Positive()) { // negative leap second
-                            if (_Second >= 59) {
-                                return false;
-                            }
-                        }
-                    } else { // no leap second
-                        if (_Possible_insertion) {
+                    if (_Possible_insertion) {
+                        const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time + seconds{1}};
+                        if (!_Match_leap) { // no leap second
                             return false;
                         }
                     }
 
                     const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : _STD _Prev_iter(_It)->_Elapsed();
                     _Dur += _CHRONO duration_cast<_DurationType>(_Offset);
-
-                    if (_Original_leap == _Leap_second_rep::_File_time) {
-                        _Dur -= _CHRONO duration_cast<_DurationType>(
-                            filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
-                    }
                 }
             }
 
@@ -4582,7 +4431,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_All)) {
+        if (_Istr && _Time._Make_time_point<_Time_parse_fields::_Leap_second_rep::_All>(_Dur)) {
             _Tp = utc_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4597,7 +4446,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
+        if (_Istr && _Time._Make_time_point<_Time_parse_fields::_Leap_second_rep::_None>(_Dur)) {
             _Tp = sys_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4612,7 +4461,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
+        if (_Istr && _Time._Make_time_point<_Time_parse_fields::_Leap_second_rep::_None>(_Dur)) {
             _Tp = tai_time<_Duration>{_Dur + _CHRONO duration_cast<_Duration>(days{4383})};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4627,7 +4476,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
+        if (_Istr && _Time._Make_time_point<_Time_parse_fields::_Leap_second_rep::_None>(_Dur)) {
             _Tp = gps_time<_Duration>{_Dur - _CHRONO duration_cast<_Duration>(days{3657})};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4642,7 +4491,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_File_time)) {
+        if (_Istr && _Time._Make_time_point<_Time_parse_fields::_Leap_second_rep::_None>(_Dur)) {
             constexpr auto _File_clock_adj{_CHRONO duration_cast<_Duration>(
                 filesystem::_File_time_clock::duration{filesystem::__std_fs_file_time_epoch_adjustment})};
             _Tp = file_time<_Duration>{_Dur} + _File_clock_adj;
@@ -4661,7 +4510,7 @@ namespace chrono {
         // *_Offset is not subtracted from local_time, see N4950 [time.clock.local]/4.
         _Time._Utc_offset.reset();
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
+        if (_Istr && _Time._Make_time_point<_Time_parse_fields::_Leap_second_rep::_None>(_Dur)) {
             _Tp = local_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -6161,9 +6010,8 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
-        const auto _Utc = _CHRONO file_clock::to_utc(_Val);
-        const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
-        return _Impl._Write(_Format_ctx, _Utc, _CHRONO _Fill_tm(_Sys));
+        const auto _Sys = _CHRONO file_clock::to_sys(_Val);
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
