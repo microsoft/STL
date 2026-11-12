@@ -257,7 +257,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
 #ifndef _M_ARM64
-// TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 void* __cdecl __std_swap_ranges_trivially_swappable(
     void* const _First1, void* const _Last1, void* const _First2) noexcept {
     __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
@@ -3623,7 +3623,7 @@ const void* __stdcall __std_min_element_d_(const void* const _First, const void*
 }
 
 #ifndef _M_ARM64
-// TRANSITION, ABI: __std_min_element_1() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3633,7 +3633,7 @@ const void* __stdcall __std_min_element_1(
     }
 }
 
-// TRANSITION, ABI: __std_min_element_2() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3643,7 +3643,7 @@ const void* __stdcall __std_min_element_2(
     }
 }
 
-// TRANSITION, ABI: __std_min_element_4() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3653,7 +3653,7 @@ const void* __stdcall __std_min_element_4(
     }
 }
 
-// TRANSITION, ABI: __std_min_element_8() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3663,12 +3663,12 @@ const void* __stdcall __std_min_element_8(
     }
 }
 
-// TRANSITION, ABI: __std_min_element_f() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_f(const void* const _First, const void* const _Last, bool) noexcept {
     return __std_min_element_f_(_First, _Last);
 }
 
-// TRANSITION, ABI: __std_min_element_d() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_d(const void* const _First, const void* const _Last, bool) noexcept {
     return __std_min_element_d_(_First, _Last);
 }
@@ -3717,7 +3717,7 @@ const void* __stdcall __std_max_element_d_(const void* const _First, const void*
 }
 
 #ifndef _M_ARM64
-// TRANSITION, ABI: __std_max_element_1() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3727,7 +3727,7 @@ const void* __stdcall __std_max_element_1(
     }
 }
 
-// TRANSITION, ABI: __std_max_element_2() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3737,7 +3737,7 @@ const void* __stdcall __std_max_element_2(
     }
 }
 
-// TRANSITION, ABI: __std_max_element_4() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3747,7 +3747,7 @@ const void* __stdcall __std_max_element_4(
     }
 }
 
-// TRANSITION, ABI: __std_max_element_8() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3757,12 +3757,12 @@ const void* __stdcall __std_max_element_8(
     }
 }
 
-// TRANSITION, ABI: __std_max_element_f() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_f(const void* const _First, const void* const _Last, bool) noexcept {
     return __std_max_element_f_(_First, _Last);
 }
 
-// TRANSITION, ABI: __std_max_element_d() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_d(const void* const _First, const void* const _Last, bool) noexcept {
     return __std_max_element_d_(_First, _Last);
 }
@@ -3811,7 +3811,7 @@ _Min_max_element_t __stdcall __std_minmax_element_d_(const void* const _First, c
 }
 
 #ifndef _M_ARM64
-// TRANSITION, ABI: __std_minmax_element_1() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 _Min_max_element_t __stdcall __std_minmax_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3821,7 +3821,7 @@ _Min_max_element_t __stdcall __std_minmax_element_1(
     }
 }
 
-// TRANSITION, ABI: __std_minmax_element_2() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 _Min_max_element_t __stdcall __std_minmax_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3831,7 +3831,7 @@ _Min_max_element_t __stdcall __std_minmax_element_2(
     }
 }
 
-// TRANSITION, ABI: __std_minmax_element_4() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 _Min_max_element_t __stdcall __std_minmax_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3841,7 +3841,7 @@ _Min_max_element_t __stdcall __std_minmax_element_4(
     }
 }
 
-// TRANSITION, ABI: __std_minmax_element_8() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 _Min_max_element_t __stdcall __std_minmax_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     if (_Signed) {
@@ -3851,12 +3851,12 @@ _Min_max_element_t __stdcall __std_minmax_element_8(
     }
 }
 
-// TRANSITION, ABI: __std_minmax_element_f() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 _Min_max_element_t __stdcall __std_minmax_element_f(const void* const _First, const void* const _Last, bool) noexcept {
     return __std_minmax_element_f_(_First, _Last);
 }
 
-// TRANSITION, ABI: __std_minmax_element_d() is preserved for binary compatibility (x64/x86/ARM64EC)
+// TRANSITION, ABI: preserved for binary compatibility (x64/x86/ARM64EC)
 _Min_max_element_t __stdcall __std_minmax_element_d(const void* const _First, const void* const _Last, bool) noexcept {
     return __std_minmax_element_d_(_First, _Last);
 }
