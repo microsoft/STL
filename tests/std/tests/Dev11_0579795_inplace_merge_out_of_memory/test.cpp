@@ -11,6 +11,7 @@
 
 #ifdef __cpp_lib_execution
 #include <execution>
+#include <numeric>
 #endif // __cpp_lib_execution
 
 using namespace std;
@@ -229,6 +230,37 @@ void test_after_skipping_in_position_overhaul() {
     g_max_memory = old_max_memory;
 }
 
+#ifdef __cpp_lib_execution
+void test_parallel_sort() {
+    const size_t old_max_memory = g_max_memory;
+
+#if _ITERATOR_DEBUG_LEVEL == 0
+    g_max_memory = 0;
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
+    // TRANSITION, ABI: Allow container proxies to be allocated, but nothing larger. If proxy allocation fails,
+    // parallel sort will fall back to serial before reaching the code we want to exercise here.
+    g_max_memory = sizeof(_Container_proxy);
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
+
+    constexpr size_t N = 100;
+    constexpr size_t K = 21;
+    static_assert(gcd(N, K) == 1, "N and K must be coprime to generate useful values here");
+
+    array<size_t, N> a;
+    for (size_t i = 0; i < N; ++i) {
+        a[i] = (i * K) % N;
+    }
+
+    sort(execution::par, a.begin(), a.end());
+
+    for (size_t i = 0; i < N; ++i) {
+        assert(a[i] == i); // because N and K are coprime
+    }
+
+    g_max_memory = old_max_memory;
+}
+#endif // __cpp_lib_execution
+
 int main() {
     test();
     test_stability();
@@ -240,4 +272,8 @@ int main() {
 
     test_after_skipping_in_position_overhaul();
     test_more();
+
+#ifdef __cpp_lib_execution
+    test_parallel_sort();
+#endif // __cpp_lib_execution
 }
