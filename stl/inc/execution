@@ -3933,7 +3933,7 @@ struct _Set_intersection_per_chunk {
         _Iter_diff_t<_RanIt2> _Curr_range2_index = 0;
         const auto _Range1_dist                  = _Last1 - _First1;
         const auto _Range2_dist                  = _Last2 - _First2;
-        while (_Curr_range1_index < _Range1_dist && _Curr_range1_index < _Range2_dist) {
+        while (_Curr_range1_index < _Range1_dist && _Curr_range2_index < _Range2_dist) {
             if (_DEBUG_LT_PRED(_Pred, *(_First1 + _Curr_range1_index), *(_First2 + _Curr_range2_index))) {
                 ++_Curr_range1_index;
             } else {
