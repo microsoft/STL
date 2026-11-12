@@ -205,13 +205,10 @@ std/modules/std.pass.cpp FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.pass.cpp:1 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size.pass.cpp:1 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align_nothrow.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align.pass.cpp:1 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.single/new.size_nothrow.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size.pass.cpp:1 FAIL
 std/strings/basic.string/string.capacity/max_size.pass.cpp:1 FAIL
@@ -604,10 +601,6 @@ std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
 std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
 std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
 
-# DevCom-10892055 VSO-2453093 ADL fails to consider the namespace associated with the base class under a specific scenario
-std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
-
 # VSO-3077974 constexpr error when a unique_ptr resets itself
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:1 FAIL
@@ -752,6 +745,7 @@ std/re/re.traits/lookup_classname.pass.cpp FAIL
 # Tests with undefined behavior under N4842 [basic.start.term]/6 (detached threads)
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
+std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
 std/thread/thread.jthread/detach.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.class/thread.thread.member/detach.pass.cpp SKIPPED
 

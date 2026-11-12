@@ -62,23 +62,23 @@ foreach ($workload in $VisualStudioWorkloads) {
 
 # https://github.com/PowerShell/PowerShell/releases/latest
 if ($Provisioning_x64) {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.7/PowerShell-7.6.7-win-x64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.7.0/PowerShell-7.7.0-win-x64.zip'
 } else {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.7/PowerShell-7.6.7-win-arm64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.7.0/PowerShell-7.7.0-win-arm64.zip'
 }
-$PowerShellArgs = @('/quiet', '/norestart')
+$PowerShellPath = [uri]::new($PowerShellUrl).Segments[-1] -ireplace '(PowerShell-\d+\.\d+\.\d+)-win-\w+\.zip', 'C:\$1'
 
 # https://www.python.org
 if ($Provisioning_x64) {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.15.0/python-3.15.0-embed-amd64.zip'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.15.2/python-3.15.2-embed-amd64.zip'
 } else {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.15.0/python-3.15.0-embed-arm64.zip'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.15.2/python-3.15.2-embed-arm64.zip'
 }
 $PythonPath = [uri]::new($PythonUrl).Segments[-1] -ireplace '(python-\d+\.\d+\.\d+)-embed-\w+\.zip', 'C:\$1'
 
 # https://developer.nvidia.com/cuda-toolkit
 if ($Provisioning_x64) {
-  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.4.3/local_installers/cuda_13.4.3_windows_x86_64.exe'
+  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.5.0/local_installers/cuda_13.5.0_windows_x86_64.exe'
 } else {
   $CudaUrl = 'CUDA supports ARM64, but is not yet installed here'
 }
@@ -192,7 +192,7 @@ Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 # Skip a blank line to improve the output.
 (cmd /c ver)[1]
 
-DownloadAndInstall   -Name 'PowerShell'    -Url $PowerShellUrl   -Args $PowerShellArgs
+DownloadAndExtract   -Name 'PowerShell'    -Url $PowerShellUrl   -Dest $PowerShellPath
 DownloadAndExtract   -Name 'Python'        -Url $PythonUrl       -Dest $PythonPath
 DownloadAndInstall   -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
 if ($Provisioning_x64) {
@@ -201,11 +201,10 @@ if ($Provisioning_x64) {
 
 Write-Host 'Setting environment variables...'
 
-# Manually add Python to the PATH.
-# Don't use $Env:PATH here - that's the local path for this running script, captured before we installed anything.
-# The machine path was just updated by the installers above.
-$machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-[Environment]::SetEnvironmentVariable('Path', "$PythonPath;$machinePath", 'Machine')
+$machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine') # Get what the installers just updated...
+$machinePath = "$PowerShellPath;$PythonPath;$machinePath"               # then manually add PowerShell and Python...
+[Environment]::SetEnvironmentVariable('Path', $machinePath, 'Machine')  # to the machine path and...
+$Env:PATH = $machinePath                                                # update the current PowerShell session's path.
 
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
 [Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
