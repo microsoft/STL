@@ -1664,19 +1664,23 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
 
     using _Base::operator++;
     _Ty operator++(int) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++(0);
     }
 
     _Ty operator++() volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++();
     }
 
     using _Base::operator--;
     _Ty operator--(int) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--(0);
     }
 
     _Ty operator--() volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--();
     }
 
@@ -1962,6 +1966,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator++(int) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(1);
     }
 
@@ -1970,6 +1975,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator++() volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(1) + 1;
     }
 
@@ -1978,6 +1984,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator--(int) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(-1);
     }
 
@@ -1986,6 +1993,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator--() volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(-1) - 1;
     }
 
@@ -2244,16 +2252,19 @@ public:
 #if _HAS_CXX20
     using _Base::wait;
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         const_cast<const atomic*>(this)->_Base::wait(_Expected, _Order);
     }
 
     using _Base::notify_one;
     void notify_one() volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         const_cast<atomic*>(this)->_Base::notify_one();
     }
 
     using _Base::notify_all;
     void notify_all() volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         const_cast<atomic*>(this)->_Base::notify_all();
     }
 #endif // _HAS_CXX20
