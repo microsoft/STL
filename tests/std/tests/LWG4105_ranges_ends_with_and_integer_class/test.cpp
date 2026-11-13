@@ -84,7 +84,7 @@ struct instantiator {
 
 #ifdef TEST_EVERYTHING
 int main() {
-#if !defined(_PREFAST_) && !defined(__EDG__) // TRANSITION, GH-1030 and GH-3567
+#ifndef _PREFAST_ // TRANSITION, GH-1030 and GH-3567
     test_in_in<instantiator, const pair<int, int>, const pair<long, long>>();
 #endif // ^^^ no workaround ^^^
 }

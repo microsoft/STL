@@ -92,7 +92,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(
 }
 #endif // defined(MRTDLL)
 
-// TRANSITION, ABI: __Wcrtomb_lk() is preserved for binary compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL __Wcrtomb_lk(
     char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) noexcept {
     return _Wcrtomb(s, wchar, pst, ploc);

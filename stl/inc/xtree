@@ -1177,7 +1177,7 @@ public:
     }
 
     _Default_sentinel _Unchecked_end() const noexcept {
-        return {};
+        return _Default_sentinel{};
     }
 
     _Unchecked_const_iterator _Unchecked_end_iter() const noexcept {
@@ -1856,7 +1856,7 @@ public:
     }
 
     template <class>
-    friend class _Tree;
+    friend class _STD _Tree;
 
     template <class _Other_traits>
     void merge(_Tree<_Other_traits>& _That) {

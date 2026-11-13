@@ -697,7 +697,7 @@ int main() {
     static_assert(test_interface());
     static_assert(test_iterators());
     static_assert(test_growth());
-#ifndef __EDG__ // TRANSITION, DevCom-11008487
+#ifndef __EDG__ // TRANSITION, EDG-286
     static_assert(test_vector_of_array());
 #endif // ^^^ no workaround ^^^
 }

@@ -23,6 +23,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// https://learn.microsoft.com/cpp/c-runtime-library/math-constants
+// These non-Standard macros (`M_PI` etc.) are widely used, but at least they're opt-in.
+// The <numbers> header is a Standard alternative.
+#ifdef _USE_MATH_DEFINES
+#include <corecrt_math_defines.h>
+#endif
+
 extern "C++" {
 namespace _Msvc { // duplicate type traits not provided by <yvals_core.h>
     template <class _Ty>

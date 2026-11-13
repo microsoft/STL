@@ -22,18 +22,6 @@ jobs:
           & "$(launchVsDevShell)" -Preview -NoLogo -HostArch x64 -Arch x64
           cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B "$(validationBuildOutputLocation)"
           cmake --build "$(validationBuildOutputLocation)"
-      timeoutInMinutes: 5
-      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-    - task: PowerShell@2
-      displayName: 'clang-format Files'
-      inputs:
-        pwsh: true
-        targetType: inline
-        script: |
-          $PSNativeCommandUseErrorActionPreference = $true
-          & "$(launchVsDevShell)" -Preview -NoLogo -HostArch x64 -Arch x64
-          cmake --build "$(validationBuildOutputLocation)" --target run-format
-      timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PowerShell@2
       displayName: 'Validate Files'
@@ -44,7 +32,17 @@ jobs:
           $PSNativeCommandUseErrorActionPreference = $true
           & "$(launchVsDevShell)" -Preview -NoLogo -HostArch x64 -Arch x64
           cmake --build "$(validationBuildOutputLocation)" --target run-validate
-      timeoutInMinutes: 2
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+    # We need to validate files before running clang-format, which modifies them in-place.
+    - task: PowerShell@2
+      displayName: 'clang-format Files'
+      inputs:
+        pwsh: true
+        targetType: inline
+        script: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          & "$(launchVsDevShell)" -Preview -NoLogo -HostArch x64 -Arch x64
+          cmake --build "$(validationBuildOutputLocation)" --target run-format
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PowerShell@2
       displayName: 'Create Diff'

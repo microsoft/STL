@@ -769,7 +769,7 @@ _EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class list { // bidirectional linked list
 private:
     template <class>
-    friend class _Hash;
+    friend class _STD _Hash;
     template <class _Traits>
     friend bool _Hash_equal(const _Hash<_Traits>&, const _Hash<_Traits>&);
 

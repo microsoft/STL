@@ -56,10 +56,9 @@ void test_DevDiv_235721() {
 
 void test_message(const future_errc fe, const string& s) {
     assert(make_error_code(fe).message() == s);
-    assert(future_error(make_error_code(fe)).what() == s); // nonstandard
 
-    // also P0517R0 "Constructing future_error From future_errc"
-    assert(future_error(fe).what() == s); // C++17
+    // P0517R0 "Constructing future_error From future_errc"
+    assert(future_error(fe).what() == s);
 }
 
 void test_DevDiv_586551() {

@@ -29,7 +29,7 @@ struct small_diff_iterator {
 
     small_diff_iterator() : base_ptr() {}
 
-    explicit small_diff_iterator(pointer base_ptr) : base_ptr(base_ptr) {}
+    explicit small_diff_iterator(pointer base_ptr_) : base_ptr(base_ptr_) {}
 
     reference operator*() const {
         return *base_ptr;

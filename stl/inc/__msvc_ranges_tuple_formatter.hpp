@@ -271,11 +271,7 @@ public:
         }
     };
 
-#ifdef __CUDACC__ // TRANSITION, DevCom-10863472 (still needed by CUDA 13.2)
-    basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
-#else // ^^^ workaround / no workaround vvv
     basic_format_arg() noexcept = default;
-#endif // ^^^ no workaround ^^^
 
     explicit operator bool() const noexcept {
         return _Active_state != _Basic_format_arg_type::_None;

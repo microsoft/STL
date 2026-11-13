@@ -1465,28 +1465,19 @@ concept has_three_way_op = requires (T& t, U& u) { t <=> u; };
 using std::three_way_comparable;
 
 struct HasSimpleOrdering {
-  constexpr bool operator==(const HasSimpleOrdering&) const;
-  constexpr bool operator<(const HasSimpleOrdering&) const;
+  bool operator==(const HasSimpleOrdering&) const;
+  bool operator<(const HasSimpleOrdering&) const;
 };
 
 struct HasOnlySpaceship {
-  constexpr bool operator==(const HasOnlySpaceship&) const = delete;
-  constexpr std::weak_ordering operator<=>(const HasOnlySpaceship&) const;
+  bool operator==(const HasOnlySpaceship&) const = delete;
+  std::weak_ordering operator<=>(const HasOnlySpaceship&) const;
 };
-
-#ifdef __clang__ // TRANSITION, not yet investigated
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundefined-inline"
-#endif // ^^^ workaround ^^^
 
 struct HasFullOrdering {
-  constexpr bool operator==(const HasFullOrdering&) const;
-  constexpr std::weak_ordering operator<=>(const HasFullOrdering&) const;
+  bool operator==(const HasFullOrdering&) const;
+  std::weak_ordering operator<=>(const HasFullOrdering&) const;
 };
-
-#ifdef __clang__ // TRANSITION, not yet investigated
-#pragma clang diagnostic pop
-#endif // ^^^ workaround ^^^
 
 // operator<=> must resolve the return types of all its union types'
 // operator<=>s to determine its own return type, so it is detectable by SFINAE
@@ -3021,7 +3012,7 @@ constexpr void test_T_assignment_sfinae() {
     struct X {
       operator void*();
     };
-#ifndef __EDG__ // TRANSITION, VSO-1327220
+#ifndef __EDG__ // TRANSITION, EDG-273
     static_assert(!std::is_assignable<V, X>::value, "no boolean conversion in operator=");
 #endif // ^^^ no workaround ^^^
     static_assert(std::is_assignable<V, std::false_type>::value, "converted to bool in operator=");
@@ -4705,7 +4696,7 @@ void test_T_ctor_sfinae() {
     struct X {
       operator void*();
     };
-#ifndef __EDG__ // TRANSITION, VSO-1327220
+#ifndef __EDG__ // TRANSITION, EDG-273
     static_assert(!std::is_constructible<V, X>::value, "no boolean conversion in constructor");
 #endif // ^^^ no workaround ^^^
     static_assert(std::is_constructible<V, std::false_type>::value, "converted to bool in constructor");

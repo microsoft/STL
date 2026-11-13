@@ -805,7 +805,11 @@ constexpr bool impl_test_source_location() {
     using namespace std;
     const auto sl = source_location::current();
     assert(sl.line() == __LINE__ - 1);
+#ifdef __clang__
+    assert(sl.column() == 21);
+#else // ^^^ Clang / Other vvv
     assert(sl.column() == 38);
+#endif // ^^^ Other ^^^
 
 #ifdef __EDG__
     assert(sl.function_name() == "bool impl_test_source_location()"sv);
