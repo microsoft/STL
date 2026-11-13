@@ -14,8 +14,8 @@ using namespace std::execution;
 
 void test_case_replace_parallel(const size_t testSize, mt19937& gen) {
     vector<char> actual(testSize);
-    uniform_int_distribution<int> dist('a', 'z');
-    generate(actual.begin(), actual.end(), [&]() { return static_cast<char>(dist(gen)); });
+    uniform_int_distribution<signed char> dist('a', 'z');
+    generate(actual.begin(), actual.end(), [&]() { return dist(gen); });
 
     vector<char> expected(actual);
     replace(expected.begin(), expected.end(), 'a', 'b');
@@ -25,8 +25,8 @@ void test_case_replace_parallel(const size_t testSize, mt19937& gen) {
 
 void test_case_replace_if_parallel(const size_t testSize, mt19937& gen) {
     vector<char> actual(testSize);
-    uniform_int_distribution<int> dist('a', 'z');
-    generate(actual.begin(), actual.end(), [&]() { return static_cast<char>(dist(gen)); });
+    uniform_int_distribution<signed char> dist('a', 'z');
+    generate(actual.begin(), actual.end(), [&]() { return dist(gen); });
 
     auto pred = [](char c) { return c == 'a'; };
 
