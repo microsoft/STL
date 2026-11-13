@@ -8,7 +8,7 @@ _STD_BEGIN
 
 // TRANSITION, ABI: preserved for binary compatibility
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Throw_future_error(const error_code& _Code) {
-    _THROW(future_error(_Code));
+    _THROW(future_error(static_cast<future_errc>(_Code.value())));
 }
 
 // TRANSITION, ABI: preserved for binary compatibility

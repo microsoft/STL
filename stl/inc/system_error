@@ -564,9 +564,7 @@ public:
 
     _NODISCARD string message(int _Errcode) const override {
         if (_Errcode == static_cast<int>(io_errc::stream)) {
-            static constexpr char _Iostream_error[] = "iostream stream error";
-            constexpr size_t _Iostream_error_length = sizeof(_Iostream_error) - 1; // TRANSITION, DevCom-906503
-            return string{_Iostream_error, _Iostream_error_length};
+            return "iostream stream error";
         } else {
             return _Syserror_map(_Errcode);
         }
@@ -588,9 +586,7 @@ public:
             // CodeQL [SM02310] _Msg's ctor inits _Str(nullptr) before doing work, then we test _Msg._Str above.
             return string{_Msg._Str, _Msg._Length};
         } else {
-            static constexpr char _Unknown_error[] = "unknown error";
-            constexpr size_t _Unknown_error_length = sizeof(_Unknown_error) - 1; // TRANSITION, DevCom-906503
-            return string{_Unknown_error, _Unknown_error_length};
+            return "unknown error";
         }
     }
 

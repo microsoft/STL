@@ -356,7 +356,7 @@ namespace test_derived_from {
 
     void PrivateDerived::f() {
         // Check these in a member to verify that access doesn't depend on context
-#ifndef __EDG__ // TRANSITION, VSO-1898937
+#ifndef __EDG__ // TRANSITION, EDG-266
         static_assert(!derived_from<PrivateDerived, Middle<0>>);
         static_assert(!derived_from<PrivateDerived, Middle<1>>);
 #endif // ^^^ no workaround ^^^
@@ -1423,7 +1423,7 @@ namespace test_constructible_from {
     };
     static_assert(!test<Multiparameter>());
     static_assert(test<Multiparameter, int>());
-#ifndef __EDG__ // TRANSITION, VSO-1898939
+#ifndef __EDG__ // TRANSITION, EDG-270
     static_assert(test<Multiparameter, long>() == is_permissive);
 #endif // ^^^ no workaround ^^^
     static_assert(!test<Multiparameter, double>());
@@ -1475,13 +1475,9 @@ namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
     static_assert(default_initializable<int>);
-#ifndef __EDG__ // TRANSITION, VSO-1898941
     static_assert(!default_initializable<int const>);
-#endif // ^^^ no workaround ^^^
     static_assert(default_initializable<int volatile>);
-#ifndef __EDG__ // TRANSITION, VSO-1898941
     static_assert(!default_initializable<int const volatile>);
-#endif // ^^^ no workaround ^^^
     static_assert(default_initializable<double>);
     static_assert(!default_initializable<void>);
 
@@ -1494,9 +1490,7 @@ namespace test_default_initializable {
     static_assert(!default_initializable<int[]>);
     static_assert(!default_initializable<char[]>);
     static_assert(!default_initializable<char[][3]>);
-#ifndef __EDG__ // TRANSITION, VSO-1898941
     static_assert(!default_initializable<int const[2]>);
-#endif // ^^^ no workaround ^^^
 
     static_assert(!default_initializable<int&>);
     static_assert(!default_initializable<int const&>);
@@ -1540,12 +1534,12 @@ namespace test_default_initializable {
         int x;
     };
     static_assert(default_initializable<S>);
-#ifndef __EDG__ // TRANSITION, VSO-1898941
+#ifndef __EDG__ // TRANSITION, EDG-266
     static_assert(!default_initializable<S const>);
 #endif // ^^^ no workaround ^^^
 
     // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
-#ifndef __EDG__ // TRANSITION, VSO-1898945
+#ifndef __EDG__ // TRANSITION, EDG-266
     static_assert(!default_initializable<AggregatesExplicitDefault>);
 #endif // ^^^ no workaround ^^^
 } // namespace test_default_initializable
@@ -2589,7 +2583,7 @@ namespace test_totally_ordered {
     static_assert(test<int[42]>());
     static_assert(test<int(int)>());
 
-#ifndef __EDG__ // TRANSITION, VSO-1898947
+#ifndef __EDG__ // TRANSITION, EDG-267
     static_assert(!test<std::nullptr_t>());
 #endif // ^^^ no workaround ^^^
     static_assert(!test<EmptyClass>());
@@ -2693,7 +2687,7 @@ namespace test_totally_ordered_with {
     static_assert(test<int>());
     static_assert(test<double>());
     static_assert(test<int, double>());
-#ifndef __EDG__ // TRANSITION, VSO-1898947
+#ifndef __EDG__ // TRANSITION, EDG-267
     static_assert(!test<std::nullptr_t>());
 #endif // ^^^ no workaround ^^^
 

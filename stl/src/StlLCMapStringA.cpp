@@ -8,9 +8,8 @@
 // int __cdecl __crtLCMapStringA - Get type information about an ANSI string.
 //
 // Purpose:
-//        Internal support function. Assumes info in ANSI string format. Tries
-//        to use NLS API call LCMapStringA if available and uses LCMapStringW
-//        if it must. If neither is available it fails and returns 0.
+//        Internal support function. Converts an ANSI string to a wide string
+//        and calls the NLS API LCMapStringEx.
 //
 // Entry:
 //        LPCWSTR  LocaleName  - locale context for the comparison.
@@ -22,8 +21,7 @@
 //        LPSTR    lpDestStr   - pointer to memory to store mapping
 //        int      cchDest     - char (byte) count of buffer (including null terminator)
 //        int      code_page   - for MB/WC conversion. If 0, use __lc_codepage
-//        BOOL     bError      - TRUE if MB_ERR_INVALID_CHARS set on call to MultiByteToWideChar when GetStringTypeW
-//                               used.
+//        BOOL     bError      - TRUE if MB_ERR_INVALID_CHARS set on call to MultiByteToWideChar.
 //
 // Exit:
 //        Success: number of chars written to lpDestStr (including null terminator)
@@ -31,7 +29,7 @@
 extern "C" _CRTIMP2 int __cdecl __crtLCMapStringA(_In_opt_z_ LPCWSTR LocaleName, _In_ DWORD dwMapFlags,
     _In_reads_(cchSrc) LPCSTR lpSrcStr, _In_ int cchSrc, _Out_writes_opt_(cchDest) char* lpDestStr, _In_ int cchDest,
     _In_ int code_page, _In_ BOOL bError) noexcept {
-    // LCMapString will map past the null terminator.  We must find the null
+    // LCMapStringEx will map past the null terminator.  We must find the null
     // terminator if it occurs in the string before cchSrc characters
     // and cap the number of characters to be considered.
     if (cchSrc > 0) {

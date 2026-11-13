@@ -365,9 +365,6 @@ using test_range =
         test::ProxyRef::no>;
 
 constexpr void instantiation_test() {
-#ifdef TEST_EVERYTHING
-    test_in<instantiator, const P>();
-#else // ^^^ test all input range permutations / test only "interesting" permutations vvv
     // The view is sensitive to category, commonality, size, and differencing, but cannot handle proxies.
     using test::Common, test::Sized;
 
@@ -391,7 +388,6 @@ constexpr void instantiation_test() {
     instantiator::call<test_range<contiguous_iterator_tag, Sized::no, Common::yes>>();
     instantiator::call<test_range<contiguous_iterator_tag, Sized::yes, Common::no>>();
     instantiator::call<test_range<contiguous_iterator_tag, Sized::yes, Common::yes>>();
-#endif // TEST_EVERYTHING
 }
 
 // GH-3014 "<ranges>: list-initialization is misused"

@@ -12,16 +12,14 @@ class CustomTestFormat(STLTestFormat):
         exeSourceDir = os.path.dirname(test.getSourcePath())
         _, outputBase = test.getTempPaths()
 
-        sourceFiles = []
-        for filename in os.listdir(exeSourceDir):
-            if filename.endswith('.cpp'):
-                sourceFiles.append(os.path.join(exeSourceDir, filename))
+        sourceFiles = [os.path.join(exeSourceDir, filename)
+                       for filename in os.listdir(exeSourceDir) if filename.endswith('.cpp')]
 
         if TestType.COMPILE in test.testType:
             cmd = [test.cxx, '/c', *sourceFiles, *test.flags, *test.compileFlags]
         elif TestType.RUN in test.testType:
-            shared.execFile = outputBase + '.exe'
-            cmd = [test.cxx, *sourceFiles, *test.flags, *test.compileFlags, '/Fe' + shared.execFile,
+            shared.execFile = f'{outputBase}.exe'
+            cmd = [test.cxx, *sourceFiles, *test.flags, *test.compileFlags, f'/Fe{shared.execFile}',
                    '/link', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)

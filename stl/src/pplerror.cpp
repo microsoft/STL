@@ -34,9 +34,7 @@ namespace Concurrency {
                     if (!isBadAlloc && info != nullptr) {
                         auto restrictedInfo(static_cast<IRestrictedErrorInfo*>(info->restrictedInfo));
                         if (restrictedInfo != nullptr) {
-#ifndef _M_ARM64 // CRT_REFACTOR TODO
                             ::RoReportUnhandledError(restrictedInfo);
-#endif // !defined(_M_ARM64)
 
                             // IRestrictedErrorInfo should be put back
                             // to make sure that RoFailFastWithErrorContext can extract the information

@@ -31,7 +31,6 @@ steps:
       -DSTL_BINARY_DIR="$(buildOutputLocation)" `
       -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} `
       -S $(Build.SourcesDirectory)/benchmarks -B "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
-  timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   # TRANSITION, we currently only build the benchmarks with Clang for x64
   condition: >
@@ -47,7 +46,6 @@ steps:
       $PSNativeCommandUseErrorActionPreference = $true
       & "$(launchVsDevShell)" -Preview -NoLogo -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
       cmake --build "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
-  timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   # TRANSITION, we currently only build the benchmarks with Clang for x64
   condition: >

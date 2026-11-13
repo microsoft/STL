@@ -131,6 +131,25 @@ constexpr void month_test() {
     assert(month{23} + months{1} == December);
     assert(February - months{2} == December);
     assert(January - February == months{11});
+
+    static_assert(months::min() == months{-2147483647 - 1});
+    static_assert(months::max() == months{2147483647});
+    assert(month{0} + months::min() == month{4});
+    assert(month{1} + months::min() == month{5});
+    assert(month{12} + months::min() == month{4});
+    assert(month{255} + months::min() == month{7});
+    assert(month{0} + months::max() == month{7});
+    assert(month{1} + months::max() == month{8});
+    assert(month{12} + months::max() == month{7});
+    assert(month{255} + months::max() == month{10});
+    assert(month{0} - months::min() == month{8});
+    assert(month{1} - months::min() == month{9});
+    assert(month{12} - months::min() == month{8});
+    assert(month{255} - months::min() == month{11});
+    assert(month{0} - months::max() == month{5});
+    assert(month{1} - months::max() == month{6});
+    assert(month{12} - months::max() == month{5});
+    assert(month{255} - months::max() == month{8});
 }
 
 constexpr void year_test() {
@@ -285,6 +304,25 @@ constexpr void weekday_test() {
     // GH-5153 "<chrono>: integer overflow in weekday::weekday(sys_days::max())"
     assert(weekday{sys_days::max()} == weekday{sys_days::max() - days{7}});
     assert(weekday{local_days::max()} == weekday{local_days::max() - days{7}});
+
+    static_assert(days::min() == days{-2147483647 - 1});
+    static_assert(days::max() == days{2147483647});
+    assert(weekday{0} + days::min() == weekday{5});
+    assert(weekday{6} + days::min() == weekday{4});
+    assert(weekday{7} + days::min() == weekday{5});
+    assert(weekday{255} + days::min() == weekday{1});
+    assert(weekday{0} + days::max() == weekday{1});
+    assert(weekday{6} + days::max() == weekday{0});
+    assert(weekday{7} + days::max() == weekday{1});
+    assert(weekday{255} + days::max() == weekday{4});
+    assert(weekday{0} - days::min() == weekday{2});
+    assert(weekday{6} - days::min() == weekday{1});
+    assert(weekday{7} - days::min() == weekday{2});
+    assert(weekday{255} - days::min() == weekday{5});
+    assert(weekday{0} - days::max() == weekday{6});
+    assert(weekday{6} - days::max() == weekday{5});
+    assert(weekday{7} - days::max() == weekday{6});
+    assert(weekday{255} - days::max() == weekday{2});
 }
 
 constexpr void weekday_indexed_test() {
@@ -526,6 +564,23 @@ constexpr void year_month_test() {
 
     assert(ym - months{2} == 2019y / November);
     assert(ym - 2019y / January == months{12});
+
+    assert(2020y / month{0} + months::min() == 23865y / month{4});
+    assert(2020y / month{1} + months::min() == 23865y / month{5});
+    assert(2020y / month{12} + months::min() == 23866y / month{4});
+    assert(2020y / month{255} + months::min() == 23886y / month{7});
+    assert(2020y / month{0} + months::max() == -19826y / month{7});
+    assert(2020y / month{1} + months::max() == -19826y / month{8});
+    assert(2020y / month{12} + months::max() == -19825y / month{7});
+    assert(2020y / month{255} + months::max() == -19805y / month{10});
+    assert(2020y / month{0} - months::min() == -19826y / month{8});
+    assert(2020y / month{1} - months::min() == -19826y / month{9});
+    assert(2020y / month{12} - months::min() == -19825y / month{8});
+    assert(2020y / month{255} - months::min() == -19805y / month{11});
+    assert(2020y / month{0} - months::max() == 23865y / month{5});
+    assert(2020y / month{1} - months::max() == 23865y / month{6});
+    assert(2020y / month{12} - months::max() == 23866y / month{5});
+    assert(2020y / month{255} - months::max() == 23886y / month{8});
 
     assert(ym + years{2} == 2022y / January);
     assert(years{2} + ym == 2022y / January);

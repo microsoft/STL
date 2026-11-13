@@ -2172,20 +2172,26 @@ void test_gh_5774() {
 void test_gh_5790() {
     // GH-5790: Process greedy simple loops non-recursively.
     // This extends our test coverage on (mainly greedy) simple loops.
-    g_regexTester.should_not_match("", "a+");
-    g_regexTester.should_match("b", "a{0}b");
-    g_regexTester.should_not_match("ab", "a{0}b");
-    g_regexTester.should_match("ab", "a{0,1}b");
-    g_regexTester.should_not_match("aab", "a{0,1}b");
-    g_regexTester.should_match("aab", "a{0,2}b");
-    g_regexTester.should_match("aab", "a{1,2}b");
-    g_regexTester.should_not_match("aab", "a{1}b");
-    g_regexTester.should_not_match("aaab", "a{1,2}b");
-    g_regexTester.should_match("aaab", "a{1,3}b");
+
+    // GH-6499: Accelerate greedy single-character loops
+    // Also test correct handling of `collate` mode
+    // for implementation-defined regex traits.
+    for (syntax_option_type options : {ECMAScript, regex_constants::collate}) {
+        g_regexTester.should_not_match("", "a+", options);
+        g_regexTester.should_match("b", "a{0}b", options);
+        g_regexTester.should_not_match("ab", "a{0}b", options);
+        g_regexTester.should_match("ab", "a{0,1}b", options);
+        g_regexTester.should_not_match("aab", "a{0,1}b", options);
+        g_regexTester.should_match("aab", "a{0,2}b", options);
+        g_regexTester.should_match("aab", "a{1,2}b", options);
+        g_regexTester.should_not_match("aab", "a{1}b", options);
+        g_regexTester.should_not_match("aaab", "a{1,2}b", options);
+        g_regexTester.should_match("aaab", "a{1,3}b", options);
+    }
 
     // Check that greedy and non-greedy search find the appropriate match.
     // For the following regexes, greedy and leftmost-longest search yield the same matches.
-    for (syntax_option_type options : {ECMAScript, extended}) {
+    for (syntax_option_type options : {ECMAScript, extended, regex_constants::collate}) {
         {
             test_regex greedy_a_star(&g_regexTester, "a*", options);
             greedy_a_star.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
@@ -2726,6 +2732,568 @@ void test_gh_6359() {
     g_regexTester.should_capture("a", "(?:(?=(a)))?a", "");
 }
 
+void test_gh_6423() {
+    // GH-6423: Unwrap iterators in `match_results` overloads
+    // Test that all regex_match and regex_search overloads still compile and work in principle
+    const regex re("a((bc)*d)e");
+    {
+        cmatch cm;
+        const char* const input = "abcbcde";
+        const char* const last  = input + char_traits<char>::length(input);
+        assert(regex_match(input, re));
+        assert(regex_match(input, cm, re));
+        assert(cm.ready());
+        assert(cm.size() == 3);
+        assert(cm[0].matched);
+        assert(cm[0].first == input);
+        assert(cm[0].second == last);
+        assert(cm.position(0) == 0);
+        assert(cm[1].matched);
+        assert(cm[1].first == input + 1);
+        assert(cm[1].second == input + 6);
+        assert(cm.position(1) == 1);
+        assert(cm[2].matched);
+        assert(cm[2].first == input + 3);
+        assert(cm[2].second == input + 5);
+        assert(cm.position(2) == 3);
+        assert(!cm.prefix().matched);
+        assert(cm.prefix().first == input);
+        assert(cm.prefix().second == input);
+        assert(!cm.suffix().matched);
+        assert(cm.suffix().first == last);
+        assert(cm.suffix().second == last);
+    }
+
+    {
+        smatch sm;
+        const string input = "abcbcde";
+        assert(regex_match(input, re));
+        assert(regex_match(input, sm, re));
+        assert(sm.ready());
+        assert(sm.size() == 3);
+        assert(sm[0].matched);
+        assert(sm[0].first == input.begin());
+        assert(sm[0].second == input.end());
+        assert(sm.position(0) == 0);
+        assert(sm[1].matched);
+        assert(sm[1].first == input.begin() + 1);
+        assert(sm[1].second == input.begin() + 6);
+        assert(sm.position(1) == 1);
+        assert(sm[2].matched);
+        assert(sm[2].first == input.begin() + 3);
+        assert(sm[2].second == input.begin() + 5);
+        assert(sm.position(2) == 3);
+        assert(!sm.prefix().matched);
+        assert(sm.prefix().first == input.begin());
+        assert(sm.prefix().second == input.begin());
+        assert(!sm.suffix().matched);
+        assert(sm.suffix().first == input.end());
+        assert(sm.suffix().second == input.end());
+    }
+
+    {
+        match_results<vector<char>::const_iterator> vm;
+        const vector<char> input = {'a', 'b', 'c', 'b', 'c', 'd', 'e'};
+        assert(regex_match(input.begin(), input.end(), re));
+        assert(regex_match(input.begin(), input.end(), vm, re));
+        assert(vm.ready());
+        assert(vm.size() == 3);
+        assert(vm[0].matched);
+        assert(vm[0].first == input.begin());
+        assert(vm[0].second == input.end());
+        assert(vm.position(0) == 0);
+        assert(vm[1].matched);
+        assert(vm[1].first == input.begin() + 1);
+        assert(vm[1].second == input.begin() + 6);
+        assert(vm.position(1) == 1);
+        assert(vm[2].matched);
+        assert(vm[2].first == input.begin() + 3);
+        assert(vm[2].second == input.begin() + 5);
+        assert(vm.position(2) == 3);
+        assert(!vm.prefix().matched);
+        assert(vm.prefix().first == input.begin());
+        assert(vm.prefix().second == input.begin());
+        assert(!vm.suffix().matched);
+        assert(vm.suffix().first == input.end());
+        assert(vm.suffix().second == input.end());
+    }
+
+    {
+        cmatch cm;
+        const char* const input = "xyzabcbcdezyx";
+        const char* const last  = input + char_traits<char>::length(input);
+        assert(regex_search(input, re));
+        assert(regex_search(input, cm, re));
+        assert(cm.ready());
+        assert(cm.size() == 3);
+        assert(cm[0].matched);
+        assert(cm[0].first == input + 3);
+        assert(cm[0].second == last - 3);
+        assert(cm.position(0) == 3);
+        assert(cm[1].matched);
+        assert(cm[1].first == input + 4);
+        assert(cm[1].second == input + 9);
+        assert(cm.position(1) == 4);
+        assert(cm[2].matched);
+        assert(cm[2].first == input + 6);
+        assert(cm[2].second == input + 8);
+        assert(cm.prefix().matched);
+        assert(cm.prefix().first == input);
+        assert(cm.prefix().second == input + 3);
+        assert(cm.suffix().matched);
+        assert(cm.suffix().first == last - 3);
+        assert(cm.suffix().second == last);
+    }
+
+    {
+        smatch sm;
+        const string input = "xyzabcbcdezyx";
+        assert(regex_search(input, re));
+        assert(regex_search(input, sm, re));
+        assert(sm.ready());
+        assert(sm.size() == 3);
+        assert(sm[0].matched);
+        assert(sm[0].first == input.begin() + 3);
+        assert(sm[0].second == input.end() - 3);
+        assert(sm.position(0) == 3);
+        assert(sm[1].matched);
+        assert(sm[1].first == input.begin() + 4);
+        assert(sm[1].second == input.begin() + 9);
+        assert(sm.position(1) == 4);
+        assert(sm[2].matched);
+        assert(sm[2].first == input.begin() + 6);
+        assert(sm[2].second == input.begin() + 8);
+        assert(sm.position(2) == 6);
+        assert(sm.prefix().matched);
+        assert(sm.prefix().first == input.begin());
+        assert(sm.prefix().second == input.begin() + 3);
+        assert(sm.suffix().matched);
+        assert(sm.suffix().first == input.end() - 3);
+        assert(sm.suffix().second == input.end());
+    }
+
+    {
+        match_results<vector<char>::const_iterator> vm;
+        const vector<char> input = {'x', 'y', 'z', 'a', 'b', 'c', 'b', 'c', 'd', 'e', 'z', 'y', 'x'};
+        assert(regex_search(input.begin(), input.end(), re));
+        assert(regex_search(input.begin(), input.end(), vm, re));
+        assert(vm.ready());
+        assert(vm.size() == 3);
+        assert(vm[0].matched);
+        assert(vm[0].first == input.begin() + 3);
+        assert(vm[0].second == input.end() - 3);
+        assert(vm.position(0) == 3);
+        assert(vm[1].matched);
+        assert(vm[1].first == input.begin() + 4);
+        assert(vm[1].second == input.begin() + 9);
+        assert(vm.position(1) == 4);
+        assert(vm[2].matched);
+        assert(vm[2].first == input.begin() + 6);
+        assert(vm[2].second == input.begin() + 8);
+        assert(vm.position(2) == 6);
+        assert(vm.prefix().matched);
+        assert(vm.prefix().first == input.begin());
+        assert(vm.prefix().second == input.begin() + 3);
+        assert(vm.suffix().matched);
+        assert(vm.suffix().first == input.end() - 3);
+        assert(vm.suffix().second == input.end());
+    }
+}
+
+void test_gh_6464() {
+    // GH-6464: Accelerate greedy loops over fixed strings
+
+    // There is already test coverage for the new optimization in test_gh_5790().
+    // But as a result, we lose test coverage for greedy simple loops not subject to this optimization.
+    // This restores the test coverage for unoptimized greedy simple loops.
+    g_regexTester.should_not_match("", "(?:a[bc])+");
+    g_regexTester.should_match("d", "(?:a[bc]){0}d");
+    g_regexTester.should_not_match("abd", "(?:a[bc]){0}d");
+    g_regexTester.should_match("abd", "(?:a[bc]){0,1}d");
+    g_regexTester.should_not_match("abacd", "(?:a[bc]){0,1}d");
+    g_regexTester.should_match("abacd", "(?:a[bc]){0,2}d");
+    g_regexTester.should_match("abacd", "(?:a[bc]){1,2}d");
+    g_regexTester.should_not_match("abacd", "(?:a[bc]){1}d");
+    g_regexTester.should_not_match("abacabd", "(?:a[bc]){1,2}d");
+    g_regexTester.should_match("abacabd", "(?:a[bc]){1,3}d");
+
+    for (syntax_option_type options : {ECMAScript | nosubs, extended | nosubs}) {
+        {
+            test_regex greedy_abc_star(&g_regexTester, "(a[bc])*", options | regex_constants::nosubs);
+            greedy_abc_star.should_search_match("abacababacacababacab", "abacababacacababacab");
+        }
+
+        {
+            test_regex bounded_greedy_abc_rep(&g_regexTester, "(a[bc]){5}", options);
+            bounded_greedy_abc_rep.should_search_match("abacababacacababacab", "abacababac");
+        }
+
+        {
+            test_regex upper_bounded_greedy_abc_rep(&g_regexTester, "(a[bc]){0,5}", options);
+            upper_bounded_greedy_abc_rep.should_search_match("abacababacacababacab", "abacababac");
+        }
+
+        {
+            test_regex lower_bounded_greedy_abc_rep(&g_regexTester, "(a[bc]){4,1000}", options);
+            lower_bounded_greedy_abc_rep.should_search_match("abacababacacababacab", "abacababacacababacab");
+        }
+
+        {
+            test_regex lower_and_upper_bounded_greedy_abc_rep(&g_regexTester, "(a[bc]){2,5}", options);
+            lower_and_upper_bounded_greedy_abc_rep.should_search_match("abacababacacababacab", "abacababac");
+        }
+
+        {
+            test_regex too_large_min_greedy_abc_rep(&g_regexTester, "(a[bc]){11,1000}", options);
+            too_large_min_greedy_abc_rep.should_search_fail("abacababacacababacab");
+        }
+    }
+}
+
+void test_gh_6475() {
+    // GH-6475: Accelerate greedy wildcard loops
+    for (syntax_option_type options : {ECMAScript, extended}) {
+        g_regexTester.should_not_match("", ".+", options);
+        g_regexTester.should_match("a", ".+", options);
+        g_regexTester.should_match("b", ".{0}b", options);
+        g_regexTester.should_not_match("ab", ".{0}b", options);
+        g_regexTester.should_match("ab", ".{0,1}b", options);
+        g_regexTester.should_not_match("aab", ".{0,1}b", options);
+        g_regexTester.should_match("aab", ".{0,2}b", options);
+        g_regexTester.should_match("aab", ".{1,2}b", options);
+        g_regexTester.should_not_match("aab", ".{1}b", options);
+        g_regexTester.should_not_match("aaab", ".{1,2}b", options);
+        g_regexTester.should_match("aaab", ".{1,3}b", options);
+        g_regexTester.should_not_match("ab", ".{2,}b", options);
+        g_regexTester.should_match("aab", ".{2,}b", options);
+        g_regexTester.should_match("aaab", ".{2,}b", options);
+
+        for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+            const auto c = static_cast<char>(i);
+            if (c != '\0' && c != '\r' && c != '\n') {
+                g_regexTester.should_match(string(1u, c), ".*", options);
+            }
+        }
+
+        {
+            test_regex greedy_dot_star(&g_regexTester, ".*", options);
+            greedy_dot_star.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex bounded_greedy_dot_rep(&g_regexTester, ".{5}", options);
+            bounded_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex upper_bounded_greedy_dot_rep(&g_regexTester, ".{0,5}", options);
+            upper_bounded_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex lower_bounded_greedy_dot_rep(&g_regexTester, ".{4,1000}", options);
+            lower_bounded_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex lower_bounded_and_upper_unlimited_greedy_dot_rep(&g_regexTester, ".{4,}", options);
+            lower_bounded_and_upper_unlimited_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex lower_and_upper_bounded_greedy_dot_rep(&g_regexTester, ".{2,5}", options);
+            lower_and_upper_bounded_greedy_dot_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex too_large_min_greedy_dot_rep(&g_regexTester, ".{11,1000}", options);
+            too_large_min_greedy_dot_rep.should_search_fail("aaaaaaaaaa");
+        }
+    }
+
+    g_regexTester.should_not_match("aaa\r", ".*");
+    g_regexTester.should_not_match("aaa\n", ".*");
+    g_regexTester.should_match("aaa" + string(1u, '\0'), ".*");
+
+    {
+        test_wregex greedy_dot_star_ecma(&g_regexTester, L"^.*$");
+        greedy_dot_star_ecma.should_search_fail(L"aaa\r");
+        greedy_dot_star_ecma.should_search_fail(L"aaa\n");
+        greedy_dot_star_ecma.should_search_fail(L"aaa\u2028"); // U+2028 LINE SEPARATOR
+        greedy_dot_star_ecma.should_search_fail(L"aaa\u2029"); // U+2029 PARAGRAPH SEPARATOR
+        greedy_dot_star_ecma.should_search_match(L"aaa" + wstring(1u, '\0'), L"aaa" + wstring(1u, '\0'));
+    }
+
+
+    g_regexTester.should_match("aaa\r", ".*", extended);
+    g_regexTester.should_match("aaa\n", ".*", extended);
+    g_regexTester.should_not_match("aaa" + string(1u, '\0'), ".*", extended);
+
+    {
+        test_wregex greedy_dot_star_extended(&g_regexTester, L"^.*$", extended);
+        greedy_dot_star_extended.should_search_match(L"aaa\r", L"aaa\r");
+        greedy_dot_star_extended.should_search_match(L"aaa\n", L"aaa\n");
+        greedy_dot_star_extended.should_search_match(L"aaa\u2028", L"aaa\u2028"); // U+2028 LINE SEPARATOR
+        greedy_dot_star_extended.should_search_match(L"aaa\u2029", L"aaa\u2029"); // U+2029 PARAGRAPH SEPARATOR
+        greedy_dot_star_extended.should_search_fail(L"aaa" + wstring(1u, '\0'));
+    }
+}
+
+void test_gh_6480() {
+    // GH-6480: regex_replace() implementation divergence for zero-length matches at the end
+    // regex_replace() should replace final zero-length match at the end of the input string
+    g_regexTester.should_replace_to("", "a?", "X", match_default, "X");
+    g_regexTester.should_replace_to("a", "a?", "X", match_default, "XX");
+    g_regexTester.should_replace_to("bab", "b*", "X", match_default, "XXaXX");
+    g_regexTester.should_replace_to("bbabb", "b*", "X", match_default, "XXaXX");
+    g_regexTester.should_replace_to("bab", "b+", "X", match_default, "XaX");
+    g_regexTester.should_replace_to("bbabb", "b+", "X", match_default, "XaX");
+    g_regexTester.should_replace_to("bbabb", "b*$", "X", match_default, "bbaXX");
+    g_regexTester.should_replace_to("aaabbb", "b*$", "X", match_default, "aaaXX");
+}
+
+void test_gh_6499() {
+    // GH-6499: Accelerate greedy single-character loops
+    //
+    // There are existing tests for single-character loops
+    // in default or collate mode in test_gh_5790().
+    // But we lose coverage of existing code
+    // for greedy multi-character loops as a result,
+    // so add additional test coverage for multi-character loops.
+    // Also add coverage for single-character loops in icase mode.
+    for (const auto options : {ECMAScript, regex_constants::collate}) {
+        g_regexTester.should_not_match("", "(?:aa)+", options);
+        g_regexTester.should_not_match("a", "(?:aa)+", options);
+        g_regexTester.should_match("aa", "(?:aa)+", options);
+        g_regexTester.should_match("c", "(?:aa){0}c", options);
+        g_regexTester.should_match("aaaaaa", "(?:aa)*", options);
+        g_regexTester.should_not_match("aaaaa", "(?:aa)*", options);
+        g_regexTester.should_not_match("aaaaaaac", "(?:aa)*", options);
+        g_regexTester.should_not_match("aaaaaaaac", "(?:aa)*", options);
+
+        g_regexTester.should_not_match("aac", "(?:aa){0}c", options);
+        g_regexTester.should_match("aac", "(?:aa){0,1}c", options);
+        g_regexTester.should_not_match("aaaac", "(?:aa){0,1}c", options);
+        g_regexTester.should_match("aaaac", "(?:aa){0,2}c", options);
+        g_regexTester.should_match("aaaac", "(?:aa){1,2}c", options);
+        g_regexTester.should_not_match("aaaac", "(?:aa){1}c", options);
+        g_regexTester.should_not_match("aaaaac", "(?:aa){1,2}c", options);
+        g_regexTester.should_match("aaaaaac", "(?:aa){1,3}c", options);
+        g_regexTester.should_not_match("aac", "(?:aa){2,}c", options);
+        g_regexTester.should_not_match("aaac", "(?:aa){2,}c", options);
+        g_regexTester.should_match("aaaac", "(?:aa){2,}c", options);
+        g_regexTester.should_not_match("aaaaac", "(?:aa){2,}c", options);
+        g_regexTester.should_match("aaaaaac", "(?:aa){2,}c", options);
+
+        g_regexTester.should_not_match("", "(?:ab)+", options);
+        g_regexTester.should_not_match("a", "(?:ab)+", options);
+        g_regexTester.should_match("ab", "(?:ab)+", options);
+        g_regexTester.should_match("c", "(?:ab){0}c", options);
+        g_regexTester.should_match("ababab", "(?:ab)*", options);
+        g_regexTester.should_not_match("ababa", "(?:ab)*", options);
+        g_regexTester.should_not_match("ababaa", "(?:ab)*", options);
+        g_regexTester.should_not_match("abababac", "(?:ab)*", options);
+        g_regexTester.should_not_match("ababababc", "(?:ab)*", options);
+
+        g_regexTester.should_not_match("abc", "(?:ab){0}c", options);
+        g_regexTester.should_match("abc", "(?:ab){0,1}c", options);
+        g_regexTester.should_not_match("ababc", "(?:ab){0,1}c", options);
+        g_regexTester.should_match("ababc", "(?:ab){0,2}c", options);
+        g_regexTester.should_match("ababc", "(?:ab){1,2}c", options);
+        g_regexTester.should_not_match("ababc", "(?:ab){1}c", options);
+        g_regexTester.should_not_match("ababac", "(?:ab){1,2}c", options);
+        g_regexTester.should_match("abababc", "(?:ab){1,3}c", options);
+        g_regexTester.should_not_match("abc", "(?:ab){2,}c", options);
+        g_regexTester.should_not_match("abac", "(?:ab){2,}c", options);
+        g_regexTester.should_match("ababc", "(?:ab){2,}c", options);
+        g_regexTester.should_not_match("ababac", "(?:ab){2,}c", options);
+        g_regexTester.should_match("abababc", "(?:ab){2,}c", options);
+    }
+
+    for (const syntax_option_type options :
+        {ECMAScript | nosubs, extended | nosubs, regex_constants::collate | nosubs}) {
+        {
+            test_regex greedy_aa_star(&g_regexTester, "(aa)*", options);
+            greedy_aa_star.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+            greedy_aa_star.should_search_match("aaaaaaaaa", "aaaaaaaa");
+        }
+
+        {
+            test_regex greedy_ab_plus(&g_regexTester, "(ab)+", options);
+            greedy_ab_plus.should_search_match("abababababab", "abababababab");
+            greedy_ab_plus.should_search_match("ababababababa", "abababababab");
+            greedy_ab_plus.should_search_match("babababababab", "abababababab");
+            greedy_ab_plus.should_search_match("aababababbab", "abababab");
+            greedy_ab_plus.should_search_match("caababacababab", "abab");
+        }
+
+        {
+            test_regex bounded_greedy_aa_rep(&g_regexTester, "(aa){5}", options);
+            bounded_greedy_aa_rep.should_search_match("aaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaa");
+            bounded_greedy_aa_rep.should_search_fail("abaaaaaaaaabaaaaaaaa");
+        }
+
+        {
+            test_regex bounded_greedy_ab_rep(&g_regexTester, "(ab){5}", options);
+            bounded_greedy_ab_rep.should_search_match("ababababababab", "ababababab");
+            bounded_greedy_ab_rep.should_search_fail("ababcabababcbababababac");
+        }
+
+        {
+            test_regex upper_bounded_greedy_aa_rep(&g_regexTester, "(aa){0,5}", options);
+            upper_bounded_greedy_aa_rep.should_search_match("aaaaaaaaaaaaaaaaaa", "aaaaaaaaaa");
+            upper_bounded_greedy_aa_rep.should_search_match("aaaabaaaabaaaaaaa", "aaaa");
+        }
+
+        {
+            test_regex upper_bounded_greedy_ab_rep(&g_regexTester, "(ab){0,5}", options);
+            upper_bounded_greedy_ab_rep.should_search_match("ababaaabacababab", "abab");
+            upper_bounded_greedy_ab_rep.should_search_match("abababababababababab", "ababababab");
+            upper_bounded_greedy_ab_rep.should_search_match("bababab", "");
+        }
+
+        {
+            test_regex lower_bounded_greedy_aa_rep(&g_regexTester, "(aa){4,1000}", options);
+            lower_bounded_greedy_aa_rep.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+            lower_bounded_greedy_aa_rep.should_search_match("aaaaaaaaa", "aaaaaaaa");
+            lower_bounded_greedy_aa_rep.should_search_fail("aaaaaaa");
+        }
+
+        {
+            test_regex lower_bounded_greedy_ab_rep(&g_regexTester, "(ab){4,1000}", options);
+            lower_bounded_greedy_ab_rep.should_search_match("aabababababacabababababab", "ababababab");
+            lower_bounded_greedy_ab_rep.should_search_match("acaabababab", "abababab");
+            lower_bounded_greedy_ab_rep.should_search_fail("acaabababa");
+        }
+
+        {
+            test_regex lower_and_upper_bounded_greedy_aa_rep(&g_regexTester, "(aa){2,5}", options);
+            lower_and_upper_bounded_greedy_aa_rep.should_search_match("abaaaaaaaaaaaaaa", "aaaaaaaaaa");
+            lower_and_upper_bounded_greedy_aa_rep.should_search_match("abaaaa", "aaaa");
+            lower_and_upper_bounded_greedy_aa_rep.should_search_fail("aaa");
+        }
+
+        {
+            test_regex lower_and_upper_bounded_greedy_ab_rep(&g_regexTester, "(ab){2,5}", options);
+            lower_and_upper_bounded_greedy_ab_rep.should_search_match("acaaababababababacabab", "ababababab");
+            lower_and_upper_bounded_greedy_ab_rep.should_search_match("acababacababab", "abab");
+            lower_and_upper_bounded_greedy_ab_rep.should_search_fail("abaa");
+        }
+    }
+
+    g_regexTester.should_not_match("", "a+", icase);
+    g_regexTester.should_match("a", "a+", icase);
+    g_regexTester.should_match("A", "a+", icase);
+    g_regexTester.should_match("AaAAaaAa", "a+", icase);
+    g_regexTester.should_match("b", "a{0}b", icase);
+    g_regexTester.should_not_match("ab", "a{0}b", icase);
+    g_regexTester.should_not_match("Ab", "a{0}b", icase);
+    g_regexTester.should_match("ab", "a{0,1}b", icase);
+    g_regexTester.should_match("Ab", "a{0,1}b", icase);
+    g_regexTester.should_not_match("aab", "a{0,1}b", icase);
+    g_regexTester.should_not_match("AAb", "a{0,1}b", icase);
+    g_regexTester.should_match("aab", "a{0,2}b", icase);
+    g_regexTester.should_match("Aab", "a{0,2}b", icase);
+    g_regexTester.should_match("aAb", "a{1,2}b", icase);
+    g_regexTester.should_not_match("aab", "a{1}b", icase);
+    g_regexTester.should_not_match("AAb", "a{1}b", icase);
+    g_regexTester.should_not_match("aaab", "a{1,2}b", icase);
+    g_regexTester.should_not_match("aAab", "a{1,2}b", icase);
+    g_regexTester.should_match("aaab", "a{1,3}b", icase);
+    g_regexTester.should_match("aAAb", "a{1,3}b", icase);
+    g_regexTester.should_not_match("ab", "a{2,}b", icase);
+    g_regexTester.should_match("aAb", "a{2,}b", icase);
+    g_regexTester.should_match("AaAb", "a{2,}b", icase);
+
+    {
+        test_regex greedy_a_star(&g_regexTester, "a*", icase);
+        greedy_a_star.should_search_match("aAaaAAAaaA", "aAaaAAAaaA");
+    }
+
+    {
+        test_regex bounded_greedy_a_rep(&g_regexTester, "a{5}", icase);
+        bounded_greedy_a_rep.should_search_match("aAaaAAAaaA", "aAaaA");
+    }
+
+    {
+        test_regex upper_bounded_greedy_a_rep(&g_regexTester, "a{0,5}", icase);
+        upper_bounded_greedy_a_rep.should_search_match("aAaaAAAaaA", "aAaaA");
+    }
+
+    {
+        test_regex lower_bounded_greedy_a_rep(&g_regexTester, "a{4,1000}", icase);
+        lower_bounded_greedy_a_rep.should_search_match("aAaaAAAaaA", "aAaaAAAaaA");
+    }
+
+    {
+        test_regex lower_and_upper_bounded_greedy_a_rep(&g_regexTester, "a{2,5}", icase);
+        lower_and_upper_bounded_greedy_a_rep.should_search_match("aAaaAAAaaA", "aAaaA");
+    }
+
+    {
+        test_regex too_large_min_greedy_a_rep(&g_regexTester, "a{11,1000}", icase);
+        too_large_min_greedy_a_rep.should_search_fail("aAaaAAAaaA");
+    }
+}
+
+void test_gh_6506() {
+    // GH-6506: Accelerate greedy multi-character loops
+    //
+    // Test correct case-insensitive matching.
+    for (const string pattern : {"(?:aa)+", "(?:aA)+", "(?:Aa)+", "(?:AA)+"}) {
+        g_regexTester.should_not_match("", pattern, icase);
+        g_regexTester.should_not_match("a", pattern, icase);
+        g_regexTester.should_not_match("A", pattern, icase);
+        g_regexTester.should_match("aa", pattern, icase);
+        g_regexTester.should_match("aA", pattern, icase);
+        g_regexTester.should_match("AA", pattern, icase);
+        g_regexTester.should_match("Aa", pattern, icase);
+        g_regexTester.should_match("aAaaAAAa", pattern, icase);
+        g_regexTester.should_not_match("aAaaAAAaa", pattern, icase);
+        g_regexTester.should_not_match("aABa", pattern, icase);
+        g_regexTester.should_not_match("aAba", pattern, icase);
+        g_regexTester.should_not_match("aAab", pattern, icase);
+        g_regexTester.should_not_match("aAaB", pattern, icase);
+
+        {
+            test_regex greedy_aa_plus(&g_regexTester, pattern, icase);
+            greedy_aa_plus.should_search_match("aaAaaAAAaA", "aaAaaAAAaA");
+            greedy_aa_plus.should_search_match("aaAaaAAAa", "aaAaaAAA");
+        }
+    }
+
+    for (const string pattern : {"(?:ab)+", "(?:aB)+", "(?:Ab)+", "(?:AB)+"}) {
+        g_regexTester.should_not_match("", pattern, icase);
+        g_regexTester.should_not_match("a", pattern, icase);
+        g_regexTester.should_not_match("A", pattern, icase);
+        g_regexTester.should_not_match("b", pattern, icase);
+        g_regexTester.should_not_match("B", pattern, icase);
+        g_regexTester.should_match("ab", pattern, icase);
+        g_regexTester.should_match("aB", pattern, icase);
+        g_regexTester.should_match("Ab", pattern, icase);
+        g_regexTester.should_match("AB", pattern, icase);
+        g_regexTester.should_not_match("ba", pattern, icase);
+        g_regexTester.should_not_match("bA", pattern, icase);
+        g_regexTester.should_not_match("Ba", pattern, icase);
+        g_regexTester.should_not_match("BA", pattern, icase);
+        g_regexTester.should_match("aBABAbab", pattern, icase);
+        g_regexTester.should_not_match("aBABAbaba", pattern, icase);
+        g_regexTester.should_not_match("aABa", pattern, icase);
+        g_regexTester.should_not_match("aAba", pattern, icase);
+        g_regexTester.should_not_match("aAac", pattern, icase);
+        g_regexTester.should_not_match("aAaC", pattern, icase);
+
+        {
+            test_regex greedy_ab_plus(&g_regexTester, pattern, icase);
+            greedy_ab_plus.should_search_match("abAbaBABaB", "abAbaBABaB");
+            greedy_ab_plus.should_search_match("abAbaBABa", "abAbaBAB");
+            greedy_ab_plus.should_search_match("bAbaBABabA", "AbaBABab");
+            greedy_ab_plus.should_search_match("aAbABabAB", "AbABabAB");
+            greedy_ab_plus.should_search_match("cbABabAbaBad", "ABabAbaB");
+        }
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2798,6 +3366,12 @@ int main() {
     test_gh_6267();
     test_gh_6289();
     test_gh_6359();
+    test_gh_6423();
+    test_gh_6464();
+    test_gh_6475();
+    test_gh_6480();
+    test_gh_6499();
+    test_gh_6506();
 
     return g_regexTester.result();
 }

@@ -33,7 +33,7 @@ if __name__ == "__main__":
             damaged_lines.add(line)
         else:
             result = m.group("result")
-            if result == "FAIL" or result == "SKIPPED":
+            if result in ("FAIL", "SKIPPED"):
                 unique_tests.add(m.group("test"))
             else:
                 unknown_results.add(line)

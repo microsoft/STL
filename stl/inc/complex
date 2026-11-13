@@ -21,6 +21,8 @@
 // https://learn.microsoft.com/cpp/build/arm64-windows-abi-conventions#base-requirements
 // Both floating-point and NEON support are presumed to be present in hardware.
 #define _FMP_USING_STD_FMA
+#elif defined(__clang__) && defined(_BUILD_STD_MODULE) // TRANSITION, LLVM-195661
+// workaround: no intrinsics for Clang modules
 #elif defined(_M_IX86) || defined(_M_X64)
 #define _FMP_USING_X86_X64_INTRINSICS
 #include <__msvc_bit_utils.hpp>
@@ -360,7 +362,17 @@ using _Fcomplex_value = _CSTD _C_float_complex;
 using _Lcomplex_value = _CSTD _C_ldouble_complex;
 
 _EXPORT_STD template <class _Ty>
-class complex;
+class complex {
+    static_assert(false, R"(N5054 [complex.numbers.general]/2: "The effect of instantiating the primary template of)"
+                         R"( complex for any type that is not a cv-unqualified floating-point type is unspecified.")"
+                         R"( This implementation forbids such instantiations.)");
+};
+
+#if _HAS_CXX17
+template <class _Ty>
+complex(_Ty, _Ty = _Ty()) -> complex<_Ty>;
+#endif // _HAS_CXX17
+
 template <>
 class complex<float>;
 template <>
@@ -925,60 +937,53 @@ public:
 template <class _Ty>
 constexpr bool _Is_unqual_fp = _Is_any_of_v<_Ty, float, double, long double>;
 
-template <class _Ty>
-struct _Complex_value {
-    enum { _Re = 0, _Im = 1 };
-    _Ty _Val[2];
-};
-
 template <class _Ty, class _Valbase>
 class _Complex_base : public _Valbase {
-private:
-    static constexpr bool _Is_for_standard_complex = _Is_any_of_v<_Complex_base, _Complex_base<float, _Fcomplex_value>,
-        _Complex_base<double, _Dcomplex_value>, _Complex_base<long double, _Lcomplex_value>>;
-
 public:
+    static_assert(_Is_any_of_v<_Complex_base, _Complex_base<float, _Fcomplex_value>,
+                      _Complex_base<double, _Dcomplex_value>, _Complex_base<long double, _Lcomplex_value>>,
+        "_Complex_base is an STL-internal type.");
+
     using _Myctraits = _Ctraits<_Ty>;
     using value_type = _Ty;
 
-    constexpr _Complex_base(const _Ty& _Realval, const _Ty& _Imagval) noexcept(_Is_for_standard_complex)
-        : _Valbase{{_Realval, _Imagval}} {}
+    constexpr _Complex_base(const _Ty& _Realval, const _Ty& _Imagval) noexcept : _Valbase{{_Realval, _Imagval}} {}
 
-    _CONSTEXPR20 void real(const _Ty& _Right) noexcept(_Is_for_standard_complex) /* strengthened */ {
+    _CONSTEXPR20 void real(const _Ty& _Right) noexcept /* strengthened */ {
         // set real component
         this->_Val[_RE] = _Right;
     }
 
-    _CONSTEXPR20 void imag(const _Ty& _Right) noexcept(_Is_for_standard_complex) /* strengthened */ {
+    _CONSTEXPR20 void imag(const _Ty& _Right) noexcept /* strengthened */ {
         // set imaginary component
         this->_Val[_IM] = _Right;
     }
 
-    _NODISCARD constexpr _Ty real() const noexcept(_Is_for_standard_complex) /* strengthened */ {
+    _NODISCARD constexpr _Ty real() const noexcept /* strengthened */ {
         // return real component
         return this->_Val[_RE];
     }
 
-    _NODISCARD constexpr _Ty imag() const noexcept(_Is_for_standard_complex) /* strengthened */ {
+    _NODISCARD constexpr _Ty imag() const noexcept /* strengthened */ {
         // return imaginary component
         return this->_Val[_IM];
     }
 
 protected:
     template <class _Other>
-    _CONSTEXPR20 void _Add(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Add(const complex<_Other>& _Right) noexcept(_Is_unqual_fp<_Other>) {
         this->_Val[_RE] = this->_Val[_RE] + static_cast<_Ty>(_Right.real());
         this->_Val[_IM] = this->_Val[_IM] + static_cast<_Ty>(_Right.imag());
     }
 
     template <class _Other>
-    _CONSTEXPR20 void _Sub(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Sub(const complex<_Other>& _Right) noexcept(_Is_unqual_fp<_Other>) {
         this->_Val[_RE] = this->_Val[_RE] - static_cast<_Ty>(_Right.real());
         this->_Val[_IM] = this->_Val[_IM] - static_cast<_Ty>(_Right.imag());
     }
 
     template <class _Other>
-    _CONSTEXPR20 void _Mul(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Mul(const complex<_Other>& _Right) noexcept(_Is_unqual_fp<_Other>) {
         _Ty _Rightreal = static_cast<_Ty>(_Right.real());
         _Ty _Rightimag = static_cast<_Ty>(_Right.imag());
 
@@ -988,7 +993,7 @@ protected:
     }
 
     template <class _Other>
-    _CONSTEXPR20 void _Div(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Div(const complex<_Other>& _Right) noexcept(_Is_unqual_fp<_Other>) {
         using _Myctraits = _Ctraits<_Ty>;
 
         _Ty _Rightreal = static_cast<_Ty>(_Right.real());
@@ -1319,98 +1324,6 @@ constexpr complex<long double>::complex(const complex<float>& _Right) noexcept /
 
 constexpr complex<long double>::complex(const complex<double>& _Right) noexcept // strengthened
     : _Complex_base<long double, _Lcomplex_value>(_Right.real(), _Right.imag()) {}
-
-_EXPORT_STD template <class _Ty>
-class complex : public _Complex_base<_Ty, _Complex_value<_Ty>> {
-public:
-    using _Mybase = _Complex_base<_Ty, _Complex_value<_Ty>>;
-
-    _DEPRECATE_NONFLOATING_COMPLEX
-    constexpr complex(const _Ty& _Realval = _Ty(), const _Ty& _Imagval = _Ty()) : _Mybase(_Realval, _Imagval) {}
-
-    _CONSTEXPR20 complex& operator=(const _Ty& _Right) {
-        this->_Val[_RE] = _Right;
-        this->_Val[_IM] = _Ty();
-        return *this;
-    }
-
-    template <class _Other>
-    _DEPRECATE_NONFLOATING_COMPLEX constexpr complex(const complex<_Other>& _Right)
-        : _Mybase(static_cast<_Ty>(_Right.real()), static_cast<_Ty>(_Right.imag())) {}
-
-    template <class _Other>
-    _CONSTEXPR20 complex& operator=(const complex<_Other>& _Right) {
-        this->_Val[_RE] = static_cast<_Ty>(_Right.real());
-        this->_Val[_IM] = static_cast<_Ty>(_Right.imag());
-        return *this;
-    }
-
-    _CONSTEXPR20 complex& operator+=(const _Ty& _Right) {
-        this->_Val[_RE] = this->_Val[_RE] + _Right;
-        return *this;
-    }
-
-    _CONSTEXPR20 complex& operator-=(const _Ty& _Right) {
-        this->_Val[_RE] = this->_Val[_RE] - _Right;
-        return *this;
-    }
-
-    _CONSTEXPR20 complex& operator*=(const _Ty& _Right) {
-        this->_Val[_RE] = this->_Val[_RE] * _Right;
-        this->_Val[_IM] = this->_Val[_IM] * _Right;
-        return *this;
-    }
-
-    _CONSTEXPR20 complex& operator/=(const _Ty& _Right) {
-        this->_Val[_RE] = this->_Val[_RE] / _Right;
-        this->_Val[_IM] = this->_Val[_IM] / _Right;
-        return *this;
-    }
-
-    _CONSTEXPR20 complex& operator+=(const complex& _Right) {
-        this->_Add(_Right);
-        return *this;
-    }
-
-    _CONSTEXPR20 complex& operator-=(const complex& _Right) {
-        this->_Sub(_Right);
-        return *this;
-    }
-
-    _CONSTEXPR20 complex& operator*=(const complex& _Right) {
-        this->_Mul(_Right);
-        return *this;
-    }
-
-    _CONSTEXPR20 complex& operator/=(const complex& _Right) {
-        this->_Div(_Right);
-        return *this;
-    }
-
-    template <class _Other>
-    _CONSTEXPR20 complex& operator+=(const complex<_Other>& _Right) {
-        this->_Add(_Right);
-        return *this;
-    }
-
-    template <class _Other>
-    _CONSTEXPR20 complex& operator-=(const complex<_Other>& _Right) {
-        this->_Sub(_Right);
-        return *this;
-    }
-
-    template <class _Other>
-    _CONSTEXPR20 complex& operator*=(const complex<_Other>& _Right) {
-        this->_Mul(_Right);
-        return *this;
-    }
-
-    template <class _Other>
-    _CONSTEXPR20 complex& operator/=(const complex<_Other>& _Right) {
-        this->_Div(_Right);
-        return *this;
-    }
-};
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const complex<_Ty>& _Right)

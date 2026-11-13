@@ -23,15 +23,6 @@ extern "C" {
 
 using __std_tzdb_epoch_milli = double;
 
-struct __std_tzdb_leap_info {
-    uint16_t _Year;
-    uint16_t _Month;
-    uint16_t _Day;
-    uint16_t _Hour;
-    uint16_t _Negative;
-    uint16_t _Reserved;
-};
-
 enum class __std_tzdb_error {
     _Success   = 0,
     _Win_error = 1,
@@ -85,10 +76,6 @@ _NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
     const char* _Tz, size_t _Tz_len, __std_tzdb_epoch_milli _Local) noexcept;
 void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* _Info) noexcept;
 
-_NODISCARD __std_tzdb_leap_info* __stdcall __std_tzdb_get_leap_seconds(
-    size_t _Prev_ls_size, size_t* _Current_ls_size) noexcept;
-void __stdcall __std_tzdb_delete_leap_seconds(__std_tzdb_leap_info* _Info) noexcept;
-
 _NODISCARD void* __stdcall __std_calloc_crt(size_t _Count, size_t _Size) noexcept;
 void __stdcall __std_free_crt(void* _Ptr) noexcept;
 
@@ -117,13 +104,6 @@ template <>
 struct _Tzdb_deleter<__std_tzdb_sys_info> {
     static void operator()(__std_tzdb_sys_info* _Info) noexcept {
         __std_tzdb_delete_sys_info(_Info);
-    }
-};
-
-template <>
-struct _Tzdb_deleter<__std_tzdb_leap_info[]> {
-    static void operator()(__std_tzdb_leap_info* _Info) noexcept {
-        __std_tzdb_delete_leap_seconds(_Info);
     }
 };
 

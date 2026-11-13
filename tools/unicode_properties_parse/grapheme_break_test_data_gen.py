@@ -3,7 +3,7 @@
 
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Optional, TextIO
+from typing import TextIO
 from array import array
 
 
@@ -21,7 +21,7 @@ class EOF:
     pass
 
 
-def parse_break_test_line(input: TextIO) -> Optional[BreakTestItem]:
+def parse_break_test_line(input: TextIO) -> BreakTestItem | None:
     result = BreakTestItem()
     while True:
         c = input.read(1)

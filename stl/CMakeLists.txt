@@ -16,6 +16,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_formatter.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_heap_algorithms.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_inttypes.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_iter_core.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_math.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_minmax.hpp
@@ -399,7 +400,7 @@ add_compile_definitions(_CRTBLD _HAS_OLD_IOSTREAMS_MEMBERS=1)
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
 
 add_compile_options(/nologo /WX /Gy
-    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:preprocessor;/Zc:threadSafeInit-;/Zc:cmath-;/Zl>"
+    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:preprocessor;/Zc:threadSafeInit-;/Zl>"
     "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},x64;arm64;arm64ec>>:/guard:ehcont>"
     "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},arm64;arm64ec>>:/guard:signret>"
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/quiet>"
@@ -514,9 +515,9 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
 
     # msvcp140_2.dll (the special math satellite)
     add_library(msvcp_2${D_SUFFIX}_objects OBJECT ${SOURCES_SATELLITE_2})
-    target_compile_definitions(msvcp_2${D_SUFFIX}_objects PRIVATE _BUILDING_SATELLITE_2 _DLL)
+    target_compile_definitions(msvcp_2${D_SUFFIX}_objects PRIVATE _BUILDING_SATELLITE_2 _DLL BOOST_MATH_STANDALONE=1)
     target_compile_options(msvcp_2${D_SUFFIX}_objects PRIVATE ${gl_flag_${REL_OR_DBG}} /EHsc)
-    target_link_libraries(msvcp_2${D_SUFFIX}_objects PRIVATE Boost::math)
+    target_include_directories(msvcp_2${D_SUFFIX}_objects PRIVATE "${PROJECT_SOURCE_DIR}/boost-math/include")
     target_stl_compile_options(msvcp_2${D_SUFFIX}_objects ${REL_OR_DBG})
 
     add_library(msvcp_2${D_SUFFIX} SHARED)
@@ -536,7 +537,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
     generate_satellite_def("atomic_wait" "${D_SUFFIX}")
 
     add_library(msvcp${D_SUFFIX}_atomic_wait SHARED "${CMAKE_BINARY_DIR}/msvcp_atomic_wait${D_SUFFIX}.def")
-    target_link_libraries(msvcp${D_SUFFIX}_atomic_wait PRIVATE msvcp${D_SUFFIX}_atomic_wait_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib" "advapi32.lib" "synchronization.lib")
+    target_link_libraries(msvcp${D_SUFFIX}_atomic_wait PRIVATE msvcp${D_SUFFIX}_atomic_wait_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib" "synchronization.lib")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_atomic_wait${D_SUFFIX}${VCLIBS_SUFFIX}")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_wait${VCLIBS_SUFFIX}")
@@ -573,9 +574,10 @@ function(add_stl_statics FLAVOR_SUFFIX REL_OR_DBG IDL_VALUE)
     target_stl_compile_options(libcpmt${FLAVOR_SUFFIX}_eha ${REL_OR_DBG})
 
     add_library(libcpmt${FLAVOR_SUFFIX} STATIC ${HEADERS} ${IMPLIB_SOURCES} ${SOURCES} ${INITIALIZER_SOURCES} ${STATIC_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE _ANNOTATE_STL "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE _ANNOTATE_STL "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}" BOOST_MATH_STANDALONE=1)
     target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
-    target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math stl_alias_objects libcpmt${FLAVOR_SUFFIX}_eha)
+    target_include_directories(libcpmt${FLAVOR_SUFFIX} PRIVATE "${PROJECT_SOURCE_DIR}/boost-math/include")
+    target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE stl_alias_objects libcpmt${FLAVOR_SUFFIX}_eha)
     target_stl_compile_options(libcpmt${FLAVOR_SUFFIX} ${REL_OR_DBG})
     set_target_properties(libcpmt${FLAVOR_SUFFIX} PROPERTIES STATIC_LIBRARY_OPTIONS "${VCLIBS_EXPLICIT_MACHINE}")
 endfunction()

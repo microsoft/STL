@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <cstdio>
 #include <cstdlib>
 #include <internal_shared.h>
 #include <mutex>
@@ -12,24 +11,13 @@
 
 extern "C" {
 
-// TRANSITION, ABI: exported only for ABI compat
-[[noreturn]] _CRTIMP2_PURE void __cdecl _Thrd_abort(const char* msg) noexcept { // abort on precondition failure
-    fputs(msg, stderr);
-    fputc('\n', stderr);
+// TRANSITION, ABI: preserved for binary compatibility
+[[noreturn]] _CRTIMP2_PURE void __cdecl _Thrd_abort(const char*) noexcept { // abort on precondition failure
     abort();
 }
 
-#ifdef _DEBUG
-#define _THREAD_QUOTX(x)          #x
-#define _THREAD_QUOT(x)           _THREAD_QUOTX(x)
-#define _THREAD_ASSERT(expr, msg) ((expr) ? (void) 0 : _Thrd_abort(__FILE__ "(" _THREAD_QUOT(__LINE__) "): " msg))
-#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
-#define _THREAD_ASSERT(expr, msg) ((void) 0)
-#endif // ^^^ !defined(_DEBUG) ^^^
-
 // TRANSITION, ABI: preserved for binary compatibility
-enum class __stl_sync_api_modes_enum { normal, win7, vista, concrt };
-_CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum) noexcept {}
+_CRTIMP2 void __cdecl __set_stl_sync_api_mode(int) noexcept {}
 
 [[nodiscard]] static PSRWLOCK get_srw_lock(_Mtx_t mtx) noexcept {
     return reinterpret_cast<PSRWLOCK>(&mtx->_Critical_section._M_srw_lock);
@@ -45,7 +33,7 @@ _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t mtx, int type) noexcept { //
 
 // TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t mtx) noexcept { // destroy mutex in situ
-    _THREAD_ASSERT(mtx->_Count == 0, "mutex destroyed while busy");
+    _ASSERT_EXPR(mtx->_Count == 0, L"mutex destroyed while busy");
     (void) mtx;
 }
 
@@ -147,9 +135,9 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) noexcept 
 }
 
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t mtx) noexcept { // unlock mutex
-    _THREAD_ASSERT(mtx->_Count > 0, "unlock of unowned mutex");
-    _THREAD_ASSERT(
-        mtx->_Thread_id == static_cast<long>(GetCurrentThreadId()), "unlock of mutex not owned by the current thread");
+    _ASSERT_EXPR(mtx->_Count > 0, L"unlock of unowned mutex");
+    _ASSERT_EXPR(
+        mtx->_Thread_id == static_cast<long>(GetCurrentThreadId()), L"unlock of mutex not owned by the current thread");
 
     if (--mtx->_Count == 0) { // leave critical section
         mtx->_Thread_id = -1;
@@ -167,7 +155,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t mtx) noexcept { // lock mute
 
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t mtx) noexcept { // attempt to lock try_mutex
     _timespec64 xt;
-    _THREAD_ASSERT((mtx->_Type & (_Mtx_try | _Mtx_timed)) != 0, "trylock not supported by mutex");
+    _ASSERT_EXPR((mtx->_Type & (_Mtx_try | _Mtx_timed)) != 0, L"trylock not supported by mutex");
     xt.tv_sec  = 0;
     xt.tv_nsec = 0;
     return mtx_do_lock(mtx, &xt);
@@ -178,7 +166,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_timedlock(_Mtx_t mtx, const _timespec64*
     // attempt to lock timed mutex
     _Thrd_result res;
 
-    _THREAD_ASSERT((mtx->_Type & _Mtx_timed) != 0, "timedlock not supported by mutex");
+    _ASSERT_EXPR((mtx->_Type & _Mtx_timed) != 0, L"timedlock not supported by mutex");
     res = mtx_do_lock(mtx, xt);
     return res == _Thrd_result::_Busy ? _Thrd_result::_Timedout : res;
 }
