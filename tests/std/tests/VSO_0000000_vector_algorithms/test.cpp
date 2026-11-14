@@ -702,8 +702,8 @@ void test_gh_6520() {
         v.push_back(static_cast<uint8_t>(c));
     }
 
-    const auto mn_mx = minmax_element(v.begin(), v.end());
-    const auto mx_only  = max_element(v.begin(), v.end());
+    const auto mn_mx   = minmax_element(v.begin(), v.end());
+    const auto mx_only = max_element(v.begin(), v.end());
     assert(*mn_mx.first == uint8_t{'a'});
     assert(*mn_mx.second == uint8_t{'s'});
     assert(*mx_only == uint8_t{'s'});
@@ -1809,7 +1809,6 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         test_gh_4449<uint32_t>();
         test_gh_4449<uint64_t>();
 #endif // _HAS_CXX20
-        test_gh_6520();
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(30, "find")] += finish_time - start_time;
     }
@@ -1899,6 +1898,7 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
             vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
 
         test_gh_6373();
+        test_gh_6520();
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(70, "minmax_element")] += finish_time - start_time;
     }
