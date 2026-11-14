@@ -690,6 +690,25 @@ void test_gh_6373() {
     }
 }
 
+// GH-6520 <algorithm>: x64 vectorized max_element() / minmax_element() return the wrong maximum for uint8_t
+void test_gh_6520() {
+    vector<std::uint8_t> v;
+    for (int i = 0; i < 8192; ++i) {
+        v.push_back('a');
+        v.push_back('b');
+    }
+
+    for (char c : {'s', 'e', 'c', 'o', 'n', 'd'}) {
+        v.push_back(static_cast<uint8_t>(c));
+    }
+
+    const auto mn_mx = minmax_element(v.begin(), v.end());
+    const auto mx_only  = max_element(v.begin(), v.end());
+    assert(*mn_mx.first == uint8_t{'a'});
+    assert(*mn_mx.second == uint8_t{'s'});
+    assert(*mx_only == uint8_t{'s'});
+}
+
 template <class T>
 void test_is_sorted_until(mt19937_64& gen) {
     using Limits = numeric_limits<T>;
@@ -1790,6 +1809,7 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
         test_gh_4449<uint32_t>();
         test_gh_4449<uint64_t>();
 #endif // _HAS_CXX20
+        test_gh_6520();
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(30, "find")] += finish_time - start_time;
     }
