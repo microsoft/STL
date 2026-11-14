@@ -692,7 +692,7 @@ void test_gh_6373() {
 
 // GH-6520 <algorithm>: x64 vectorized max_element() / minmax_element() return the wrong maximum for uint8_t
 void test_gh_6520() {
-    array<uint8_t, 8192 * 2 + 6> a{};
+    vector<uint8_t> a(8192 * 2 + 6);
     for (size_t i = 0; i < 8192; ++i) {
         a[i * 2 + 0] = 'a';
         a[i * 2 + 1] = 'b';
