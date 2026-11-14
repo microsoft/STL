@@ -2938,7 +2938,7 @@ namespace {
 
                             const size_t _Tail_byte_size = _Remaining_byte_size & _Traits::_Tail_mask;
 
-                            if (_Last_portion && _Tail_byte_size != 0) {
+                            if (_Last_portion && _Tail_byte_size != 0 && !_mm256_testz_si256(_Cur_idx, _Cur_idx)) {
                                 const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size);
                                 auto _Tail_vals       = _Traits::_Load_mask(_First, _Tail_mask);
                                 if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
