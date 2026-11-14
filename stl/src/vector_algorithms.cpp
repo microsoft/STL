@@ -67,10 +67,12 @@ namespace {
         return (__processor_features_0_63 & _Mask_sve2) != 0;
     }
 
-    // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
-    // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
-    __declspec(noinline) size_t _Sve_vl() noexcept {
-        return svcntb();
+    // If _Use_FEAT_SVE() is false, _Get_sve_vl_bytes() is zero.
+    // Otherwise, the SVE vector length is always a power of two.
+    // Arm Architecture Reference Manual for A-profile architecture, B1.4.2 "Configurable SVE vector lengths":
+    // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
+    size_t _Get_sve_vl_bytes() noexcept {
+        return __arm64_sve_vl; // records the result of svcntb()
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
@@ -6962,7 +6964,7 @@ namespace {
                     return _Last1;
                 }
 
-                const size_t _Sve_vl_bytes    = svcntb();
+                const size_t _Sve_vl_bytes    = _Get_sve_vl_bytes();
                 const void* _Stop1            = _First1;
                 const size_t _Haystack_length = _Byte_length(_First1, _Last1);
                 _Advance_bytes(_Stop1, _Haystack_length & ~(_Sve_vl_bytes - 1));
@@ -9763,12 +9765,9 @@ namespace {
         template <class _Traits, class _Ty>
         __declspec(noalias) __declspec(noinline) void __stdcall _Replace_sve(
             void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
-            // Arm Architecture Reference Manual for A-profile architecture,
-            // B1.4.2 "Configurable SVE vector lengths":
-            // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
-            const size_t _Sve_vl        = svcntb();
+            const size_t _Sve_vl_bytes  = _Get_sve_vl_bytes();
             const size_t _Size_bytes    = _Byte_length(_First, _Last);
-            const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl - 1};
+            const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl_bytes - 1};
 
             const void* _Stop_at = _First;
             _Advance_bytes(_Stop_at, _Full_vl_bytes);
@@ -9781,10 +9780,10 @@ namespace {
                 const auto _Data = _Traits::_Load(_True, _First);
                 const auto _Mask = _Traits::_Cmp(_True, _Data, _Comparand);
                 _Traits::_Store(_Mask, _First, _Replacement);
-                _Advance_bytes(_First, _Sve_vl);
+                _Advance_bytes(_First, _Sve_vl_bytes);
             }
 
-            if (const size_t _Tail_length = _Size_bytes & size_t{_Sve_vl - 1}; _Tail_length != 0) {
+            if (const size_t _Tail_length = _Size_bytes & size_t{_Sve_vl_bytes - 1}; _Tail_length != 0) {
                 const auto _Tail_mask = svwhilelt_b8(size_t{0}, _Tail_length);
                 const auto _Data      = _Traits::_Load(_Tail_mask, _First);
                 const auto _Mask      = _Traits::_Cmp(_Tail_mask, _Data, _Comparand);
@@ -10257,7 +10256,7 @@ namespace {
             using _Vec_t = svuint64_t;
 
             static size_t _Step() noexcept {
-                return svcntd();
+                return _Get_sve_vl_bytes() / 8; // i.e. svcntd()
             }
 
             static svbool_t _Whilelt(const size_t _Op1, const size_t _Op2) noexcept {
@@ -10303,7 +10302,7 @@ namespace {
             using _Vec_t = svuint32_t;
 
             static size_t _Step() noexcept {
-                return svcntw();
+                return _Get_sve_vl_bytes() / 4; // i.e. svcntw()
             }
 
             static svbool_t _Whilelt(const size_t _Op1, const size_t _Op2) noexcept {
@@ -10818,7 +10817,7 @@ extern "C" {
 
 void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _Val) noexcept {
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+    if (_Use_FEAT_SVE() && _Get_sve_vl_bytes() > 16) {
         return _Removing::_Remove_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_1>(_First, _Last, _First, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
@@ -10847,7 +10846,7 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
 
 void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _Val) noexcept {
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+    if (_Use_FEAT_SVE() && _Get_sve_vl_bytes() > 16) {
         return _Removing::_Remove_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_2>(_First, _Last, _First, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
@@ -10944,7 +10943,7 @@ void* __stdcall __std_remove_copy_1(
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     // For 8-bit element types SVE is only faster than Neon at same VL for small input sizes.
-    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 96 || _Sve_vl() > 16);
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 96 || _Get_sve_vl_bytes() > 16);
     if (_Use_sve) {
         return _Removing::_Remove_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_1>(_First, _Last, _Out, _Val);
     }
@@ -11037,7 +11036,7 @@ void* __stdcall __std_remove_copy_8(
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     // For 64-bit element types SVE is only faster than the scalar fallback at VL128 for large input sizes.
-    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes > 512 || _Sve_vl() > 16);
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes > 512 || _Get_sve_vl_bytes() > 16);
     if (_Use_sve) {
         return _Removing::_Remove_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_8>(_First, _Last, _Out, _Val);
     }
@@ -11074,7 +11073,7 @@ void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 64 || _Sve_vl() > 16);
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 64 || _Get_sve_vl_bytes() > 16);
     if (_Use_sve) {
         return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_1, uint8_t>(
             _First, _Last, _First, _Size_bytes);
@@ -11112,7 +11111,7 @@ void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 512 || _Sve_vl() > 16);
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 512 || _Get_sve_vl_bytes() > 16);
     if (_Use_sve) {
         return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_2, uint16_t>(
             _First, _Last, _First, _Size_bytes);
@@ -11150,7 +11149,7 @@ void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes >= 32 || _Sve_vl() > 16);
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes >= 32 || _Get_sve_vl_bytes() > 16);
     if (_Use_sve) {
         return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_4, uint32_t>(
             _First, _Last, _First, _Size_bytes);
@@ -11195,7 +11194,7 @@ void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
     [[maybe_unused]] const size_t _Size_bytes = _Byte_length(_First, _Last);
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes >= 256 || _Sve_vl() > 16);
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes >= 256 || _Get_sve_vl_bytes() > 16);
     if (_Use_sve) {
         return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove, _Removing::_Sve_8, uint64_t>(
             _First, _Last, _First, _Size_bytes);
@@ -11231,7 +11230,7 @@ void* __stdcall __std_unique_copy_1(const void* _First, const void* const _Last,
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+    if (_Use_FEAT_SVE() && _Get_sve_vl_bytes() > 16) {
         _Advance_bytes(_Dest, 1);
         return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_1, uint8_t>(
             _First, _Last, _Dest, _Size_bytes);
@@ -11267,7 +11266,7 @@ void* __stdcall __std_unique_copy_2(const void* _First, const void* const _Last,
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+    if (_Use_FEAT_SVE() && _Get_sve_vl_bytes() > 16) {
         _Advance_bytes(_Dest, 2);
         return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_2, uint16_t>(
             _First, _Last, _Dest, _Size_bytes);
@@ -11303,7 +11302,7 @@ void* __stdcall __std_unique_copy_4(const void* _First, const void* const _Last,
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+    if (_Use_FEAT_SVE() && _Get_sve_vl_bytes() > 16) {
         _Advance_bytes(_Dest, 4);
         return _Removing::_Unique_impl_sve<_Removing::_Alg::_Remove_copy, _Removing::_Sve_4, uint32_t>(
             _First, _Last, _Dest, _Size_bytes);
@@ -12112,7 +12111,7 @@ namespace {
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) void _Impl_sve_1(char* const _Dest, const void* _Src, const size_t _Size_bits,
             const char _Elem0, const char _Elem1) noexcept {
-            const size_t _Step_size_bits = svcntb();
+            const size_t _Step_size_bits = _Get_sve_vl_bytes();
             const size_t _Step_bytes     = _Step_size_bits / 8;
             size_t _Remaining_bits       = _Size_bits;
             if (_Size_bits >= _Step_size_bits) {
@@ -12139,7 +12138,7 @@ namespace {
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) void _Impl_sve_2(wchar_t* const _Dest, const void* _Src, const size_t _Size_bits,
             const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
-            const size_t _Step_size_bits = svcntb();
+            const size_t _Step_size_bits = _Get_sve_vl_bytes();
             const size_t _Step_bytes     = _Step_size_bits / 8;
             size_t _Remaining_bits       = _Size_bits;
             if (_Size_bits >= _Step_size_bits) {
@@ -12534,7 +12533,7 @@ namespace {
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_1(void* const _Dest, const char* const _Src, const size_t _Size_bytes,
             const size_t _Size_convert, const size_t _Size_chars, const char _Elem0, const char _Elem1) noexcept {
-            const size_t _Step_in    = svcntb();
+            const size_t _Step_in    = _Get_sve_vl_bytes();
             const size_t _Step_out   = _Step_in / 8;
             const char* _Src_end     = _Src + _Size_convert;
             uint8_t* _Dest_bytes     = static_cast<uint8_t*>(_Dest);
@@ -12568,7 +12567,7 @@ namespace {
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         __declspec(noinline) bool _Impl_sve_2(void* const _Dest, const wchar_t* const _Src, const size_t _Size_bytes,
             const size_t _Size_convert, const size_t _Size_chars, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
-            const size_t _Step_in    = svcntb();
+            const size_t _Step_in    = _Get_sve_vl_bytes();
             const size_t _Step_out   = _Step_in / 8;
             const size_t _Half_step  = _Step_in / 2;
             const wchar_t* _Src_end  = _Src + _Size_convert;
@@ -12617,7 +12616,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
     const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
+    if (_Use_FEAT_SVE() && _Size_convert >= _Get_sve_vl_bytes()) {
         return _Impl_sve_1(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
@@ -12644,7 +12643,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
     const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-    if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
+    if (_Use_FEAT_SVE() && _Size_convert >= _Get_sve_vl_bytes()) {
         return _Impl_sve_2(_Dest, _Src, _Size_bytes, _Size_convert, _Size_chars, _Elem0, _Elem1);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
