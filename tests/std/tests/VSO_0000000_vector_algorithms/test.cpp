@@ -692,21 +692,28 @@ void test_gh_6373() {
 
 // GH-6520 <algorithm>: x64 vectorized max_element() / minmax_element() return the wrong maximum for uint8_t
 void test_gh_6520() {
-    vector<std::uint8_t> v;
-    for (int i = 0; i < 8192; ++i) {
-        v.push_back('a');
-        v.push_back('b');
+    array<uint8_t, 8192 * 2 + 6> a{};
+    for (size_t i = 0; i < 8192; ++i) {
+        a[i * 2 + 0] = 'a';
+        a[i * 2 + 1] = 'b';
     }
 
-    for (char c : {'s', 'e', 'c', 'o', 'n', 'd'}) {
-        v.push_back(static_cast<uint8_t>(c));
-    }
+    const array<uint8_t, 6> tail = {'s', 'e', 'c', 'o', 'n', 'd'};
 
-    const auto mn_mx   = minmax_element(v.begin(), v.end());
-    const auto mx_only = max_element(v.begin(), v.end());
-    assert(*mn_mx.first == uint8_t{'a'});
-    assert(*mn_mx.second == uint8_t{'s'});
-    assert(*mx_only == uint8_t{'s'});
+    copy(tail.begin(), tail.end(), a.begin() + 8192 * 2);
+
+
+    const auto mn_mx   = minmax_element(a.begin(), a.end());
+    const auto mn_only = min_element(a.begin(), a.end());
+    const auto mx_only = max_element(a.begin(), a.end());
+    assert(mn_mx.first == a.begin());
+    assert(*mn_mx.first == 'a');
+    assert(mn_mx.second == a.begin() + 8192 * 2);
+    assert(*mn_mx.second == 's');
+    assert(mn_only == a.begin());
+    assert(*mn_only == 'a');
+    assert(mx_only == a.begin() + 8192 * 2);
+    assert(*mx_only == 's');
 }
 
 template <class T>
