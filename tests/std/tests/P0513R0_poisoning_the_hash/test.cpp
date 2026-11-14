@@ -9,19 +9,22 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
-#include <optional>
 #include <string>
-#include <string_view>
 #include <system_error>
 #include <type_traits>
 #include <typeindex>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #ifndef _M_CEE_PURE
 #include <thread>
 #endif // _M_CEE_PURE
+
+#if _HAS_CXX17
+#include <optional>
+#include <string_view>
+#include <variant>
+#endif // _HAS_CXX17
 
 using namespace std;
 

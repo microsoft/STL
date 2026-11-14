@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+
+#if _HAS_CXX20
 #include <ranges>
+#endif // _HAS_CXX20
 
 #include <test_death.hpp>
 
