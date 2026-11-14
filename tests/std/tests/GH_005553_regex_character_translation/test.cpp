@@ -295,10 +295,42 @@ void test_gh_6506() {
         check_no_match(L"bdcfbecd", pattern, collating_bd_star);
     }
 }
+
+void test_gh_6540() {
+    // GH-6540: Accelerate greedy loops of small and negated empty character classes
+    {
+        const wstring pattern = L"[bd]*";
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> collating_pos_class_bd_star{
+            pattern, regex_constants::collate};
+        check_match(L"", pattern, collating_pos_class_bd_star);
+        check_match(L"bbccddeebcdecdebdebcebcd", pattern, collating_pos_class_bd_star);
+        check_no_match(L"bbccddeebcdecdebdebcebcda", pattern, collating_pos_class_bd_star);
+        check_no_match(L"bbccddeebcdecdebdebcebcdf", pattern, collating_pos_class_bd_star);
+        check_search_match(L"bcdebcdebbcdabcedf", L"bcdebcdebbcd", pattern, collating_pos_class_bd_star);
+    }
+
+    {
+        const wstring pattern = L"[^bd]*";
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> collating_neg_class_bd_star{
+            pattern, regex_constants::collate};
+        check_match(L"", pattern, collating_neg_class_bd_star);
+        check_no_match(L"b", pattern, collating_neg_class_bd_star);
+        check_no_match(L"c", pattern, collating_neg_class_bd_star);
+        check_no_match(L"d", pattern, collating_neg_class_bd_star);
+        check_no_match(L"e", pattern, collating_neg_class_bd_star);
+        check_match(L"afghijklmnopqrstuvwxyz", pattern, collating_neg_class_bd_star);
+        check_no_match(L"afghijklmnbopqrstuvwxyz", pattern, collating_neg_class_bd_star);
+        check_no_match(L"cafghijklmnopqrstuvwxyz", pattern, collating_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzd", pattern, collating_neg_class_bd_star);
+        check_search_match(L"afghijklmnbopqrstuvwxyz", L"afghijklmn", pattern, collating_neg_class_bd_star);
+    }
+}
+
 int main() {
     test_gh_5553();
     test_gh_6499();
     test_gh_6506();
+    test_gh_6540();
 
     return g_regexTester.result();
 }

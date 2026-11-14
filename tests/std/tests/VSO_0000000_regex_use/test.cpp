@@ -3294,6 +3294,55 @@ void test_gh_6506() {
     }
 }
 
+void test_gh_6540() {
+    // GH-6540: Accelerate greedy loops of small and negated empty character classes
+    for (const auto options : {syntax_option_type{}, icase, regex_constants::collate}) {
+        for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+            const auto c = static_cast<char>(i);
+            g_regexTester.should_match(string(2u, c), "[^]*", options);
+            g_regexTester.should_not_match(string(1u, c), "[]*", options);
+        }
+    }
+
+    for (const auto options : {syntax_option_type{}, regex_constants::collate}) {
+        g_regexTester.should_match("abaababb", "[ab]*", options);
+        g_regexTester.should_not_match("abaababb", "[^ab]*", options);
+        g_regexTester.should_not_match("abaababbcab", "[ab]*", options);
+        g_regexTester.should_not_match("abaababbcab", "[^ab]*", options);
+        g_regexTester.should_match("aa", "[ab]*", options);
+        g_regexTester.should_not_match("aa", "[^ab]*", options);
+        g_regexTester.should_match("bb", "[ab]*", options);
+        g_regexTester.should_not_match("bb", "[^ab]*", options);
+        for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+            const auto c = static_cast<char>(i);
+            if (c != 'a' && c != 'b') {
+                g_regexTester.should_not_match(string(1u, c), "[ab]*", options);
+                g_regexTester.should_match(string(2u, c), "[^ab]*", options);
+            }
+        }
+    }
+
+    for (string pos_pattern : {"[AB]*", "[Ab]*", "[aB]*", "[ab]*"}) {
+        string neg_pattern = "[^" + pos_pattern.substr(1);
+        g_regexTester.should_match("abAbaBABaaAaaAAAbaBabABAbbbBbbBBB", pos_pattern, icase);
+        g_regexTester.should_not_match("abAbaBABaaAaaAAAbaBabABAbbbBbbBBB", neg_pattern, icase);
+        g_regexTester.should_not_match("abAbaBABaaAaaAAAbaBabABAbbbBbbBBBc", pos_pattern, icase);
+        g_regexTester.should_not_match("abAbaBABaaAaaAAAbaBabABAbbbBbbBBBc", neg_pattern, icase);
+        for (string input : {"aa", "aA", "Aa", "AA", "bb", "bB", "Bb", "BB"}) {
+            g_regexTester.should_match(input, pos_pattern, icase);
+            g_regexTester.should_not_match(input, neg_pattern, icase);
+        }
+
+        for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+            const auto c = static_cast<char>(i);
+            if (c != 'A' && c != 'a' && c != 'B' && c != 'b') {
+                g_regexTester.should_not_match(string(1u, c), pos_pattern, icase);
+                g_regexTester.should_match(string(2u, c), neg_pattern, icase);
+            }
+        }
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -3372,6 +3421,7 @@ int main() {
     test_gh_6480();
     test_gh_6499();
     test_gh_6506();
+    test_gh_6540();
 
     return g_regexTester.result();
 }
