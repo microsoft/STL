@@ -699,9 +699,7 @@ void test_gh_6520() {
     }
 
     const array<uint8_t, 6> tail = {'s', 'e', 'c', 'o', 'n', 'd'};
-
     copy(tail.begin(), tail.end(), a.begin() + 8192 * 2);
-
 
     const auto mn_mx   = minmax_element(a.begin(), a.end());
     const auto mn_only = min_element(a.begin(), a.end());
