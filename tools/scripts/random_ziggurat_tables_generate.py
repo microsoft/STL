@@ -196,24 +196,36 @@ def generate_tables(
     print("};")
 
 
+def sqrt_of_pi_over_2() -> mpf:
+    return mpf("0x1.40d931ff627059657ca41fae722dp+0")
+
+
+def inv_sqrt2() -> mpf:
+    return mpf("0x1.6a09e667f3bcda1ec56c7db8f04cp-1")
+
+
+def sqrt_of_2_over_pi() -> mpf:
+    return mpf("0x1.9884533d436508d0fcb3c500bab9p-1")
+
+
 def half_normal_pdf(x: mpf) -> mpf:
-    return mp.exp(x * x * -0.5) * mpf("0x1.9884533d436508d0fcb3c500bab9p-1")
+    return mp.exp(x * x * -0.5) * sqrt_of_2_over_pi()
 
 
 def half_normal_inverse_pdf(y: mpf) -> mpf:
-    return mp.sqrt(-2 * mp.log(y * mpf("0x1.40d931ff627059657ca41fae722dp+0")))
+    return mp.sqrt(-2 * mp.log(y * sqrt_of_pi_over_2()))
 
 
 def half_normal_cdf(x: mpf) -> mpf:
-    return mp.erf(x * mpf("0x1.6a09e667f3bcda1ec56c7db8f04cp-1"))
+    return mp.erf(x * inv_sqrt2())
 
 
 def half_normal_pdf_derivative(x: mpf) -> mpf:
-    return mp.exp(x * x * -0.5) * x * -mpf("0x1.9884533d436508d0fcb3c500bab9p-1")
+    return mp.exp(x * x * -0.5) * x * -sqrt_of_2_over_pi()
 
 
 def half_normal_pdf_2nd_derivative(x: mpf) -> mpf:
-    return mp.exp(x * x * -0.5) * (x + 1) * (x - 1) * mpf("0x1.9884533d436508d0fcb3c500bab9p-1")
+    return mp.exp(x * x * -0.5) * (x + 1) * (x - 1) * sqrt_of_2_over_pi()
 
 
 def generate_header() -> None:
@@ -267,13 +279,13 @@ def generate_normal_distribution() -> None:
     generate_tables(
         "_Normal_distribution_tables", True, half_normal_pdf, half_normal_inverse_pdf,
         half_normal_cdf, half_normal_pdf_derivative, half_normal_pdf_2nd_derivative,
-        mpf("0x1.40d931ff627059657ca41fae722dp+0"), FloatType="double"
+        sqrt_of_pi_over_2(), FloatType="double"
     )
 
     generate_tables(
         "_Normal_distribution_tables", True, half_normal_pdf, half_normal_inverse_pdf,
         half_normal_cdf, half_normal_pdf_derivative, half_normal_pdf_2nd_derivative,
-        mpf("0x1.40d931ff627059657ca41fae722dp+0"), FloatType="float"
+        sqrt_of_pi_over_2(), FloatType="float"
     )
 
 
