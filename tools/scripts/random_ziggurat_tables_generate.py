@@ -184,32 +184,20 @@ def generate_tables(
     )
 
     # _Ty _Layer_widths[_Layer_num + 1];
-    print(f"        {{{format_float(layers[0].x_inner * width_scale, traits)}", end="")
-    for layer in layers:
-        print(f", {format_float(layer.x_outer * width_scale, traits)}", end="")
-
-    print("},")
+    widths = [layers[0].x_inner, *(layer.x_outer for layer in layers)]
+    print(f"        {{{", ".join(format_float(x * width_scale, traits) for x in widths)}}},")
 
     # _Ty _Layer_heights[_Layer_num + 1];
-    print(f"        {{{format_float(layers[0].y_max * height_scale, traits)}", end="")
-    for layer in layers:
-        print(f", {format_float(layer.y_min * height_scale, traits)}", end="")
-
-    print("},")
+    heights = [layers[0].y_max, *(layer.y_min for layer in layers)]
+    print(f"        {{{", ".join(format_float(y * height_scale, traits) for y in heights)}}},")
 
     # _Uty _Alias_table[1 << _Lw];
-    first = True
-    for entry in alias_table:
-        table_value = (
-            int(mp.nint(min(entry.probability, max_probability) * probability_scale)) << traits.layer_bits
-        ) | entry.alias_index
-        if first:
-            print(f"        {{{table_value:#x}u", end="")
-            first = False
-        else:
-            print(f", {table_value:#x}u", end="")
-
-    print("},")
+    table_values = (
+        (int(mp.nint(min(entry.probability, max_probability) * probability_scale)) << traits.layer_bits)
+        | entry.alias_index
+        for entry in alias_table
+    )
+    print(f"        {{{", ".join(f"{table_value:#x}u" for table_value in table_values)}}},")
 
     print("    };")
     print("};")
