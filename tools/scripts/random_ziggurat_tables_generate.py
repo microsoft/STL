@@ -124,25 +124,23 @@ def generate_tables(
     alias_table = [alias_table_entry() for _ in range(layer_division)]
 
     average_area = (layer_division - regular_layer_num) * regular_area / layer_division
-    temp_overs: list[alias_table_entry] = []
-    temp_unders: list[alias_table_entry] = []
+    overs: list[alias_table_entry] = []
+    unders: list[alias_table_entry] = []
 
     for i, area in enumerate(irregular_areas):
         probability = area / average_area
         entry = alias_table_entry(probability=probability, index=i)
         if probability > 1:
-            temp_overs.append(entry)
+            overs.append(entry)
         elif probability < 1:
-            temp_unders.append(entry)
+            unders.append(entry)
         else:
             alias_table[i] = entry
 
     for i in range(len(irregular_areas), layer_division):
-        temp_unders.append(alias_table_entry(probability=mpf(0), index=i))
+        unders.append(alias_table_entry(probability=mpf(0), index=i))
 
-    overs = temp_overs
     heapify(overs)
-    unders = temp_unders
     heapify_max(unders)
 
     while overs and unders:
