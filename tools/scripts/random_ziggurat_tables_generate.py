@@ -109,12 +109,9 @@ def generate_tables(
 
     regular_layer_num = len(layers) - 1
 
-    irregular_areas: list[mpf] = []
-
-    for layer in layers:
-        irregular_areas.append(
-            cdf(layer.x_outer) - cdf(layer.x_inner) - (layer.x_outer - layer.x_inner) * layer.y_min
-        )
+    irregular_areas = [
+        cdf(layer.x_outer) - cdf(layer.x_inner) - (layer.x_outer - layer.x_inner) * layer.y_min for layer in layers
+    ]
 
     # the bottommost layer
     irregular_areas.append(1 - cdf(layers[-1].x_outer))
