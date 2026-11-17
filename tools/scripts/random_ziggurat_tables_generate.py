@@ -146,15 +146,13 @@ def generate_tables(
     heapify_max(unders)
 
     while overs and unders:
-        over = overs[0]
-        under = unders[0]
+        over = heappop(overs)
+        under = heappop_max(unders)
         alias_table[under.index].probability = under.probability
         alias_table[under.index].index = under.index
         alias_table[under.index].alias_index = over.index
 
         remaining = alias_table_entry(probability=over.probability - 1 + under.probability, index=over.index)
-        heappop(overs)
-        heappop_max(unders)
         if remaining.probability > 1:
             heappush(overs, remaining)
         elif remaining.probability < 1:
