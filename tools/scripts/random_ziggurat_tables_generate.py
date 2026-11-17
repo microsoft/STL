@@ -65,7 +65,9 @@ def generate_tables(
 ) -> None:
     traits = {
         "double": modified_ziggurat_traits("double", "", 64, 8),
-        "float": modified_ziggurat_traits("float", "f", 32, 7),  # 32 - 1 (sign) - 24 (magnitude)
+        "float": modified_ziggurat_traits(
+            "float", "f", 32, 7
+        ),  # 32 - 1 (sign) - 24 (magnitude)
     }[FloatType]
     layer_division = 1 << traits.layer_bits
     regular_area = mpf(1) / layer_division
@@ -86,7 +88,9 @@ def generate_tables(
 
     while True:
         y1 = pdf_derivative(x_outer) + regular_area / (x_outer * x_outer)
-        y2 = pdf_2nd_derivative(x_outer) - 2 * regular_area / (x_outer * x_outer * x_outer)
+        y2 = pdf_2nd_derivative(x_outer) - 2 * regular_area / (
+            x_outer * x_outer * x_outer
+        )
         dx = y1 / y2
         x_outer -= dx
         if not (abs(dx) > abs(x_outer) * mpf("0x1p-80")):
@@ -97,7 +101,9 @@ def generate_tables(
     # make sure that we have at most `layer_division` irregular regions
     # the bottommost layer has 2 irregular regions, other layers have 1 each
     while len(layers) + 2 < layer_division:
-        layers.append(ziggurat_layer(x_inner=x_inner, x_outer=x_outer, y_min=y_min, y_max=y_max))
+        layers.append(
+            ziggurat_layer(x_inner=x_inner, x_outer=x_outer, y_min=y_min, y_max=y_max)
+        )
 
         x_inner = x_outer
         y_max = y_min
@@ -110,7 +116,10 @@ def generate_tables(
     regular_layer_num = len(layers) - 1
 
     irregular_areas = [
-        cdf(layer.x_outer) - cdf(layer.x_inner) - (layer.x_outer - layer.x_inner) * layer.y_min for layer in layers
+        cdf(layer.x_outer)
+        - cdf(layer.x_inner)
+        - (layer.x_outer - layer.x_inner) * layer.y_min
+        for layer in layers
     ]
 
     # the bottommost layer
@@ -147,7 +156,9 @@ def generate_tables(
         alias_table[under.index].index = under.index
         alias_table[under.index].alias_index = over.index
 
-        remaining = alias_table_entry(probability=over.probability - 1 + under.probability, index=over.index)
+        remaining = alias_table_entry(
+            probability=over.probability - 1 + under.probability, index=over.index
+        )
         if remaining.probability > 1:
             heappush(overs, remaining)
         elif remaining.probability < 1:
@@ -178,19 +189,28 @@ def generate_tables(
 
     # _Ty _Layer_widths[_Layer_num + 1];
     widths = [layers[0].x_inner, *(layer.x_outer for layer in layers)]
-    print(f"        {{{", ".join(format_float(x * width_scale, traits) for x in widths)}}},")
+    print(
+        f"        {{{", ".join(format_float(x * width_scale, traits) for x in widths)}}},"
+    )
 
     # _Ty _Layer_heights[_Layer_num + 1];
     heights = [layers[0].y_max, *(layer.y_min for layer in layers)]
-    print(f"        {{{", ".join(format_float(y * height_scale, traits) for y in heights)}}},")
+    print(
+        f"        {{{", ".join(format_float(y * height_scale, traits) for y in heights)}}},"
+    )
 
     # _Uty _Alias_table[1 << _Lw];
     table_values = (
-        (int(mp.nint(min(entry.probability, max_probability) * probability_scale)) << traits.layer_bits)
+        (
+            int(mp.nint(min(entry.probability, max_probability) * probability_scale))
+            << traits.layer_bits
+        )
         | entry.alias_index
         for entry in alias_table
     )
-    print(f"        {{{", ".join(f"{table_value:#x}u" for table_value in table_values)}}},")
+    print(
+        f"        {{{", ".join(f"{table_value:#x}u" for table_value in table_values)}}},"
+    )
 
     print("    };")
     print("};")
@@ -273,15 +293,27 @@ def generate_normal_distribution() -> None:
     print("struct _Normal_distribution_tables;")
 
     generate_tables(
-        "_Normal_distribution_tables", True, half_normal_pdf, half_normal_inverse_pdf,
-        half_normal_cdf, half_normal_pdf_derivative, half_normal_pdf_2nd_derivative,
-        sqrt_of_pi_over_2, FloatType="double"
+        "_Normal_distribution_tables",
+        True,
+        half_normal_pdf,
+        half_normal_inverse_pdf,
+        half_normal_cdf,
+        half_normal_pdf_derivative,
+        half_normal_pdf_2nd_derivative,
+        sqrt_of_pi_over_2,
+        FloatType="double",
     )
 
     generate_tables(
-        "_Normal_distribution_tables", True, half_normal_pdf, half_normal_inverse_pdf,
-        half_normal_cdf, half_normal_pdf_derivative, half_normal_pdf_2nd_derivative,
-        sqrt_of_pi_over_2, FloatType="float"
+        "_Normal_distribution_tables",
+        True,
+        half_normal_pdf,
+        half_normal_inverse_pdf,
+        half_normal_cdf,
+        half_normal_pdf_derivative,
+        half_normal_pdf_2nd_derivative,
+        sqrt_of_pi_over_2,
+        FloatType="float",
     )
 
 
