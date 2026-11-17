@@ -12,10 +12,10 @@ mp.prec = 113
 
 @dataclass
 class ziggurat_layer:
-    x_inner: mpf = mpf(0)
-    x_outer: mpf = mpf(0)
-    y_min: mpf = mpf(0)
-    y_max: mpf = mpf(0)
+    x_inner: mpf
+    x_outer: mpf
+    y_min: mpf
+    y_max: mpf
 
 
 @dataclass(order=True)
