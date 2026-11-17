@@ -690,6 +690,30 @@ void test_gh_6373() {
     }
 }
 
+// GH-6520 <algorithm>: x64 vectorized max_element() / minmax_element() return the wrong maximum for uint8_t
+void test_gh_6520() {
+    vector<uint8_t> a(8192 * 2 + 6);
+    for (size_t i = 0; i < 8192; ++i) {
+        a[i * 2 + 0] = 'a';
+        a[i * 2 + 1] = 'b';
+    }
+
+    const array<uint8_t, 6> tail = {'s', 'e', 'c', 'o', 'n', 'd'};
+    copy(tail.begin(), tail.end(), a.begin() + 8192 * 2);
+
+    const auto mn_mx   = minmax_element(a.begin(), a.end());
+    const auto mn_only = min_element(a.begin(), a.end());
+    const auto mx_only = max_element(a.begin(), a.end());
+    assert(mn_mx.first == a.begin());
+    assert(*mn_mx.first == 'a');
+    assert(mn_mx.second == a.begin() + 8192 * 2);
+    assert(*mn_mx.second == 's');
+    assert(mn_only == a.begin());
+    assert(*mn_only == 'a');
+    assert(mx_only == a.begin() + 8192 * 2);
+    assert(*mx_only == 's');
+}
+
 template <class T>
 void test_is_sorted_until(mt19937_64& gen) {
     using Limits = numeric_limits<T>;
@@ -1879,6 +1903,7 @@ void test_vector_algorithms(mt19937_64& gen, const IsaLevel level) {
             vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
 
         test_gh_6373();
+        test_gh_6520();
         const auto finish_time = steady_clock::now();
         elapsed_time[make_pair(70, "minmax_element")] += finish_time - start_time;
     }

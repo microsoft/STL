@@ -2928,17 +2928,25 @@ namespace {
                     } else {
                         if constexpr (_Traits::_Tail_mask != 0) {
                             const size_t _Remaining_byte_size = _Byte_length(_First, _Last);
-                            bool _Last_portion;
+                            bool _Process_tail_bytes;
 
                             if constexpr (_Traits::_Has_portion_max) {
-                                _Last_portion = (_Remaining_byte_size & ~_Traits::_Vec_mask) == 0;
+                                // Was it the last portion?
+                                _Process_tail_bytes = (_Remaining_byte_size & ~_Traits::_Vec_mask) == 0;
+
+                                if (_Process_tail_bytes && _mm256_testz_si256(_Cur_idx, _Cur_idx)) {
+                                    // _Cur_idx has overflowed, this happens if the last portion was the whole portion,
+                                    // don't process tail bytes here then, as the match will have an incorrect index
+                                    // (it will be handled in the scalar part)
+                                    _Process_tail_bytes = false;
+                                }
                             } else {
-                                _Last_portion = true;
+                                _Process_tail_bytes = true;
                             }
 
                             const size_t _Tail_byte_size = _Remaining_byte_size & _Traits::_Tail_mask;
 
-                            if (_Last_portion && _Tail_byte_size != 0) {
+                            if (_Process_tail_bytes && _Tail_byte_size != 0) {
                                 const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size);
                                 auto _Tail_vals       = _Traits::_Load_mask(_First, _Tail_mask);
                                 if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
