@@ -88,16 +88,7 @@ void test_ntcts_constructibility() { // COMPILE-ONLY
         ~missing_trivially_copyable() = default;
     };
 
-    // test scalar types
-    test_ntcts_constructibility_for_lengths<int, true>();
-    test_ntcts_constructibility_for_lengths<char*, true>();
-    test_ntcts_constructibility_for_lengths<void (*)(), true>();
-    test_ntcts_constructibility_for_lengths<unscoped_enum, true>();
-    test_ntcts_constructibility_for_lengths<scoped_enum, true>();
-    test_ntcts_constructibility_for_lengths<int missing_trivial_default_ctor::*, true>();
-    test_ntcts_constructibility_for_lengths<void (missing_standard_layout::*)() const&, true>();
-
-    // test POD array types
+    // test POD array types (N5054 [bitset.cons]/8.1)
     test_ntcts_constructibility_for_lengths<char[1], false>();
     test_ntcts_constructibility_for_lengths<char[1][2], false>();
 #ifdef __cpp_char8_t
@@ -115,8 +106,7 @@ void test_ntcts_constructibility() { // COMPILE-ONLY
     test_ntcts_constructibility_for_lengths<char* [7], false>();
     test_ntcts_constructibility_for_lengths<char* [7][1][2][14], false>();
 
-    // test class types
-    test_ntcts_constructibility_for_lengths<pod_class, true>();
+    // test class types (N5054 [bitset.cons]/8.2, /8.3, /8.4)
     test_ntcts_constructibility_for_lengths<missing_trivial_default_ctor, false>();
     test_ntcts_constructibility_for_lengths<missing_standard_layout, false>();
     test_ntcts_constructibility_for_lengths<missing_trivially_copyable, false>();
