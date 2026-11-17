@@ -13,12 +13,15 @@
 #include <set>
 #include <sstream>
 #include <string>
-#include <syncstream>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+#if _HAS_CXX20
+#include <syncstream>
+#endif // _HAS_CXX20
 
 #include <instantiate_containers_iterators_common.hpp>
 

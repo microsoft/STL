@@ -135,7 +135,7 @@ namespace Concurrency {
         }
 
         _CRTIMP2 int __cdecl _Reschedule_chore(const _Threadpool_chore* _Chore) {
-            _ASSERT(_Chore->_M_work);
+            _ASSERTE(_Chore->_M_work);
 
             // Adds a reference to the DLL with the code to execute on async; the callback will
             // FreeLibraryWhenCallbackReturns this DLL once it starts running.
@@ -149,8 +149,8 @@ namespace Concurrency {
         }
 
         _CRTIMP2 int __cdecl _Schedule_chore(_Threadpool_chore* _Chore) {
-            _ASSERT(_Chore->_M_work == nullptr);
-            _ASSERT(_Chore->_M_callback != nullptr);
+            _ASSERTE(_Chore->_M_work == nullptr);
+            _ASSERTE(_Chore->_M_callback != nullptr);
 
             _Chore->_M_work = CreateThreadpoolWork(_Task_scheduler_callback, _Chore, nullptr);
 

@@ -65,9 +65,6 @@
           "arm64",
           ""
         ]
-      },
-      "cacheVariables": {
-        "TESTS_BUILD_ONLY": true
       }
     },
     {
@@ -87,7 +84,6 @@
         ]
       },
       "cacheVariables": {
-        "TESTS_BUILD_ONLY": true,
         "VCLIBS_TARGET_ARCHITECTURE": "ARM64EC"
       }
     }

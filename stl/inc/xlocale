@@ -1971,7 +1971,7 @@ protected:
 
             case 0: // converted NULL character, TRANSITION, VSO-654347
                 _Bytes = 1;
-                _FALLTHROUGH;
+                [[fallthrough]];
 
             default: // converted some other character
                 _Mid1 += _Bytes;
@@ -2171,7 +2171,7 @@ protected:
 
             case 0: // converted NULL character, TRANSITION, VSO-654347
                 _Bytes = 1;
-                _FALLTHROUGH;
+                [[fallthrough]];
 
             default: // converted some other character
                 _Mid1 += _Bytes;

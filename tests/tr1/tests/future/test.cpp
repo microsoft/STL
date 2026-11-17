@@ -119,7 +119,7 @@ bool is_logic_error(const void*) { // return false for other pointers
 
 static void test_future_error() { // test class future_error
     STD error_code code = STD make_error_code(STD future_errc::broken_promise);
-    STD future_error fe(code);
+    STD future_error fe(STD future_errc::broken_promise);
     CHECK_INT(is_logic_error(&fe), true);
     CHECK_INT(fe.code() == code, true);
     STD string what_msg = fe.what();

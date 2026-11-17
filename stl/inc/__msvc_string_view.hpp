@@ -117,16 +117,20 @@ size_t _Find_last_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _H
 #endif // ^^^ _VECTORIZED_FIND_LAST_OF ^^^
 
 #if _VECTORIZED_FIND
-template <class _Ty>
-const _Ty* _Find_not_ch_vectorized(const _Ty* const _First, const _Ty* const _Last, const _Ty _Ch) noexcept {
+template <class _Ty, class _TVal>
+_Ty* _Find_not_ch_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Ch) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
-        return static_cast<const _Ty*>(::__std_find_not_ch_1(_First, _Last, static_cast<uint8_t>(_Ch)));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_not_ch_1(_First, _Last, _STD _Find_arg_cast<uint8_t>(_Ch))));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return static_cast<const _Ty*>(::__std_find_not_ch_2(_First, _Last, static_cast<uint16_t>(_Ch)));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_not_ch_2(_First, _Last, _STD _Find_arg_cast<uint16_t>(_Ch))));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return static_cast<const _Ty*>(::__std_find_not_ch_4(_First, _Last, static_cast<uint32_t>(_Ch)));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_not_ch_4(_First, _Last, _STD _Find_arg_cast<uint32_t>(_Ch))));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return static_cast<const _Ty*>(::__std_find_not_ch_8(_First, _Last, static_cast<uint64_t>(_Ch)));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_not_ch_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Ch))));
     } else {
         static_assert(false, "unexpected size");
     }

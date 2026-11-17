@@ -7,7 +7,6 @@
 #===----------------------------------------------------------------------===//
 
 import locale
-import os
 from libcxx.test.dsl import Feature
 
 def hasLocale(loc):
@@ -41,11 +40,6 @@ def getDefaultFeatures(config, litConfig):
     for loc, alts in locales.items():
       if any(hasLocale(alt) for alt in alts):
         DEFAULT_FEATURES.append(Feature(name=f'locale.{loc}'))
-    env_var = 'STL_EDG_DROP'
-    litConfig.edg_drop = None
-    if env_var in os.environ and os.environ[env_var] is not None:
-        litConfig.edg_drop = os.environ[env_var]
-        DEFAULT_FEATURES.append(Feature(name='edg_drop'))
 
     if litConfig.target_arch.casefold() == 'x86'.casefold():
         DEFAULT_FEATURES.append(Feature(name='arch_avx2'))

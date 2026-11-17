@@ -535,6 +535,10 @@ public:
     }
 };
 
+template <class _RxTraits>
+constexpr bool _Is_implementation_handled_regex_traits =
+    _Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>;
+
 _EXPORT_STD class _NODISCARD regex_error : public runtime_error { // type of all regular expression exceptions
 public:
     explicit regex_error(regex_constants::error_type _Ex) : runtime_error(_Stringify(_Ex)), _Err(_Ex) {}
@@ -1269,18 +1273,29 @@ _INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _B
 _INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
-    _Fl_none              = 0x0000,
-    _Fl_negate            = 0x0001,
-    _Fl_greedy            = 0x0002,
-    _Fl_longest           = 0x0008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked some nodes with it
-    _Fl_class_negated_w   = 0x0100,
-    _Fl_class_negated_s   = 0x0200,
-    _Fl_class_negated_d   = 0x0400,
-    _Fl_class_cl_all_bits = 0x0800, // TRANSITION, ABI: GH-5242
-    _Fl_begin_needs_w     = 0x0100,
-    _Fl_begin_needs_s     = 0x0200,
-    _Fl_begin_needs_d     = 0x0400,
-    _Fl_rep_branchless    = 0x1000,
+    _Fl_none              = 0x00000,
+    _Fl_negate            = 0x00001,
+    _Fl_greedy            = 0x00002,
+    _Fl_longest           = 0x00008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked nodes with it
+    _Fl_class_negated_w   = 0x00100,
+    _Fl_class_negated_s   = 0x00200,
+    _Fl_class_negated_d   = 0x00400,
+    _Fl_class_cl_all_bits = 0x00800, // TRANSITION, ABI: GH-5242
+    _Fl_begin_needs_w     = 0x00100,
+    _Fl_begin_needs_s     = 0x00200,
+    _Fl_begin_needs_d     = 0x00400,
+    _Fl_rep_branchless    = 0x01000,
+    _Fl_rep_str_icase     = 0x02000, // 1 << 13
+    _Fl_rep_str_collate   = 0x04000, // 2 << 13
+    _Fl_rep_str_default   = 0x06000, // 3 << 13
+    _Fl_rep_char_icase    = 0x08000, // 4 << 13
+    _Fl_rep_char_collate  = 0x0A000, // 5 << 13
+    _Fl_rep_char_default  = 0x0C000, // 6 << 13
+    _Fl_rep_dot_ecma      = 0x0E000, // 7 << 13
+    _Fl_rep_dot_posix     = 0x10000, // 8 << 13
+    // values 9 << 13 through 15 << 13 inclusive are reserved for new special cases to optimize
+    _Fl_rep_known_subtype = 0x10000, // 8 << 13, increase to be equal to the newest special case
+    _Fl_rep_subtype_mask  = 0x1E000, // 15 << 13, don't change
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
@@ -1334,59 +1349,42 @@ struct _Buf { // character buffer
         return _Chrs;
     }
 
-    void _Insert2(_Elem _Ch) { // append _Ch
-        if (_Sz <= _Nchrs) {
-            _Expand2(1U);
-        }
+    void _Assign(const _Elem* const _First, const size_t _Len) { // assign character sequence to buffer
+        _STL_INTERNAL_CHECK(!_Chrs);
 
-        _Chrs[_Nchrs++] = _Ch;
-    }
-
-    template <class _FwdIt>
-    void _Insert2(_FwdIt _First, _FwdIt _Last) { // append multiple characters
-        while (_First != _Last) {
-            _Insert2(*_First++);
-        }
-    }
-
-private:
-    unsigned int _Calculate_expansion(unsigned int _Increase) const {
         constexpr size_t _Max_elems      = static_cast<size_t>(-1) / sizeof(_Elem);
         constexpr unsigned int _Max_uint = static_cast<unsigned int>(-1);
         constexpr unsigned int _Max      = _Max_elems < _Max_uint ? static_cast<unsigned int>(_Max_elems) : _Max_uint;
 
-        constexpr unsigned int _Buf_incr = 16U;
-
-        if (_Increase < _Buf_incr) {
-            _Increase = _Buf_incr;
-        }
-
-        if (_Increase < (_Sz >> 1)) {
-            _Increase = _Sz >> 1;
-        }
-
-        if (_Max <= _Increase || _Max - _Increase <= _Sz) {
-            return _Max;
-        }
-
-        return _Sz + _Increase;
-    }
-
-    void _Expand2(const unsigned int _Min_increase) { // expand buffer by at least _Min_increase
-        const unsigned int _Len = _Calculate_expansion(_Min_increase);
-        if (_Len - _Sz < _Min_increase) {
-            _Xregex_error(regex_constants::error_space);
-        }
-        _Elem* _Tmp = static_cast<_Elem*>(_CSTD realloc(_Chrs, sizeof(_Elem) * static_cast<size_t>(_Len)));
-        if (!_Tmp) {
+        if (_Len > _Max) {
             _Xregex_error(regex_constants::error_space);
         }
 
-        _Chrs = _Tmp;
-        _Sz   = _Len;
+        _Chrs = static_cast<_Elem*>(_CSTD malloc(sizeof(_Elem) * _Len));
+        if (!_Chrs) {
+            _Xregex_error(regex_constants::error_space);
+        }
+
+        _Sz    = static_cast<unsigned int>(_Len);
+        _Nchrs = static_cast<unsigned int>(_Len);
+        _STD _Uninitialized_copy_unchecked(_First, _First + _Len, _Chrs);
     }
 
-    unsigned int _Sz    = 0;
+    void _Assign(_Elem _Ch) { // assign single character to buffer
+        _STL_INTERNAL_CHECK(!_Chrs);
+
+        _Chrs = static_cast<_Elem*>(_CSTD malloc(sizeof(_Elem)));
+        if (!_Chrs) {
+            _Xregex_error(regex_constants::error_space);
+        }
+
+        _Sz    = 1U;
+        _Nchrs = 1U;
+        *_Chrs = _Ch;
+    }
+
+private:
+    unsigned int _Sz    = 0; // TRANSITION, ABI: preserved for binary compatibility
     unsigned int _Nchrs = 0;
     _Elem* _Chrs        = nullptr;
 };
@@ -1590,6 +1588,9 @@ enum class _Rx_char_class_kind : int { // must be aligned with corresponding _No
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 class _Builder3 { // provides operations used by _Parser3 to build the nfa
+private:
+    using _String_type = typename _RxTraits::string_type;
+
 public:
     _Builder3(const _RxTraits& _Tr, regex_constants::syntax_option_type);
     void _Setlong();
@@ -1602,6 +1603,7 @@ public:
     void _Add_dot();
     void _Add_char(_Elem _Ch);
     void _Add_class();
+    void _Finalize_class();
     void _Add_char_to_class(_Elem _Ch);
     void _Add_range(_Elem, _Elem);
     void _Add_named_class(typename _RxTraits::char_class_type, _Rx_char_class_kind);
@@ -1627,14 +1629,20 @@ private:
     void _Add_char_to_bitmap(unsigned char _Ch);
     void _Add_char_to_array(_Elem _Ch);
     void _Add_elts(_Node_class<_Elem, _RxTraits>*, typename _RxTraits::char_class_type, bool);
-    void _Char_to_elts(const _Elem*, const _Elem*, _Sequence<_Elem>**);
+    void _Add_coll_elem_to_buf(
+        vector<_String_type>& _Target, unsigned int _Start_length, const _Elem* _First, const _Elem* _Last);
+    void _Fill_coll_sequence_from_buf(
+        _Sequence<_Elem>*& _Seq_start, vector<_String_type>& _Source, unsigned int _Start_length);
     void _Generate_rep(_Node_base* _First_inner, int _Min, int _Max, bool _Greedy);
 
     _Root_node* _Root;
     _Node_base* _Current;
     regex_constants::syntax_option_type _Flags;
     const _RxTraits& _Traits;
-    typename _RxTraits::string_type _Chars;
+    _String_type _Chars;
+    _String_type _Ranges;
+    vector<_String_type> _Coll_elems;
+    vector<_String_type> _Equivs;
 
 public:
     _Builder3(const _Builder3&)            = delete;
@@ -2053,7 +2061,8 @@ private:
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
 class _Matcher3 { // provides ways to match a regular expression to a text sequence
 private:
-    using _Loop_vals_type   = _Loop_vals_v3_t<_Iter_diff_t<_It>>;
+    using _Diff_type        = _Iter_diff_t<_It>;
+    using _Loop_vals_type   = _Loop_vals_v3_t<_Diff_type>;
     using _Tgt_state_type   = _Tgt_state_v2_t<_It, allocator<_It>>;
     using _State_frame_type = _Rx_state_frame_t<_It>;
 
@@ -2077,9 +2086,9 @@ public:
             _Char_class_d = _Lookup_char_class(static_cast<_Elem>('D'));
         }
 
-        _Iter_diff_t<_It> _Input_length = _STD distance(_Pfirst, _Plast);
-        _Frames_limit                   = _Calculate_frames_limit(_Input_length);
-        _Complexity_limit               = _Calculate_complexity_limit(_Input_length);
+        const _Diff_type _Input_length = _STD distance(_Pfirst, _Plast);
+        _Frames_limit                  = _Calculate_frames_limit(_Input_length);
+        _Complexity_limit              = _Calculate_complexity_limit(_Input_length);
 
         // TRANSITION, ABI, GH-6025:
         // The first two nodes are of types _N_begin and _N_capture with capturing group 0.
@@ -2158,9 +2167,9 @@ private:
 
     size_t _Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node);
 
-    size_t _Calculate_frames_limit(_Iter_diff_t<_It> _Input_length);
-    long long _Calculate_complexity_limit(_Iter_diff_t<_It> _Input_length);
-    void _Increase_complexity_count(_Iter_diff_t<_It> _Count);
+    size_t _Calculate_frames_limit(_Diff_type _Input_length);
+    long long _Calculate_complexity_limit(_Diff_type _Input_length);
+    void _Increase_complexity_count(_Diff_type _Count);
 
     void _Prepare_rep(_Node_rep*);
     bool _Find_first_inner_capture_group(_Node_base*, _Loop_vals_type*);
@@ -2284,10 +2293,9 @@ enum _Lang_flags2 : unsigned long long { // describe language properties
 
 class _Regex_base : public _Container_base { // base class for basic_regex to construct and destroy proxy
 public:
-#if 0 < _ITERATOR_DEBUG_LEVEL
+#if _ITERATOR_DEBUG_LEVEL != 0
     _Regex_base() { // construct proxy
-        this->_Myproxy = new _Container_proxy;
-        this->_Myproxy->_Mycont = this;
+        this->_Myproxy = new _Container_proxy{this};
     }
 
     ~_Regex_base() noexcept {
@@ -2295,7 +2303,7 @@ public:
         delete this->_Myproxy;
         this->_Myproxy = nullptr;
     }
-#endif // 0 < _ITERATOR_DEBUG_LEVEL
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 };
 
 _EXPORT_STD template <class _Elem, class _RxTraits = regex_traits<_Elem>>
@@ -2765,7 +2773,6 @@ bool _Regex_search4(const _It _First, const _It _Last, const basic_regex<_Elem, 
     return _Mx._Search();
 }
 
-
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool _Regex_search4(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, const regex_constants::match_flag_type _Flgs) {
@@ -2872,12 +2879,13 @@ _OutIt _Regex_replace1(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_
 
         _Result = _Matches._Format1(_Result, _Fmt.data(), _Fmt.data() + _Fmt.size(), _Flags);
 
-        _Pos = _Matches[0].second;
-        if (_Pos == _Last || (_Flgs & regex_constants::format_first_only)) {
+        _Pos                    = _Matches[0].second;
+        const bool _Zero_length = _Matches[0].first == _Pos;
+        if ((_Zero_length && _Pos == _Last) || (_Flgs & regex_constants::format_first_only) != 0) {
             break;
         }
 
-        if (_Matches[0].first == _Matches[0].second) {
+        if (_Zero_length) {
             _Not_null = regex_constants::_Match_not_null;
         } else { // non-null match, recognize earlier text
             _Not_null = regex_constants::match_flag_type{};
@@ -3353,7 +3361,7 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Emit_str_node() { // emit string node
 
     auto _Node = new _Node_str<_Elem>;
     _Link_node(_Node);
-    _Node->_Data._Insert2(_Chars.data(), _Chars.data() + _Chars.size());
+    _Node->_Data._Assign(_Chars.data(), _Chars.size());
     _Chars.clear();
 }
 
@@ -3375,6 +3383,39 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_class() { // add bracket expressi
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
+void _Builder3<_FwdIt, _Elem, _RxTraits>::_Finalize_class() { // finalize bracket expression node
+    const auto _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
+    if (_Node->_Classes != typename _RxTraits::char_class_type{}) {
+        _Add_elts(_Node, _Node->_Classes, false);
+        if constexpr (sizeof(_Elem) == 1) { // unset when all code points are less than 256
+            _Node->_Classes = typename _RxTraits::char_class_type{};
+        }
+    }
+
+    if (!_Chars.empty()) {
+        _Node->_Large = new _Buf<_Elem>;
+        _Node->_Large->_Assign(_Chars.data(), _Chars.size());
+        _Chars.clear();
+    }
+
+    if (!_Ranges.empty()) {
+        _Node->_Ranges = new _Buf<_Elem>;
+        _Node->_Ranges->_Assign(_Ranges.data(), _Ranges.size());
+        _Ranges.clear();
+    }
+
+    if (!_Coll_elems.empty()) {
+        _Fill_coll_sequence_from_buf(_Node->_Coll, _Coll_elems, 2U);
+        _Coll_elems.clear();
+    }
+
+    if (!_Equivs.empty()) {
+        _Fill_coll_sequence_from_buf(_Node->_Equiv, _Equivs, 1U);
+        _Equivs.clear();
+    }
+}
+
+template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(unsigned char _Ch) { // add character to accelerator table
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
 
@@ -3387,12 +3428,7 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(unsigned char _Ch)
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // append character to character array
-    _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    if (!_Node->_Large) {
-        _Node->_Large = new _Buf<_Elem>;
-    }
-
-    _Node->_Large->_Insert2(_Ch);
+    _Chars.push_back(_Ch);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3414,7 +3450,6 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, const _Elem _Arg1) {
     // add character range to set
-    using _String_type                   = typename _RxTraits::string_type;
     using _Char_traits_type              = typename _String_type::traits_type;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
 
@@ -3497,12 +3532,8 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, const _Elem _A
     }
 
     // store remaining range as pair
-    if (!_Node->_Ranges) {
-        _Node->_Ranges = new _Buf<_Elem>;
-    }
-
-    _Node->_Ranges->_Insert2(_Arg0);
-    _Node->_Ranges->_Insert2(_Arg1);
+    _Ranges.push_back(_Arg0);
+    _Ranges.push_back(_Arg1);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3527,18 +3558,20 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
     // add contents of named class to bracket expression
     using _Char_class_type               = typename _RxTraits::char_class_type;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    _Add_elts(_Node, _Cl, _Kind != _Rx_char_class_kind::_Positive);
-    if constexpr (sizeof(_Elem) > 1U) {
-        if (_Kind == _Rx_char_class_kind::_Positive) {
-            auto _Cl_all_bits_set = static_cast<_Char_class_type>(-1);
-            if ((_Node->_Classes != _Cl_all_bits_set && _Cl != _Cl_all_bits_set)
-                || _Node->_Classes == _Char_class_type{}) {
-                _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes | _Cl);
-            } else if (_Node->_Classes != _Cl) {
-                _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes & _Cl);
+    if (_Kind == _Rx_char_class_kind::_Positive) {
+        const auto _Cl_all_bits_set = static_cast<_Char_class_type>(-1);
+        if ((_Node->_Classes != _Cl_all_bits_set && _Cl != _Cl_all_bits_set) || _Node->_Classes == _Char_class_type{}) {
+            _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes | _Cl);
+        } else if (_Node->_Classes != _Cl) {
+            _Add_elts(_Node, _Cl_all_bits_set, false);
+            _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes & _Cl);
+            if constexpr (sizeof(_Elem) > 1) { // set only when potentially matching code points >= 256
                 _Node->_Flags |= _Fl_class_cl_all_bits;
             }
-        } else {
+        }
+    } else {
+        _Add_elts(_Node, _Cl, true);
+        if constexpr (sizeof(_Elem) > 1) { // set only when potentially matching code points >= 256
             auto _Node_flag = static_cast<_Node_flags>(_Kind);
             _Node->_Flags |= _Node_flag;
             _Root->_Flags |= _Node_flag;
@@ -3547,27 +3580,44 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder3<_FwdIt, _Elem, _RxTraits>::_Char_to_elts(const _Elem* const _First, const _Elem* const _Last,
-    _Sequence<_Elem>** _Cur) { // add collation element to element sequence
-    auto _Diff = static_cast<unsigned int>(_Last - _First);
-    while (*_Cur && _Diff < (*_Cur)->_Sz) {
-        _Cur = &(*_Cur)->_Next;
+void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_coll_elem_to_buf(
+    vector<_String_type>& _Target, unsigned int _Start_length, const _Elem* _First, const _Elem* _Last) {
+    // add collation element to internal length-partitioned buffer
+    auto _Length = static_cast<size_t>(_Last - _First);
+    if (_Length > UINT_MAX) {
+        _Xregex_error(regex_constants::error_space);
     }
 
-    if (!(*_Cur) || _Diff != (*_Cur)->_Sz) {
-        // add new sequence holding elements of the same length
-        _Sequence<_Elem>* _Node = *_Cur;
-        *_Cur                   = new _Sequence<_Elem>(_Diff);
-        (*_Cur)->_Next          = _Node;
+    if (_Target.size() <= _Length - _Start_length) {
+        _Target.resize(_Length - _Start_length + 1U);
     }
-    (*_Cur)->_Data._Insert2(_First, _Last);
+
+    _Target[_Length - _Start_length].append(_First, _Last);
+}
+
+template <class _FwdIt, class _Elem, class _RxTraits>
+void _Builder3<_FwdIt, _Elem, _RxTraits>::_Fill_coll_sequence_from_buf(
+    _Sequence<_Elem>*& _Seq_start, vector<_String_type>& _Source, const unsigned int _Start_length) {
+    // generate collation element sequence from internal length-partitioned buffer
+    unsigned int _Length{_Start_length};
+    for (auto& _Elems_of_length : _Source) {
+        if (!_Elems_of_length.empty()) {
+            auto _Seq   = new _Sequence<_Elem>(_Length);
+            _Seq->_Next = _Seq_start;
+            _Seq_start  = _Seq;
+            _Seq->_Data._Assign(_Elems_of_length.data(), _Elems_of_length.size());
+            _Elems_of_length.clear();
+        }
+
+        ++_Length;
+    }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_equiv(const _Elem* const _First, const _Elem* const _Last) {
     // add elements of equivalence class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    typename _RxTraits::string_type _Str = _Traits.transform_primary(_First, _Last);
+    _String_type _Str                    = _Traits.transform_primary(_First, _Last);
 
     if (_Str.empty()) {
         _Xregex_error(regex_constants::error_collate);
@@ -3586,17 +3636,14 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_equiv(const _Elem* const _First, 
     }
 
     if constexpr (sizeof(_Elem) > 1U) { // map range
-        _Sequence<_Elem>** _Cur = _STD addressof(_Node->_Equiv);
-        _Char_to_elts(_First, _Last, _Cur);
+        _Add_coll_elem_to_buf(_Equivs, 1U, _First, _Last);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_coll(const _Elem* const _First, const _Elem* const _Last) {
     // add collation element to bracket expression
-    _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    _Sequence<_Elem>** _Cur              = _STD addressof(_Node->_Coll);
-    _Char_to_elts(_First, _Last, _Cur);
+    _Add_coll_elem_to_buf(_Coll_elems, 2U, _First, _Last);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3699,7 +3746,7 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_nongroup_rep(int _Min, int _Max, 
         _Emit_str_node();
         auto _Node = new _Node_str<_Elem>;
         _Link_node(_Node);
-        _Node->_Data._Insert2(_Last_char);
+        _Node->_Data._Assign(_Last_char);
     }
 
     return _Generate_rep(_Current, _Min, _Max, _Greedy);
@@ -3782,10 +3829,10 @@ size_t _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_ops _Cod
 }
 
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
-size_t _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Iter_diff_t<_It> _Input_length) {
+size_t _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Diff_type _Input_length) {
     constexpr size_t _Fixed_part  = 10000000U / sizeof(_State_frame_type);
     constexpr size_t _Divisor     = sizeof(_State_frame_type) / 10U;
-    const auto _Variable_part     = _Input_length / static_cast<_Iter_diff_t<_It>>(_Divisor);
+    const auto _Variable_part     = _Input_length / static_cast<_Diff_type>(_Divisor);
     const size_t _Max_frames_size = _Frames._Max_size();
 
     if (PTRDIFF_MAX < _Variable_part) {
@@ -3796,7 +3843,7 @@ size_t _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Iter_d
 }
 
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
-long long _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_complexity_limit(_Iter_diff_t<_It> _Input_length) {
+long long _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_complexity_limit(_Diff_type _Input_length) {
     constexpr long long _Intercept = 300000LL;
     constexpr long long _Gradient  = 256LL;
     if ((LLONG_MAX - _Intercept) / _Gradient < _Input_length) {
@@ -3806,7 +3853,7 @@ long long _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Calculate_complexity_limit(
 }
 
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
-void _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Increase_complexity_count(_Iter_diff_t<_It> _Count) {
+void _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Increase_complexity_count(_Diff_type _Count) {
     if (_Complexity_limit < _Count) {
         _Xregex_error(regex_constants::error_complexity);
     } else {
@@ -3938,13 +3985,27 @@ _BidIt1 _Cmp_chrange(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _E
     return _Begin2 == _End2 ? _Begin1 : _Res;
 }
 
+template <class _FwdIt1, class _FwdIt2, class _Count_type, class _Pr>
+_FwdIt1 _Find_longest_repeating_prefix(_FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
+    const _FwdIt2 _Last2, _Count_type& _Failed_work_counter, _Pr _Pred) {
+    for (;;) {
+        const _FwdIt1 _Res = _First1;
+        for (_FwdIt2 _Cur = _First2; _Cur != _Last2; ++_First1, (void) ++_Cur) {
+            if (_First1 == _Last1 || !_Pred(*_First1, *_Cur)) {
+                _Failed_work_counter = static_cast<_Count_type>(_STD distance(_First2, _Cur));
+                return _Res;
+            }
+        }
+    }
+}
+
 template <class _BidIt1, class _BidIt2, class _RxTraits, class _Counter>
 _BidIt1 _Compare_translate_both(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2,
     const _RxTraits& _Traits, regex_constants::syntax_option_type _Sflags, _Counter& _Count) {
     // compare character ranges, translating characters in both ranges according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, _Cmp_icase<_RxTraits>{_Traits});
-    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+    } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, _Cmp_collate<_RxTraits>{_Traits});
@@ -3959,7 +4020,7 @@ _BidIt1 _Compare_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     // compare character ranges, translating characters in the left range according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, _Cmp_icase_translateleft<_RxTraits>{_Traits});
-    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+    } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(
@@ -3976,7 +4037,7 @@ _BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, 
     // after translating characters in the left sequence according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
-    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+    } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
@@ -4219,13 +4280,63 @@ bool _Is_ecmascript_line_terminator(_Elem _Ch) {
     }
 }
 
+template <class _Elem, class _FwdIt>
+_FwdIt _Find_next_ecmascript_line_terminator(_FwdIt _First, _FwdIt _Last) {
+    if constexpr (is_same_v<_Elem, bool>) {
+        return _Last;
+    } else if constexpr (is_integral_v<_Elem>) {
+        if constexpr (sizeof(_Elem) == 1) {
+            static constexpr _Elem _Line_terminators_size_1[] = {
+                static_cast<_Elem>(_Meta_cr), static_cast<_Elem>(_Meta_nl)};
+            return _STD find_first_of(_First, _Last, _Line_terminators_size_1, _STD end(_Line_terminators_size_1));
+        } else {
+            static constexpr _Elem _Line_terminators_size_at_least_2[] = {static_cast<_Elem>(_Meta_cr),
+                static_cast<_Elem>(_Meta_nl), static_cast<_Elem>(_Meta_ls), static_cast<_Elem>(_Meta_ps)};
+            return _STD find_first_of(
+                _First, _Last, _Line_terminators_size_at_least_2, _STD end(_Line_terminators_size_at_least_2));
+        }
+    } else {
+        return _STD find_if(_First, _Last, [](const _Elem& _Ch) { return _STD _Is_ecmascript_line_terminator(_Ch); });
+    }
+}
+
+template <class _InIt, class _Ty>
+_NODISCARD _InIt _Find_not_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
+    // find first non-matching _Val
+    // activate optimization for contiguous iterators to most scalar types (possibly const-qualified)
+#if _VECTORIZED_FIND
+    if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
+        if (!_STD _Could_compare_equal_to_value_type<_InIt>(_Val)) {
+            return _First;
+        }
+
+        const auto _First_ptr = _STD _To_address(_First);
+        const auto _Result    = _STD _Find_not_ch_vectorized(_First_ptr, _STD _To_address(_Last), _Val);
+        if constexpr (is_pointer_v<_InIt>) {
+            return _Result;
+        } else {
+            return _First + static_cast<_Iter_diff_t<_InIt>>(_Result - _First_ptr);
+        }
+    } else
+#endif // ^^^ _VECTORIZED_FIND ^^^
+    {
+        for (; _First != _Last; ++_First) {
+            if (*_First != _Val) {
+                break;
+            }
+        }
+
+        return _First;
+    }
+}
+
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
     bool _Failed = false;
 
     while (_Nx) {
         do { // match current node
-            _Increase_complexity_count(_Iter_diff_t<_It>{1}); // one state transition
+            _Increase_complexity_count(_Diff_type{1}); // one state transition
             _Node_base* _Next = _Nx->_Next;
             switch (_Nx->_Kind) { // handle current node's type
             case _N_nop:
@@ -4261,7 +4372,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                 } else {
                     const _Elem _Ch = *_Tgt_state._Cur;
                     if (_Sflags & regex_constants::_Any_posix) {
-                        if (_Ch == _Elem()) {
+                        if (_Ch == _Elem{}) {
                             _Failed = true;
                         }
                     } else if (_STD _Is_ecmascript_line_terminator(_Ch)) {
@@ -4279,7 +4390,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                 { // check for string match
                     _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
                     _It _Res0;
-                    _Iter_diff_t<_It> _Count{};
+                    _Diff_type _Count{};
                     if ((_Res0 = _STD _Compare_translate_left(_Tgt_state._Cur, _End, _Node->_Data._Str(),
                              _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags, _Count))
                         != _Tgt_state._Cur) {
@@ -4289,7 +4400,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     }
 
                     // divide by 64 because character comparisons are cheaper than state transitions
-                    _Increase_complexity_count(static_cast<_Iter_diff_t<_It>>(_Count / 64));
+                    _Increase_complexity_count(static_cast<_Diff_type>(_Count / 64));
 
                     break;
                 }
@@ -4422,7 +4533,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                         _It _Res0 = _Tgt_state._Cur;
                         _It _Bx   = _Tgt_state._Grps[_Idx]._Begin;
                         _It _Ex   = _Tgt_state._Grps[_Idx]._End;
-                        _Iter_diff_t<_It> _Count{};
+                        _Diff_type _Count{};
                         if (_Bx != _Ex // _Bx == _Ex for zero-length match
                             && (_Res0 = _STD _Compare_translate_both(
                                     _Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags, _Count))
@@ -4433,7 +4544,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                         }
 
                         // divide by 64 because character comparisons are cheaper than state transitions
-                        _Increase_complexity_count(static_cast<_Iter_diff_t<_It>>(_Count / 64));
+                        _Increase_complexity_count(static_cast<_Diff_type>(_Count / 64));
                     } else if (_Sflags & (regex_constants::basic | regex_constants::grep)) {
                         _Failed = true;
                     }
@@ -4458,6 +4569,141 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     _Prepare_rep(_Node);
                     bool _Greedy = (_Node->_Flags & _Fl_greedy) != 0;
                     auto& _Sav   = _Loop_vals[_Node->_Loop_number];
+
+                    // optimize some common types of repetitions
+                    if constexpr (_Is_cpp17_random_iter_v<_It>) {
+                        const auto _Rep_subtype = _Node->_Flags & _Fl_rep_subtype_mask;
+                        if (_Greedy && _Rep_subtype != 0 && _Rep_subtype <= _Fl_rep_known_subtype) {
+                            const bool _Is_any_rep_str = _Rep_subtype == _Fl_rep_str_icase
+                                                      || _Rep_subtype == _Fl_rep_str_collate
+                                                      || _Rep_subtype == _Fl_rep_str_default;
+                            if (_Is_any_rep_str) {
+                                const auto _Nstr             = static_cast<const _Node_str<_Elem>*>(_Next);
+                                const unsigned int _Str_size = _Nstr->_Data._Size();
+                                _Sav._Loop_length            = static_cast<_Diff_type>(_Str_size);
+
+                                // corner case: difference type smaller than unsigned int
+                                if (_Sav._Loop_length < _Diff_type{}
+                                    || static_cast<unsigned int>(_Sav._Loop_length) != _Str_size) {
+                                    // pattern cannot match because it has more characters than input can be long
+                                    // -> try tail only
+                                    _Next   = _Node->_End_rep->_Next;
+                                    _Failed = _Node->_Min > 0;
+                                    break; // finish processing node
+                                }
+                            } else {
+                                _Sav._Loop_length = static_cast<_Diff_type>(1);
+                            }
+
+                            _It _Cur  = _Tgt_state._Cur;
+                            _It _Last = _End;
+                            if (_Node->_Max != -1) {
+                                const auto _Dist = _STD distance(_Cur, _Last) / _Sav._Loop_length;
+                                if (_Dist >= _Node->_Max) {
+                                    _Last = _Cur;
+                                    _STD advance(_Last, static_cast<_Diff_type>(_Node->_Max) * _Sav._Loop_length);
+                                }
+                            }
+
+                            _Diff_type _Failed_work_count{};
+
+                            if (_Is_any_rep_str) {
+                                const auto _Nstr      = static_cast<const _Node_str<_Elem>*>(_Next);
+                                const auto _Str_first = _Nstr->_Data._Str();
+                                const auto _Str_last  = _Str_first + _Nstr->_Data._Size();
+
+                                if (_Rep_subtype == _Fl_rep_str_icase) {
+                                    _Cur = _STD _Find_longest_repeating_prefix(_Cur, _Last, _Str_first, _Str_last,
+                                        _Failed_work_count, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+                                } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
+                                    _Cur = _STD _Find_longest_repeating_prefix(
+                                        _Cur, _Last, _Str_first, _Str_last, _Failed_work_count, equal_to<_Elem>{});
+                                } else if (_Rep_subtype == _Fl_rep_str_default) {
+                                    _Cur = _STD _Find_longest_repeating_prefix(
+                                        _Cur, _Last, _Str_first, _Str_last, _Failed_work_count, equal_to<_Elem>{});
+                                } else {
+                                    _STL_INTERNAL_CHECK(_Rep_subtype == _Fl_rep_str_collate);
+                                    _Cur = _STD _Find_longest_repeating_prefix(_Cur, _Last, _Str_first, _Str_last,
+                                        _Failed_work_count, _Cmp_collate_translateleft<_RxTraits>{_Traits});
+                                }
+                            } else if (_Rep_subtype == _Fl_rep_dot_ecma) {
+                                _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
+                            } else if (_Rep_subtype == _Fl_rep_dot_posix) {
+                                _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem{});
+                            } else {
+                                const _Elem _Val = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str();
+                                if (_Rep_subtype == _Fl_rep_char_icase) {
+                                    auto _Pred = [this, _Val](const _Elem& _Ch) {
+                                        return _Traits.translate_nocase(_Ch) == _Val;
+                                    };
+                                    _Cur = _STD find_if_not(_Cur, _Last, _Pred);
+                                } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
+                                    _Cur = _STD _Find_not_unchecked(_Cur, _Last, _Val);
+                                } else if (_Rep_subtype == _Fl_rep_char_default) {
+                                    _Cur = _STD _Find_not_unchecked(_Cur, _Last, _Val);
+                                } else {
+                                    _STL_INTERNAL_CHECK(_Rep_subtype == _Fl_rep_char_collate);
+                                    auto _Pred = [this, _Val](const _Elem& _Ch) { //
+                                        return _Traits.translate(_Ch) == _Val;
+                                    };
+                                    _Cur = _STD find_if_not(_Cur, _Last, _Pred);
+                                }
+                            }
+
+                            const auto _Count    = _STD distance(_Tgt_state._Cur, _Cur);
+                            const auto _Num_reps = _Count / _Sav._Loop_length;
+                            const int _Loop_idx  = _Num_reps >= INT_MAX ? INT_MAX : static_cast<int>(_Num_reps);
+                            _It _Min_pos         = _Tgt_state._Cur;
+                            if (_Loop_idx >= _Node->_Min && _Node->_Min != 0) {
+                                _STD advance(_Min_pos, static_cast<_Diff_type>(_Node->_Min - 1) * _Sav._Loop_length);
+                            }
+
+                            // Divide by 64 because accelerated loops are cheaper than state transitions.
+                            // We must account for all potential work during the last failed repetition attempt as well.
+                            _Increase_complexity_count(static_cast<_Diff_type>((_Count + _Failed_work_count) / 64));
+
+                            _Next   = _Node->_End_rep->_Next;
+                            _Failed = _Node->_Min > _Loop_idx;
+                            if (!_Failed && _Loop_idx != 0) {
+                                _Tgt_state._Cur = _Cur;
+
+                                // Usually, the loop variables _Loop_frame_idx and _Loop_idx
+                                // must be restored if a loop is not simple.
+                                // But here, we do not have to bother restoring their values
+                                // by pushing _Loop_greedy or _Loop_restore_vals frames on the stack:
+                                // * _Loop_frame_idx is only used by _N_end_rep's processing.
+                                // * _Loop_idx is only used by _N_end_rep's processing
+                                //   and when backtracking non-greedy loops.
+                                // Since the loops handled here are greedy and
+                                // avoiding _N_end_rep's processing is the point of this code,
+                                // we can skip restoring _Loop_frame_idx and _Loop_idx
+                                // and use the simpler unwinding opcodes
+                                // _Loop_simple_greedy_firstrep and _Do_nothing instead.
+                                const _Rx_unwind_ops _Code = _Node->_Min == 0
+                                                               ? _Rx_unwind_ops::_Loop_simple_greedy_firstrep
+                                                               : _Rx_unwind_ops::_Do_nothing;
+
+                                _It _Prev = _Tgt_state._Cur;
+                                _STD advance(_Prev, -_Sav._Loop_length);
+
+                                const bool _Second_frame_required = _Prev != _Min_pos;
+                                size_t _First_frame_idx{};
+                                if (_Code != _Rx_unwind_ops::_Do_nothing || _Second_frame_required) {
+                                    _First_frame_idx               = _Push_frame(_Code, _Node);
+                                    _Frames[_First_frame_idx]._Pos = _Min_pos;
+                                }
+
+                                if (_Second_frame_required) {
+                                    const auto _Second_frame_idx =
+                                        _Push_frame(_Rx_unwind_ops::_Loop_simple_greedy_lastrep, _Node);
+                                    auto& _Second_frame               = _Frames[_Second_frame_idx];
+                                    _Second_frame._Loop_frame_idx_sav = _First_frame_idx;
+                                    _Second_frame._Pos                = _Prev;
+                                }
+                            }
+                            break;
+                        }
+                    }
 
                     if (_Node->_Simple_loop == 1) {
                         _Sav._Loop_frame_idx = _Push_frame(_Rx_unwind_ops::_Do_nothing, _Node);
@@ -4518,7 +4764,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                             auto& _Base_frame = _Frames[_Sav._Loop_frame_idx];
                             _Sav._Loop_length = _STD distance(_Base_frame._Pos, _Tgt_state._Cur);
 
-                            if (_Sav._Loop_length == _Iter_diff_t<_It>{}) { // initial match empty
+                            if (_Sav._Loop_length == _Diff_type{}) { // initial match empty
                                 // loop is branchless, so it will only ever match empty strings
                                 // -> we only try tail for POSIX or if minimum number of reps is non-zero
                                 // _Next is already assigned correctly for matching tail
@@ -4746,7 +4992,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                             -_Sav._Loop_length);
                     }
                 }
-                _FALLTHROUGH;
+                [[fallthrough]];
 
             case _Rx_unwind_ops::_Loop_simple_greedy_lastrep:
                 {
@@ -4777,7 +5023,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                     _Tgt_state._Cur = _Frame._Pos;
                     _Failed         = false;
                 }
-                _FALLTHROUGH;
+                [[fallthrough]];
 
             case _Rx_unwind_ops::_Loop_restore_vals:
                 { // restore loop vals after processing of a rep is completed
@@ -4817,7 +5063,7 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                 { // restore end of capturing group that was previously unmatched
                     _Tgt_state._Grp_valid._Clear(_Frame._Capture_idx);
                 }
-                _FALLTHROUGH;
+                [[fallthrough]];
 
             case _Rx_unwind_ops::_Capture_restore_matched_end:
                 { // restore end of capturing group that was already matched
@@ -4866,7 +5112,6 @@ void _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Copy_captures2(
     _Submatch0.matched = true;
     _STD _Assign_wrapped(_Submatch0.first, _Begin, _Orig_last);
     _STD _Assign_wrapped(_Submatch0.second, _Result._Cur, _Orig_last);
-
 
     for (unsigned int _Idx = 1U; _Idx < _Ncap; ++_Idx) { // copy submatch _Idx
         auto& _Submatch   = _Matches._At(_Idx);
@@ -4918,11 +5163,8 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip2(
     _It _First, const _It _Last, const _Node_base* _Nx, const unsigned int _Recursion_depth) {
     // skip until possible match
     // assumes --_First is valid
-    static constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
-    static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
-        static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
-    constexpr unsigned int _Max_recursion_depth          = 50U;
-    constexpr short _Max_lookahead                       = 512;
+    constexpr unsigned int _Max_recursion_depth = 50U;
+    constexpr short _Max_lookahead              = 512;
 
     while (_First != _Last && _Nx) { // check current node
         switch (_Nx->_Kind) { // handle current node's type
@@ -4930,19 +5172,12 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip2(
             break;
 
         case _N_bol: // check for beginning anchor
-            if (_Sflags & regex_constants::multiline) {
+            if ((_Sflags & regex_constants::multiline) != 0) {
                 // multiline mode: check for embedded line terminator
                 // return iterator to character just after the newline; for input like "\nabc"
                 // matching "^abc", _First could be pointing at 'a', so we need to check --_First for '\n'
                 if (!_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_First))) {
-                    if constexpr (sizeof(_Elem) == 1) {
-                        _First =
-                            _STD find_first_of(_First, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
-                    } else {
-                        _First = _STD find_first_of(
-                            _First, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
-                    }
-
+                    _First = _STD _Find_next_ecmascript_line_terminator<_Elem>(_First, _Last);
                     if (_First != _Last) {
                         ++_First;
                     }
@@ -4955,14 +5190,9 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip2(
             }
 
         case _N_eol:
-            if (_Sflags & regex_constants::multiline) {
+            if ((_Sflags & regex_constants::multiline) != 0) {
                 // multiline mode: matches at next line terminator or end of input
-                if constexpr (sizeof(_Elem) == 1) {
-                    return _STD find_first_of(_First, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
-                } else {
-                    return _STD find_first_of(
-                        _First, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
-                }
+                return _STD _Find_next_ecmascript_line_terminator<_Elem>(_First, _Last);
             } else {
                 return _Last; // non-multiline mode: matches at end of input or not at all
             }
@@ -5154,7 +5384,6 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip2(
     }
     return _First;
 }
-
 
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Search() {
@@ -5447,6 +5676,7 @@ bool _Parser3<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { //
                   : _Char == 'S' ? _Rx_char_class_kind::_Negated_s
                   : _Char == 'D' ? _Rx_char_class_kind::_Negated_d
                                  : _Rx_char_class_kind::_Positive);
+    _Next();
 
     if (_Addit) {
         _Nfa._Add_class();
@@ -5455,12 +5685,14 @@ bool _Parser3<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { //
         // Since the former negation is defective, do the latter instead.
         if (_Kind != _Rx_char_class_kind::_Positive) {
             _Nfa._Negate();
-            _Kind = _Rx_char_class_kind::_Positive;
         }
+
+        _Nfa._Add_named_class(_Cls, _Rx_char_class_kind::_Positive);
+        _Nfa._Finalize_class();
+    } else {
+        _Nfa._Add_named_class(_Cls, _Kind);
     }
 
-    _Nfa._Add_named_class(_Cls, _Kind);
-    _Next();
     return true;
 }
 
@@ -5575,6 +5807,7 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expr
     }
 
     _ClassRanges();
+    _Nfa._Finalize_class();
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -5986,7 +6219,7 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                 _Outer_rep->_Simple_loop = 0;
                 _Outer_rep->_Flags &= ~_Fl_rep_branchless;
             }
-            _FALLTHROUGH;
+            [[fallthrough]];
 
         case _N_neg_assert:
             // visit the assertion body
@@ -6024,6 +6257,60 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                 if (_Outer_rep->_Simple_loop == -1) {
                     _Outer_rep->_Simple_loop = 1;
                 }
+
+                const auto _First_inner = _Outer_rep->_Next;
+                if (_First_inner->_Next == _Nx && _Outer_rep->_Max != 0) {
+                    switch (_Outer_rep->_Next->_Kind) {
+                    case _N_str:
+                        if (static_cast<const _Node_str<_Elem>*>(_First_inner)->_Data._Size() == 1U) {
+                            if ((_Flags & regex_constants::icase) != 0) {
+                                _Outer_rep->_Flags |= _Fl_rep_char_icase;
+                            } else if ((_Flags & regex_constants::collate) != 0) {
+                                _Outer_rep->_Flags |= _Fl_rep_char_collate;
+                            } else {
+                                _Outer_rep->_Flags |= _Fl_rep_char_default;
+                            }
+                        } else {
+                            if ((_Flags & regex_constants::icase) != 0) {
+                                _Outer_rep->_Flags |= _Fl_rep_str_icase;
+                            } else if ((_Flags & regex_constants::collate) != 0) {
+                                _Outer_rep->_Flags |= _Fl_rep_str_collate;
+                            } else {
+                                _Outer_rep->_Flags |= _Fl_rep_str_default;
+                            }
+                        }
+                        break;
+
+                    case _N_dot:
+                        _Outer_rep->_Flags |=
+                            (this->_Flags & regex_constants::_Any_posix) != 0 ? _Fl_rep_dot_posix : _Fl_rep_dot_ecma;
+                        break;
+
+                    case _N_nop:
+                    case _N_bol:
+                    case _N_eol:
+                    case _N_class:
+                    case _N_group:
+                    case _N_end_group:
+                    case _N_end_assert:
+                    case _N_capture:
+                    case _N_end_capture:
+                    case _N_if:
+                    case _N_rep:
+                    case _N_assert:
+                    case _N_neg_assert:
+                    case _N_wbound:
+                    case _N_begin:
+                    case _N_endif:
+                    case _N_end:
+                    case _N_none:
+                    case _N_back:
+                    case _N_end_rep:
+                    default:
+                        break;
+                    }
+                }
+
                 _Outer_rep = nullptr;
             }
             break;

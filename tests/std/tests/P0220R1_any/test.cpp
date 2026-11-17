@@ -2604,11 +2604,6 @@ namespace msvc {
         } // namespace swap_
     } // namespace modifiers
 
-#ifdef _M_CEE // TRANSITION, VSO-1846195
-#pragma warning(push)
-#pragma warning(disable : 5267) // definition of implicit copy constructor for 'X' is deprecated
-                                // because it has a user-provided destructor
-#endif // ^^^ workaround ^^^
     namespace overaligned {
         template <std::size_t shift>
         void test_one_alignment() {
@@ -2617,11 +2612,9 @@ namespace msvc {
             struct aligned_type {
                 alignas(align) unsigned char space[align];
 
-#ifndef _M_CEE // TRANSITION, VSO-1846195
                 aligned_type()                               = default;
                 aligned_type(const aligned_type&)            = default;
                 aligned_type& operator=(const aligned_type&) = default;
-#endif // ^^^ no workaround ^^^
 
                 ~aligned_type() noexcept {
                     assert(reinterpret_cast<std::uintptr_t>(this) % align == 0);
@@ -2655,9 +2648,6 @@ namespace msvc {
             test_one_alignment<3>();
         }
     } // namespace overaligned
-#ifdef _M_CEE // TRANSITION, VSO-1846195
-#pragma warning(pop)
-#endif // ^^^ workaround ^^^
 
     namespace size_and_alignment {
         void run_test() {

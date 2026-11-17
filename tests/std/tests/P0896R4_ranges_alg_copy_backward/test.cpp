@@ -65,8 +65,7 @@ struct instantiator {
 };
 
 constexpr void test_memmove() {
-    // Get some coverage for the memmove optimization, which we would not otherwise have since we do not currently
-    // unwrap output iterators. TRANSITION, GH-893
+    // Get some coverage for the memmove optimization.
     using ranges::copy_backward, ranges::copy_backward_result, ranges::begin, ranges::end, ranges::equal;
 
     { // Validate range overload

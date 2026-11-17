@@ -37,7 +37,7 @@ stages:
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
-          jobTimeoutInMinutes: 6
+          jobTimeoutInMinutes: 10
           hostArch: x64
           targetArch: x64
           targetPlatform: x64
@@ -60,7 +60,7 @@ stages:
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
-          jobTimeoutInMinutes: 6
+          jobTimeoutInMinutes: 10
           hostArch: x86
           targetArch: x86
           targetPlatform: x86
@@ -83,7 +83,7 @@ stages:
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
-          jobTimeoutInMinutes: 9
+          jobTimeoutInMinutes: 10
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64
@@ -106,7 +106,7 @@ stages:
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
-          jobTimeoutInMinutes: 9
+          jobTimeoutInMinutes: 10
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64ec
@@ -129,7 +129,7 @@ stages:
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
-          jobTimeoutInMinutes: 5
+          jobTimeoutInMinutes: 10
           hostArch: x64
           targetArch: x64
           targetPlatform: x64

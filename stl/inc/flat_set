@@ -753,11 +753,10 @@ private:
         }
     }
 
-    // typename is a workaround for VSO-2680018 (EDG)
     template <class _Key2, class _Compare2, class _Container2, class _Predicate2>
-    friend typename _Container2::size_type erase_if(flat_set<_Key2, _Compare2, _Container2>&, _Predicate2);
+    friend _Container2::size_type erase_if(flat_set<_Key2, _Compare2, _Container2>&, _Predicate2);
     template <class _Key2, class _Compare2, class _Container2, class _Predicate2>
-    friend typename _Container2::size_type erase_if(flat_multiset<_Key2, _Compare2, _Container2>&, _Predicate2);
+    friend _Container2::size_type erase_if(flat_multiset<_Key2, _Compare2, _Container2>&, _Predicate2);
 
     template <class _Predicate>
     _NODISCARD size_type _Erase_if(_Predicate _Pred) {
@@ -819,7 +818,7 @@ private:
     }
 
     container_type _Data;
-    _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
+    [[msvc::no_unique_address]] key_compare _Key_compare;
 };
 
 _EXPORT_STD template <class _Key, class _Compare, class _Container>

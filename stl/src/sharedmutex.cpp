@@ -69,7 +69,7 @@ namespace {
     }
 } // unnamed namespace
 
-// TRANSITION, ABI: preserved for compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 _Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms) noexcept {
     return _Cnd_timedwait_for_impl(cond, mtx, target_ms, true);
 }

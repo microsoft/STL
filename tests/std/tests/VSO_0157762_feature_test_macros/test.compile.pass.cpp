@@ -667,7 +667,7 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #error __cpp_lib_memory_resource is defined
 #endif
 
-#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG support for modules
 STATIC_ASSERT(__cpp_lib_modules == 202207L);
 #elif defined(__cpp_lib_modules)
 #error __cpp_lib_modules is defined
@@ -951,7 +951,7 @@ STATIC_ASSERT(__cpp_lib_stacktrace == 202011L);
 #error __cpp_lib_stacktrace is defined
 #endif
 
-#if _HAS_CXX23 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and VSO-2846756
+#if _HAS_CXX23 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and EDG-275
 STATIC_ASSERT(__cpp_lib_start_lifetime_as == 202207L);
 #elif defined(__cpp_lib_start_lifetime_as)
 #error __cpp_lib_start_lifetime_as is defined

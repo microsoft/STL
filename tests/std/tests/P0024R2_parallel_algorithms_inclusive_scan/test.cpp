@@ -202,6 +202,18 @@ void test_case_inclusive_scan_init_writes_intermediate_type() {
     inclusive_scan(par, begin(input), end(input), output, typesBop{}, intermediateType{0});
 }
 
+void test_case_inclusive_scan_different_types() {
+    const vector<int> input(65536, 1);
+
+    vector<long long> seqRes(input.size());
+    vector<long long> parRes(input.size());
+
+    iota(seqRes.begin(), seqRes.end(), 1);
+    inclusive_scan(execution::par, input.begin(), input.end(), parRes.begin());
+
+    assert(parRes == seqRes);
+}
+
 int main() {
     mt19937 gen(1729);
 
@@ -213,4 +225,5 @@ int main() {
     parallel_test_case(test_case_inclusive_scan_bop_init_parallel_associative);
     parallel_test_case(test_case_inclusive_scan_bop_init_parallel_associative_in_place);
     test_case_inclusive_scan_init_writes_intermediate_type();
+    test_case_inclusive_scan_different_types();
 }

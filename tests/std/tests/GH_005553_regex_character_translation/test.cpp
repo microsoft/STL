@@ -241,8 +241,64 @@ void test_gh_5553() {
     }
 }
 
+void test_gh_6499() {
+    // GH-6499: Accelerate greedy single-character loops
+    //
+    // Test correct handling of collate mode
+    // for greedy single-character loops with custom regex traits.
+    const wstring pattern = L"b*";
+    const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> collating_b_star{
+        pattern, regex_constants::collate};
+    check_match(L"", pattern, collating_b_star);
+    check_match(L"bbbbbb", pattern, collating_b_star);
+    check_match(L"bcbcccbcb", pattern, collating_b_star);
+    check_no_match(L"bcbbcbcabcbc", pattern, collating_b_star);
+    check_search_match(L"bcbbcbcabcbc", L"bcbbcbc", pattern, collating_b_star);
+    check_no_match(L"bcbbdbcb", pattern, collating_b_star);
+    check_search_match(L"bcbbdbcb", L"bcbb", pattern, collating_b_star);
+    check_search_match(L"abcbbd", L"", pattern, collating_b_star);
+}
+
+void test_gh_6506() {
+    // GH-6506: Accelerate greedy multi-character loops
+    //
+    // Test correct handling of collate mode with custom regex traits.
+    {
+        const wstring pattern = L"(?:bc)*";
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> collating_bc_star{
+            pattern, regex_constants::collate};
+        check_match(L"", pattern, collating_bc_star);
+        check_match(L"bcbcbbcc", pattern, collating_bc_star);
+        check_no_match(L"bcbcbbccb", pattern, collating_bc_star);
+        check_no_match(L"bcbcbbacbb", pattern, collating_bc_star);
+        check_search_match(L"bcbcbbacbb", L"bcbcbb", pattern, collating_bc_star);
+        check_no_match(L"bcbcbbcabb", pattern, collating_bc_star);
+        check_search_match(L"bcbcbbcabb", L"bcbcbb", pattern, collating_bc_star);
+        check_no_match(L"bcbbdbcb", pattern, collating_bc_star);
+        check_search_match(L"bcbbdbcb", L"bcbb", pattern, collating_bc_star);
+        check_no_match(L"bcbbcbccdcb", pattern, collating_bc_star);
+        check_search_match(L"bcbbcbccdcb", L"bcbbcbcc", pattern, collating_bc_star);
+        check_search_match(L"abcbbd", L"", pattern, collating_bc_star);
+        check_search_match(L"bacbbd", L"", pattern, collating_bc_star);
+    }
+
+    {
+        const wstring pattern = L"(?:bd)*";
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> collating_bd_star{
+            pattern, regex_constants::collate};
+        check_match(L"bdcebecd", pattern, collating_bd_star);
+        check_no_match(L"bdcebecddd", pattern, collating_bd_star);
+        check_no_match(L"bdcebecdbc", pattern, collating_bd_star);
+        check_no_match(L"bdaebecd", pattern, collating_bd_star);
+        check_no_match(L"bdcabecd", pattern, collating_bd_star);
+        check_no_match(L"bdfebecd", pattern, collating_bd_star);
+        check_no_match(L"bdcfbecd", pattern, collating_bd_star);
+    }
+}
 int main() {
     test_gh_5553();
+    test_gh_6499();
+    test_gh_6506();
 
     return g_regexTester.result();
 }

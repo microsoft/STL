@@ -1,12 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// TRANSITION, MSVC-PR-777572 (merged 2026-09-03) changed the MSVC frontend to intercept inclusions of <inttypes.h>:
-#ifndef _M_CEE_PURE
-#include <__msvc_inttypes.hpp>
-#endif
-// ^^^ workaround ^^^
-
 #include <cassert>
 #include <cinttypes>
 #include <cmath>
@@ -690,3 +684,9 @@ int main() {
 #endif // ^^^ _HAS_CXX26 && defined(_MSVC_LIBC_MATH) ^^^
 #endif // ^^^ defined(__cpp_lib_constexpr_cmath) ^^^
 }
+
+#ifdef _USE_MATH_DEFINES
+static_assert(static_cast<int>(M_PI * 100.0) == 314, "Unexpected value for M_PI, reboot universe and try again.");
+#elif defined(M_PI)
+static_assert(false, "When _USE_MATH_DEFINES is not defined, M_PI should not be defined.");
+#endif // ^^^ defined(M_PI) ^^^

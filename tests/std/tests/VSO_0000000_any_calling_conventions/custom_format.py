@@ -9,7 +9,7 @@ from stl.test.tests import STLTest, TestType
 
 class CustomTest(STLTest):
     def __init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum):
-        STLTest.__init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum)
+        super().__init__(suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum)
         self.callingConventionA = envlstEntry.getEnvVal('CALLING_CONVENTION_A')
         self.callingConventionB = envlstEntry.getEnvVal('CALLING_CONVENTION_B')
 
@@ -25,19 +25,19 @@ class CustomTestFormat(STLTestFormat):
         outputDir, outputBase = test.getTempPaths()
         aObj = os.path.join(outputDir, 'a.obj')
 
-        cmd = [test.cxx, aSource, test.callingConventionA, *test.flags, '/c', *test.compileFlags, '/Fo' + aObj]
+        cmd = [test.cxx, aSource, test.callingConventionA, *test.flags, '/c', *test.compileFlags, f'/Fo{aObj}']
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
 
-        shared.execFile = outputBase + '.exe'
+        shared.execFile = f'{outputBase}.exe'
         cmd = [test.cxx, exeSource, aObj, test.callingConventionB, *test.flags, *test.compileFlags,
-               '/Fe' + shared.execFile, '/link', *test.linkFlags]
+               f'/Fe{shared.execFile}', '/link', *test.linkFlags]
 
         if TestType.COMPILE in test.testType:
             cmd = [test.cxx, '/c', exeSource, aObj, test.callingConventionB, *test.flags, *test.compileFlags]
         elif TestType.RUN in test.testType:
-            shared.execFile = outputBase + '.exe'
+            shared.execFile = f'{outputBase}.exe'
             cmd = [test.cxx, exeSource, aObj, test.callingConventionB, *test.flags, *test.compileFlags,
-                   '/Fe' + shared.execFile, '/link', *test.linkFlags]
+                   f'/Fe{shared.execFile}', '/link', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)

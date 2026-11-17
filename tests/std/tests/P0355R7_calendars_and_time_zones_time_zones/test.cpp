@@ -58,7 +58,7 @@ void try_locate_invalid_zone(const tzdb& my_tzdb, string_view name) {
 void timezone_tzdb_list_test() {
     const auto& my_tzdb_list = get_tzdb_list();
 
-    // only one entry in the list unless leap seconds were to change
+    // only one entry in the list
     assert(&my_tzdb_list.front() == &get_tzdb());
     assert(&my_tzdb_list.front() == &reload_tzdb());
     assert(++my_tzdb_list.begin() == my_tzdb_list.end());
@@ -76,7 +76,7 @@ void timezone_version_test() {
     assert(leap_seconds.empty() == false);
     assert(leap_seconds == to_string(my_tzdb.leap_seconds.size()));
 
-    // remote version will only differ if leap seconds info changes, will not occur in tests
+    // remote version will never differ because leap seconds info never changes
     const auto& reloaded_tzdb = reload_tzdb();
     assert(reloaded_tzdb.version.empty() == false);
     assert(&reloaded_tzdb == &my_tzdb);
