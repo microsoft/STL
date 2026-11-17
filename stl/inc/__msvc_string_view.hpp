@@ -483,7 +483,7 @@ struct char_traits : _Char_traits<_Elem, long> { // properties of a string or st
 #ifndef _ALLOW_ANY_TYPE_IN_STD_CHAR_TRAITS
     static_assert(is_integral_v<_Elem>,
         "Standard char_traits is only provided for char, wchar_t, char8_t, char16_t, and char32_t. "
-        "See N5054 [char.traits]. Visual C++ accepts other unsigned integral types as an extension.");
+        "See N5054 [char.traits].");
 #endif // _ALLOW_ANY_TYPE_IN_STD_CHAR_TRAITS
 };
 
