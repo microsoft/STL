@@ -335,6 +335,9 @@ void test_clock_formatter() {
     assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / December / 30}) == STR("10 2010 52 52 52"));
     assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / December / 31}) == STR("10 2010 52 52 52"));
 
+    // GH-6519: %g and %G with years outside [0, 9999]
+    assert(format(STR("{:%g %G}"), sys_days{year{0} / January / 1}) == STR("01 -0001"));
+
     assert(format(STR("{:%S}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 1s) == STR("60"));
     assert(format(STR("{:%F %T}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()))
            == STR("1972-07-01 00:00:00"));
@@ -620,6 +623,10 @@ void test_year_month_formatter() {
     throw_helper(STR("{:%G}"), 2005y / month{13});
     throw_helper(STR("{:%g}"), year{-32768} / November);
     throw_helper(STR("{:%G}"), year{-32768} / November);
+
+    // GH-6519: %g and %G with years outside [0, 9999]
+    assert(format(STR("{:%g %G}"), year{-1} / June) == STR("01 -0001"));
+    assert(format(STR("{:%g %G}"), year{10000} / June) == STR("00 10000"));
 }
 
 template <typename CharT>
@@ -657,6 +664,13 @@ void test_year_month_day_formatter() {
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 30) == STR("10 2010 52 52 52"));
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 31) == STR("10 2010 52 52 52"));
 
+    // GH-6519: %g and %G with years outside [0, 9999]
+    assert(format(STR("{:%g %G}"), year{-1} / June / 15) == STR("01 -0001"));
+    assert(format(STR("{:%g %G}"), year{10000} / June / 15) == STR("00 10000"));
+    assert(format(STR("{:%g %G}"), year{0} / January / 1) == STR("01 -0001"));
+    assert(format(STR("{:%g %G}"), year{10000} / January / 2) == STR("99 9999"));
+    assert(format(STR("{:%g %G}"), year{-376} / December / 30) == STR("75 -0375"));
+
     // GH-2761, formatter<chrono::year_month_day> is not fully implemented
     assert(format(STR("{:%x}"), year_month_day{year{2010}, month{5}, day{6}}) == STR("05/06/10"));
 }
@@ -685,6 +699,9 @@ void test_year_month_day_last_formatter() {
     throw_helper(STR("{:%j}"), year{1900} / month{13} / last);
 
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / last) == STR("10 2010 22 22 22"));
+
+    // GH-6519: %g and %G with years outside [0, 9999]
+    assert(format(STR("{:%g %G}"), year{10000} / January / last) == STR("00 10000"));
 
     // GH-2761, formatter<chrono::year_month_day> is not fully implemented
     assert(format(STR("{:%x}"), ymdl1) == STR("04/30/21"));
@@ -720,6 +737,9 @@ void test_year_month_weekday_formatter() {
 
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / Monday[5]) == STR("10 2010 22 22 22"));
 
+    // GH-6519: %g and %G with years outside [0, 9999]
+    assert(format(STR("{:%g %G}"), year{-1} / June / Monday[1]) == STR("01 -0001"));
+
     // GH-2761, formatter<chrono::year_month_day> is not fully implemented
     assert(format(STR("{:%x}"), ymwd1) == STR("04/30/21"));
 }
@@ -751,6 +771,9 @@ void test_year_month_weekday_last_formatter() {
     throw_helper(STR("{:%j}"), invalid1);
 
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / Monday[last]) == STR("10 2010 22 22 22"));
+
+    // GH-6519: %g and %G with years outside [0, 9999]
+    assert(format(STR("{:%g %G}"), year{10000} / January / Sunday[last]) == STR("00 10000"));
 
     // GH-2761, formatter<chrono::year_month_day> is not fully implemented
     assert(format(STR("{:%x}"), ymwdl1) == STR("04/30/21"));
