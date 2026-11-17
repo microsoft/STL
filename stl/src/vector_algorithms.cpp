@@ -2935,8 +2935,8 @@ namespace {
                                 _Process_tail_bytes = (_Remaining_byte_size & ~_Traits::_Vec_mask) == 0;
 
                                 if (_Process_tail_bytes && _mm256_testz_si256(_Cur_idx, _Cur_idx)) {
-                                    // _Cur_idx has overflown, this happens if the last portion was the whole portion,
-                                    // don't process tail bytes here then, as the match will have incorrect index
+                                    // _Cur_idx has overflowed, this happens if the last portion was the whole portion,
+                                    // don't process tail bytes here then, as the match will have an incorrect index
                                     // (it will be handled in the scalar part)
                                     _Process_tail_bytes = false;
                                 }
