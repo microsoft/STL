@@ -201,7 +201,7 @@ def sqrt_of_pi_over_2() -> mpf:
 
 
 def inv_sqrt2() -> mpf:
-    return mpf("0x1.6a09e667f3bcda1ec56c7db8f04cp-1")
+    return mpf("0x1.6a09e667f3bcc908b2fb1366ea95p-1")
 
 
 def sqrt_of_2_over_pi() -> mpf:
