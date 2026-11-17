@@ -196,16 +196,16 @@ def generate_tables(
     print("};")
 
 
+def sqrt_of_2_over_pi() -> mpf:
+    return mp.sqrt(2 / mp.pi)
+
+
 def sqrt_of_pi_over_2() -> mpf:
     return mp.sqrt(mp.pi / 2)
 
 
 def inv_sqrt2() -> mpf:
     return mp.sqrt(2) / 2  # Accurate, unlike 1 / mp.sqrt(2) which would round twice
-
-
-def sqrt_of_2_over_pi() -> mpf:
-    return mp.sqrt(2 / mp.pi)
 
 
 def half_normal_pdf(x: mpf) -> mpf:
