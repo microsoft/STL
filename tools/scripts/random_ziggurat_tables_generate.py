@@ -89,7 +89,7 @@ def generate_tables(
         y2 = pdf_2nd_derivative(x_outer) - 2 * regular_area / (x_outer * x_outer * x_outer)
         dx = y1 / y2
         x_outer -= dx
-        if not (abs(dx) > abs(x_outer) * mp.ldexp(1, -80)):
+        if not (abs(dx) > abs(x_outer) * mpf("0x1p-80")):
             break
 
     y_min = pdf(x_outer)
@@ -204,23 +204,23 @@ def generate_tables(
 
 
 def half_normal_pdf(x: mpf) -> mpf:
-    return mp.exp(x * x * -0.5) * mp.ldexp(mpf(0x19884533d436508d0fcb3c500bab9), -113)
+    return mp.exp(x * x * -0.5) * mpf("0x1.9884533d436508d0fcb3c500bab9p-1")
 
 
 def half_normal_inverse_pdf(y: mpf) -> mpf:
-    return mp.sqrt(-2 * mp.log(y * mp.ldexp(mpf(0x140d931ff627059657ca41fae722d), -112)))
+    return mp.sqrt(-2 * mp.log(y * mpf("0x1.40d931ff627059657ca41fae722dp+0")))
 
 
 def half_normal_cdf(x: mpf) -> mpf:
-    return mp.erf(x * mp.ldexp(mpf(0x16a09e667f3bcda1ec56c7db8f04c), -113))
+    return mp.erf(x * mpf("0x1.6a09e667f3bcda1ec56c7db8f04cp-1"))
 
 
 def half_normal_pdf_derivative(x: mpf) -> mpf:
-    return mp.exp(x * x * -0.5) * x * -mp.ldexp(mpf(0x19884533d436508d0fcb3c500bab9), -113)
+    return mp.exp(x * x * -0.5) * x * -mpf("0x1.9884533d436508d0fcb3c500bab9p-1")
 
 
 def half_normal_pdf_2nd_derivative(x: mpf) -> mpf:
-    return mp.exp(x * x * -0.5) * (x + 1) * (x - 1) * mp.ldexp(mpf(0x19884533d436508d0fcb3c500bab9), -113)
+    return mp.exp(x * x * -0.5) * (x + 1) * (x - 1) * mpf("0x1.9884533d436508d0fcb3c500bab9p-1")
 
 
 def generate_header() -> None:
@@ -274,13 +274,13 @@ def generate_normal_distribution() -> None:
     generate_tables(
         "_Normal_distribution_tables", True, half_normal_pdf, half_normal_inverse_pdf,
         half_normal_cdf, half_normal_pdf_derivative, half_normal_pdf_2nd_derivative,
-        mp.ldexp(mpf(0x140d931ff627059657ca41fae722d), -112), FloatType="double"
+        mpf("0x1.40d931ff627059657ca41fae722dp+0"), FloatType="double"
     )
 
     generate_tables(
         "_Normal_distribution_tables", True, half_normal_pdf, half_normal_inverse_pdf,
         half_normal_cdf, half_normal_pdf_derivative, half_normal_pdf_2nd_derivative,
-        mp.ldexp(mpf(0x140d931ff627059657ca41fae722d), -112), FloatType="float"
+        mpf("0x1.40d931ff627059657ca41fae722dp+0"), FloatType="float"
     )
 
 
