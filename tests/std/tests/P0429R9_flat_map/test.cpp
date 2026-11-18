@@ -14,6 +14,8 @@
 #include <memory>
 #include <print>
 #include <ranges>
+#include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -1528,6 +1530,390 @@ void test_non_strict_weak_order_compare() {
     }
 }
 
+void test_operator_subscript() {
+    {
+        flat_map<int, char> fm;
+
+        const int lvalue_key = 10;
+        fm[lvalue_key]       = 'm';
+        assert(fm[10] == 'm');
+        assert(fm.size() == 1);
+
+        fm[70] = 'e';
+        assert(fm[70] == 'e');
+        assert(fm.size() == 2);
+
+        fm[lvalue_key] = 'z';
+        assert(fm[10] == 'z');
+        assert(fm.size() == 2);
+
+        int key       = 30;
+        fm[move(key)] = 'r';
+        assert(fm[30] == 'r');
+        assert(fm.size() == 3);
+
+        [[maybe_unused]] char& ref = fm[99];
+        assert(fm[99] == '\0');
+        assert(fm.size() == 4);
+
+        assert(check_key_content(fm, {10, 30, 70, 99}));
+        assert(check_value_content(fm, {'z', 'r', 'e', '\0'}));
+    }
+
+    {
+        flat_map<int, string> fm;
+        fm[1] = "hello";
+        assert(fm[1] == "hello");
+        assert(fm[2].empty());
+        assert(fm.size() == 2);
+
+        assert(check_key_content(fm, {1, 2}));
+        assert(check_value_content(fm, {string{"hello"}, string{}}));
+    }
+
+    {
+        flat_map<Packaged<int>, char, TransparentPackagedCompare<int>> fm;
+        fm[5] = 'a';
+        assert(fm.size() == 1);
+
+        fm[5] = 'b';
+        assert(fm.size() == 1);
+        assert(fm.begin()->second == 'b');
+
+        fm[10] = 'c';
+        assert(fm.size() == 2);
+        assert(fm.find(10)->second == 'c');
+
+        assert(check_key_content(fm, {Packaged<int>(5), Packaged<int>(10)}));
+        assert(check_value_content(fm, {'b', 'c'}));
+    }
+}
+
+void test_at() {
+    {
+        flat_map<int, char> fm{{10, 'm'}, {20, 'o'}, {70, 'e'}, {90, 'w'}};
+
+        assert(fm.at(10) == 'm');
+        assert(fm.at(20) == 'o');
+        assert(fm.at(70) == 'e');
+        assert(fm.at(90) == 'w');
+
+        fm.at(10) = 'x';
+        assert(fm.at(10) == 'x');
+        assert(fm.size() == 4);
+    }
+
+    {
+        const flat_map<int, char> fm{{10, 'm'}, {20, 'o'}, {70, 'e'}, {90, 'w'}};
+
+        assert(fm.at(10) == 'm');
+        assert(fm.at(20) == 'o');
+        assert(fm.at(70) == 'e');
+        assert(fm.at(90) == 'w');
+    }
+
+    {
+        flat_map<int, char> fm{{10, 'm'}, {20, 'o'}};
+        bool caught = false;
+        try {
+            (void) fm.at(42);
+        } catch (const out_of_range&) {
+            caught = true;
+        }
+        assert(caught);
+    }
+
+    {
+        const flat_map<int, char> fm{{10, 'm'}, {20, 'o'}};
+        bool caught = false;
+        try {
+            (void) fm.at(42);
+        } catch (const out_of_range&) {
+            caught = true;
+        }
+        assert(caught);
+    }
+
+    {
+        flat_map<int, char> fm;
+        bool caught = false;
+        try {
+            (void) fm.at(0);
+        } catch (const out_of_range&) {
+            caught = true;
+        }
+        assert(caught);
+    }
+
+    {
+        flat_map<Packaged<int>, char, TransparentPackagedCompare<int>> fm;
+        fm.emplace(Packaged<int>(5), 'a');
+        fm.emplace(Packaged<int>(10), 'b');
+
+        assert(fm.at(5) == 'a');
+        assert(fm.at(10) == 'b');
+        fm.at(5) = 'z';
+        assert(fm.at(5) == 'z');
+
+        const auto& cfm = fm;
+        assert(cfm.at(5) == 'z');
+        assert(cfm.at(10) == 'b');
+
+        bool caught = false;
+        try {
+            (void) fm.at(99);
+        } catch (const out_of_range&) {
+            caught = true;
+        }
+        assert(caught);
+
+        bool caught_const = false;
+        try {
+            (void) cfm.at(99);
+        } catch (const out_of_range&) {
+            caught_const = true;
+        }
+        assert(caught_const);
+    }
+}
+
+void test_emplace() {
+    {
+        flat_map<int, char> fm;
+
+        const auto [it1, inserted1] = fm.emplace(10, 'm');
+        assert(it1->first == 10);
+        assert(it1->second == 'm');
+        assert(inserted1);
+
+        const auto [it2, inserted2] = fm.emplace(70, 'e');
+        assert(it2->first == 70);
+        assert(it2->second == 'e');
+        assert(inserted2);
+
+        const auto [it3, inserted3] = fm.emplace(20, 'o');
+        assert(it3->first == 20);
+        assert(it3->second == 'o');
+        assert(inserted3);
+
+        const auto [it4, inserted4] = fm.emplace(10, 'X');
+        assert(it4->first == 10);
+        assert(it4->second == 'm');
+        assert(!inserted4);
+
+        assert(check_key_content(fm, {10, 20, 70}));
+        assert(check_value_content(fm, {'m', 'o', 'e'}));
+    }
+
+    {
+        flat_map<int, char> fm;
+
+        const auto [it1, inserted1] = fm.emplace(pair{5, 'a'});
+        assert(it1->first == 5);
+        assert(it1->second == 'a');
+        assert(inserted1);
+
+        const auto [it2, inserted2] = fm.emplace(pair{5, 'b'});
+        assert(it2->first == 5);
+        assert(it2->second == 'a');
+        assert(!inserted2);
+    }
+
+    {
+        flat_map<int, char> fm{{1, 'a'}, {5, 'e'}, {10, 'j'}};
+
+        const auto it1 = fm.emplace_hint(fm.end(), 20, 't');
+        assert(it1->first == 20);
+        assert(it1->second == 't');
+
+        const auto it2 = fm.emplace_hint(fm.begin(), 0, 'z');
+        assert(it2->first == 0);
+        assert(it2->second == 'z');
+
+        const auto it3 = fm.emplace_hint(fm.find(5), 5, 'X');
+        assert(it3->first == 5);
+        assert(it3->second == 'e');
+
+        assert(check_key_content(fm, {0, 1, 5, 10, 20}));
+        assert(check_value_content(fm, {'z', 'a', 'e', 'j', 't'}));
+    }
+}
+
+struct TransparentDereferenceCompare {
+    using is_transparent = void;
+
+    template <class T, class U>
+    bool operator()(const unique_ptr<T>& lhs, const unique_ptr<U>& rhs) const {
+        return *lhs < *rhs;
+    }
+};
+
+void test_try_emplace() {
+    {
+        flat_map<int, string> fm;
+
+        const int key          = 10;
+        const auto [it1, ins1] = fm.try_emplace(key, "hello");
+        assert(it1->first == 10);
+        assert(it1->second == "hello");
+        assert(ins1);
+
+        const auto [it2, ins2] = fm.try_emplace(20, size_t{3}, 'x');
+        assert(it2->first == 20);
+        assert(it2->second == "xxx");
+        assert(ins2);
+
+        const auto [it3, ins3] = fm.try_emplace(key, "world");
+        assert(it3->first == 10);
+        assert(it3->second == "hello");
+        assert(!ins3);
+
+        assert(fm.size() == 2);
+    }
+
+    {
+        flat_map<int, char> fm;
+
+        int key1               = 10;
+        const auto [it1, ins1] = fm.try_emplace(move(key1), 'm');
+        assert(it1->first == 10);
+        assert(it1->second == 'm');
+        assert(ins1);
+
+        int key2               = 10;
+        const auto [it2, ins2] = fm.try_emplace(move(key2), 'X');
+        assert(it2->first == 10);
+        assert(it2->second == 'm');
+        assert(!ins2);
+    }
+
+    {
+        flat_map<int, char> fm{{1, 'a'}, {5, 'e'}, {10, 'j'}};
+
+        const int key  = 20;
+        const auto it1 = fm.try_emplace(fm.end(), key, 't');
+        assert(it1->first == 20);
+        assert(it1->second == 't');
+
+        const auto it2 = fm.try_emplace(fm.begin(), 0, 'z');
+        assert(it2->first == 0);
+        assert(it2->second == 'z');
+
+        const int duplicate_key = 5;
+        const auto it3          = fm.try_emplace(fm.find(5), duplicate_key, 'X');
+        assert(it3->first == 5);
+        assert(it3->second == 'e');
+
+        assert(check_key_content(fm, {0, 1, 5, 10, 20}));
+        assert(check_value_content(fm, {'z', 'a', 'e', 'j', 't'}));
+    }
+
+    {
+        flat_map<int, char> fm{{1, 'a'}, {5, 'e'}, {10, 'j'}};
+
+        const auto it1 = fm.try_emplace(fm.begin(), 20, 't');
+        assert(it1->first == 20);
+        assert(it1->second == 't');
+
+        assert(check_key_content(fm, {1, 5, 10, 20}));
+        assert(check_value_content(fm, {'a', 'e', 'j', 't'}));
+    }
+
+    {
+        flat_map<unique_ptr<const int>, char, TransparentDereferenceCompare> fm;
+
+        auto key1              = make_unique<int>(5);
+        const auto [it1, ins1] = fm.try_emplace(move(key1), 'a');
+        assert(ins1);
+        assert(!key1);
+        assert(*it1->first == 5);
+        assert(it1->second == 'a');
+
+        auto key2              = make_unique<int>(10);
+        const auto [it2, ins2] = fm.try_emplace(move(key2), 'b');
+        assert(ins2);
+        assert(!key2);
+        assert(*it2->first == 10);
+        assert(it2->second == 'b');
+
+        auto duplicate_key     = make_unique<int>(5);
+        const auto [it3, ins3] = fm.try_emplace(move(duplicate_key), 'X');
+        assert(!ins3);
+        // Conversion to key_type before lookup would consume duplicate_key.
+        assert(duplicate_key);
+        assert(*duplicate_key == 5);
+        assert(*it3->first == 5);
+        assert(it3->second == 'a');
+
+        assert(fm.size() == 2);
+    }
+
+    {
+        flat_map<unique_ptr<const int>, char, TransparentDereferenceCompare> fm;
+        fm.try_emplace(make_unique<int>(5), 'a');
+        fm.try_emplace(make_unique<int>(10), 'b');
+
+        auto key      = make_unique<int>(20);
+        const auto it = fm.try_emplace(fm.end(), move(key), 'c');
+        assert(!key);
+        assert(*it->first == 20);
+        assert(it->second == 'c');
+        assert(fm.size() == 3);
+
+        auto duplicate_key   = make_unique<int>(20);
+        const auto duplicate = fm.try_emplace(fm.end(), move(duplicate_key), 'X');
+        assert(duplicate_key);
+        assert(*duplicate_key == 20);
+        assert(*duplicate->first == 20);
+        assert(duplicate->second == 'c');
+        assert(fm.size() == 3);
+    }
+}
+
+void test_replace() {
+    {
+        flat_map<int, char> fm{{1, 'a'}, {2, 'b'}, {3, 'c'}};
+
+        vector<int> new_keys  = {10, 20, 30, 40};
+        vector<char> new_vals = {'w', 'x', 'y', 'z'};
+        fm.replace(move(new_keys), move(new_vals));
+
+        assert(check_key_content(fm, {10, 20, 30, 40}));
+        assert(check_value_content(fm, {'w', 'x', 'y', 'z'}));
+    }
+
+    {
+        flat_map<int, char> fm{{1, 'a'}, {2, 'b'}};
+
+        fm.replace(vector<int>{}, vector<char>{});
+
+        assert(fm.empty());
+    }
+
+    {
+        flat_map<int, char> fm;
+
+        vector<int> new_keys  = {42};
+        vector<char> new_vals = {'x'};
+        fm.replace(move(new_keys), move(new_vals));
+
+        assert(fm.size() == 1);
+        assert(fm.begin()->first == 42);
+        assert(fm.begin()->second == 'x');
+    }
+
+    {
+        flat_map<int, char> fm{{1, 'a'}, {2, 'b'}, {3, 'c'}};
+
+        auto extracted = move(fm).extract();
+        assert(fm.empty());
+
+        fm.replace(move(extracted.keys), move(extracted.values));
+        assert(check_key_content(fm, {1, 2, 3}));
+        assert(check_value_content(fm, {'a', 'b', 'c'}));
+    }
+}
+
 void run_normal_tests() {
     test_key_mapped_cont_combinations<vector, vector>();
     test_key_mapped_cont_combinations<vector, deque>();
@@ -1545,6 +1931,12 @@ void run_normal_tests() {
 
     test_lookup_call_on_temporaries();
     test_non_strict_weak_order_compare();
+
+    test_operator_subscript();
+    test_at();
+    test_emplace();
+    test_try_emplace();
+    test_replace();
 }
 
 enum class cont_type { multi, unique };
