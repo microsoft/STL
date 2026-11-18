@@ -4,7 +4,6 @@
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import TextIO
-from array import array
 
 
 @dataclass
@@ -83,8 +82,7 @@ def line_to_cpp_data_line_utf32(line: BreakTestItem) -> str:
 
 
 def line_to_cpp_data_line_utf8(line: BreakTestItem) -> str:
-    utf8_rep = str(array('L', line.code_points),
-                   encoding='utf-32').encode('utf-8')
+    utf8_rep = ''.join(map(chr, line.code_points)).encode('utf-8')
     return cpp_test_data_line_template.format(','.join(
         [f"'\\x{x:x}'" for x in utf8_rep]
     ), ','.join([str(x) for x in line.breaks]))
@@ -105,6 +103,7 @@ def generate_all() -> str:
         timestamp = file.readline().replace("#", "//").rstrip()
         while line := parse_break_test_line(file):
             if len(line.code_points) > 0:
+                assert line.breaks and line.breaks[0] == 0 and line.breaks[-1] == len(line.code_points)
                 lines.append(line)
     return cpp_template.format(filename, timestamp, len(lines), ','.join(map(line_to_cpp_data_line_utf32, lines)),
         ','.join(map(line_to_cpp_data_line_utf8, lines)))
