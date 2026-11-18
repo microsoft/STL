@@ -2742,8 +2742,8 @@ private:
                 }
             } else {
                 // rectangular region of the bottommost layer
-                return static_cast<_Ty>(
-                    _Tables::_Value._Layer_widths[_Tables::_Value._Layer_num] * static_cast<_Fty>(_Xbits));
+                constexpr auto _Width = _Tables::_Value._Layer_widths[_Tables::_Value._Layer_num];
+                return static_cast<_Ty>(_Width * static_cast<_Fty>(_Xbits));
             }
         }
     }
