@@ -108,7 +108,7 @@ def generate_tables(
         x_inner = x_outer
         y_max = y_min
         y_min = y_max - regular_area / x_inner
-        if y_min < 0:
+        if y_min <= 0:
             break
 
         x_outer = inverse_pdf(y_min)
