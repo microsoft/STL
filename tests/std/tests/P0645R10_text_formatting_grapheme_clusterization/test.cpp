@@ -1184,11 +1184,14 @@ void run_unicode_test_data_utf32() {
             test_case.code_points.data(), test_case.code_points.data() + test_case.code_points.size());
         size_t i = 0;
         while (iter != default_sentinel) {
-            assert(i < test_case.breaks.size());
+            assert(i + 1 < test_case.breaks.size());
+            assert(iter._Position() == test_case.code_points.data() + test_case.breaks[i]);
             assert(*iter == test_case.code_points[test_case.breaks[i]]);
             ++iter;
             ++i;
         }
+        // The final expected break is the end of the input.
+        assert(i + 1 == test_case.breaks.size());
     }
 }
 
