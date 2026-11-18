@@ -2562,13 +2562,13 @@ public:
     };
 
     normal_distribution() noexcept // strengthened
-        : _Par(0.0, 1.0), _Valid(false), _Xx2(0) {}
+        : _Par(0.0, 1.0) {}
 
     explicit normal_distribution(_Ty _Mean0, _Ty _Sigma0 = 1.0) noexcept // strengthened
-        : _Par(_Mean0, _Sigma0), _Valid(false), _Xx2(0) {}
+        : _Par(_Mean0, _Sigma0) {}
 
     explicit normal_distribution(const param_type& _Par0) noexcept // strengthened
-        : _Par(_Par0), _Valid(false), _Xx2(0) {}
+        : _Par(_Par0) {}
 
     _NODISCARD _Ty mean() const noexcept /* strengthened */ {
         return _Par.mean();
@@ -2754,10 +2754,8 @@ private:
     }
 
     param_type _Par;
-    // TRANSITION, ABI: _Valid must be initialized to false, and must be reset to false when reset() is called, but is
-    // unused by the current implementation
-    bool _Valid;
-    _Ty _Xx2; // TRANSITION, ABI: unused by the current implementation
+    bool _Valid{false}; // TRANSITION, ABI: unused (except for binary compatibility in reset() and streaming)
+    _Ty _Xx2{0}; // TRANSITION, ABI: unused (except for binary compatibility in streaming)
 };
 
 _EXPORT_STD template <class _Ty = double>
