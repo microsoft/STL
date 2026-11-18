@@ -164,6 +164,32 @@ void test_case_set_intersection_parallel(const size_t testSize) {
         equal(seqRes.begin(), seqComp, parRes.begin(), parComp), "Randomized vectors, set intersection 2", seedValue);
 }
 
+void test_chunking() {
+    vector<int> left(65536);
+    left[0] = 0;
+    iota(left.begin() + 1, left.end(), 20'000'000);
+
+    vector<int> right(20'000'000 + 65536);
+    iota(right.begin(), right.begin() + 20'000'000, 0);
+    for (size_t i = 0; i < 65536; ++i) {
+        right[20'000'000 + i] = static_cast<int>(20'000'000 + 2 * i);
+    }
+
+    const auto l1 = left.cbegin();
+    const auto l2 = left.cend();
+    const auto r1 = right.cbegin();
+    const auto r2 = right.cend();
+
+    vector<int> seqRes(left.size());
+    vector<int> parRes(left.size());
+    seqRes.erase(set_intersection(l1, l2, r1, r2, seqRes.begin()), seqRes.end());
+    parRes.erase(set_intersection(execution::par, l1, l2, r1, r2, parRes.begin()), parRes.end());
+
+    assert(parRes == seqRes);
+}
+
 int main() {
     parallel_test_case(test_case_set_intersection_parallel);
+
+    test_chunking();
 }

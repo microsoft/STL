@@ -222,7 +222,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(int _Errcode) {
     return 0;
 }
 
-// TRANSITION, ABI: _Winerror_message() is preserved for binary compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Winerror_message(
     unsigned long _Message_id, char* _Narrow, unsigned long _Size) {
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars written

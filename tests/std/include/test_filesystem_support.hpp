@@ -4,10 +4,13 @@
 #pragma once
 
 #include <algorithm>
-#include <filesystem>
 #include <iterator>
 #include <random>
 #include <string>
+
+#if _HAS_CXX17
+#include <filesystem>
+#endif // _HAS_CXX17
 
 template <class T>
 std::string get_test_directory_subname(const T& testName) {

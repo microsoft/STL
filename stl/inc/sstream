@@ -431,7 +431,7 @@ protected:
                 }
             }
 
-            _FALLTHROUGH;
+            [[fallthrough]];
         default:
             return pos_type{off_type{-1}};
         }

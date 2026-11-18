@@ -31,20 +31,29 @@
 #define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 
 // Core STL Headers
-#include <bit>
-#include <compare>
-#include <concepts>
-#include <coroutine>
 #include <initializer_list>
 #include <limits>
-#include <numbers>
 #include <ratio>
-#include <source_location>
-#include <stdfloat>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <version>
+
+#ifdef __cpp_lib_coroutine // C++20 or later (or /await:strict in C++14/17)
+#include <coroutine>
+#endif // defined(__cpp_lib_coroutine)
+
+#if _HAS_CXX20
+#include <bit>
+#include <compare>
+#include <concepts>
+#include <numbers>
+#include <source_location>
+#endif // _HAS_CXX20
+
+#if _HAS_CXX23
+#include <stdfloat>
+#endif // _HAS_CXX23
 
 // Core C Wrapper Headers
 #include <cassert>
@@ -72,24 +81,16 @@
 
 // Non-Core STL Headers
 #include <algorithm>
-#include <any>
 #include <array>
 #include <bitset>
-#include <charconv>
 #include <chrono>
 #include <codecvt>
 #include <complex>
 #include <deque>
 #include <exception>
-#include <expected>
-#include <filesystem>
-#include <flat_map>
-#include <flat_set>
-#include <format>
 #include <forward_list>
 #include <fstream>
 #include <functional>
-#include <generator>
 #include <iomanip>
 #include <ios>
 #include <iosfwd>
@@ -99,53 +100,76 @@
 #include <list>
 #include <locale>
 #include <map>
-#include <mdspan>
 #include <memory>
-#include <memory_resource>
 #include <new>
 #include <numeric>
-#include <optional>
 #include <ostream>
-#include <print>
 #include <queue>
 #include <random>
-#include <ranges>
 #include <regex>
 #include <scoped_allocator>
 #include <set>
-#include <span>
-#include <spanstream>
 #include <sstream>
 #include <stack>
-#include <stacktrace>
 #include <stdexcept>
 #include <streambuf>
 #include <string>
-#include <string_view>
 #include <strstream>
-#include <syncstream>
 #include <system_error>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
 #include <valarray>
-#include <variant>
 #include <vector>
 
+#if _HAS_CXX17
+#include <any>
+#include <charconv>
+#include <filesystem>
+#include <memory_resource>
+#include <optional>
+#include <string_view>
+#include <variant>
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20
+#include <format>
+#include <ranges>
+#include <span>
+#include <syncstream>
+#endif // _HAS_CXX20
+
+#if _HAS_CXX23
+#include <expected>
+#include <flat_map>
+#include <flat_set>
+#include <generator>
+#include <mdspan>
+#include <print>
+#include <spanstream>
+#include <stacktrace>
+#endif // _HAS_CXX23
+
 #ifndef _M_CEE_PURE
-#include <__msvc_cxx_stdatomic.hpp>
 #include <atomic>
-#include <barrier>
 #include <condition_variable>
-#include <execution>
 #include <future>
-#include <latch>
 #include <mutex>
-#include <semaphore>
 #include <shared_mutex>
-#include <stop_token>
 #include <thread>
+#if _HAS_CXX17
+#include <execution>
+#endif // _HAS_CXX17
+#if _HAS_CXX20
+#include <barrier>
+#include <latch>
+#include <semaphore>
+#include <stop_token>
+#endif // _HAS_CXX20
+#if _HAS_CXX23
+#include <__msvc_cxx_stdatomic.hpp>
+#endif // _HAS_CXX23
 #endif // !defined(_M_CEE_PURE)
 
 // Non-Core C Wrapper Headers

@@ -14,4 +14,4 @@ steps:
   inputs:
     pwsh: true
     filePath: azure-devops/checkout-submodule.ps1
-    arguments: -submodule ${{ parameters.path }}
+    arguments: -Submodule ${{ parameters.path }}

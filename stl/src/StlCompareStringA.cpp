@@ -12,9 +12,8 @@
 // int __cdecl __crtCompareStringA - Get type information about an ANSI string.
 //
 // Purpose:
-//   Internal support function. Assumes info in ANSI string format. Tries
-//   to use NLS API call CompareStringA if available and uses CompareStringW
-//   if it must. If neither is available it fails and returns 0.
+//   Internal support function. Converts ANSI strings to wide strings
+//   and calls the NLS API CompareStringEx.
 //
 // Entry:
 //   LPCWSTR  LocaleName  - locale context for the comparison.
@@ -31,7 +30,7 @@
 extern "C" _CRTIMP2 int __cdecl __crtCompareStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwCmpFlags,
     _In_reads_(cchCount1) LPCSTR lpString1, _In_ int cchCount1, _In_reads_(cchCount2) LPCSTR lpString2,
     _In_ int cchCount2, _In_ int code_page) noexcept {
-    // CompareString will compare past null terminator. Must find null terminator if in string before cchCountn chars.
+    // CompareStringEx will compare past null terminator. Must find null terminator if in string before cchCountn chars.
     if (cchCount1 > 0) {
         cchCount1 = static_cast<int>(__strncnt(lpString1, cchCount1));
     } else if (cchCount1 < -1) {

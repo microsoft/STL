@@ -11,6 +11,7 @@
 
 #ifdef __cpp_lib_execution
 #include <execution>
+#include <numeric>
 #endif // __cpp_lib_execution
 
 using namespace std;
@@ -19,7 +20,7 @@ constexpr auto size_max = numeric_limits<size_t>::max();
 
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
-constexpr size_t prohibit_attempts_to_allocate = size_max; // extension provided by our STL
+constexpr size_t prohibit_attempts_to_allocate = size_max;
 constexpr size_t max_allocate                  = size_max - 1;
 size_t g_max_memory                            = max_allocate;
 
@@ -34,8 +35,8 @@ void* operator new(size_t size) {
 }
 
 void* operator new(size_t size, const nothrow_t&) noexcept {
-    assert(size != prohibit_attempts_to_allocate);
-    if (size >= g_max_memory) {
+    assert(g_max_memory != prohibit_attempts_to_allocate);
+    if (size > g_max_memory) {
         return nullptr;
     } else {
         return malloc(size == 0 ? 1 : size);
@@ -87,6 +88,8 @@ void do_one_test(const array<int, 9>& orig, const size_t i, const size_t k) {
 }
 
 void test_every_permutation_with_available_memory_of(size_t mem) {
+    const size_t old_max_memory = g_max_memory;
+
     g_max_memory    = mem * sizeof(int);
     array<int, 9> a = {{10, 20, 20, 30, 30, 30, 40, 40, 50}};
 
@@ -100,6 +103,8 @@ void test_every_permutation_with_available_memory_of(size_t mem) {
             }
         }
     } while (next_permutation(a.begin(), a.end()));
+
+    g_max_memory = old_max_memory;
 }
 
 void test_more() {
@@ -197,6 +202,8 @@ void test_stability() {
 }
 
 void test_after_skipping_in_position_overhaul() {
+    const size_t old_max_memory = g_max_memory;
+
     g_max_memory = prohibit_attempts_to_allocate;
     { // check that 1 element trivial cases don't fail
         array<int, 1> a = {{5}};
@@ -219,7 +226,40 @@ void test_after_skipping_in_position_overhaul() {
     do_one_test({{2, 3, 4, 5, 6, 7, 8, 0, 1}}, 7, 2);
 
     // (divide and conquer cases tested in test_more)
+
+    g_max_memory = old_max_memory;
 }
+
+#ifdef __cpp_lib_execution
+void test_parallel_sort() {
+    const size_t old_max_memory = g_max_memory;
+
+#if _ITERATOR_DEBUG_LEVEL == 0
+    g_max_memory = 0;
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
+    // TRANSITION, ABI: Allow container proxies to be allocated, but nothing larger. If proxy allocation fails,
+    // parallel sort will fall back to serial before reaching the code we want to exercise here.
+    g_max_memory = sizeof(_Container_proxy);
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
+
+    constexpr size_t N = 100;
+    constexpr size_t K = 21;
+    static_assert(gcd(N, K) == 1, "N and K must be coprime to generate useful values here");
+
+    array<size_t, N> a;
+    for (size_t i = 0; i < N; ++i) {
+        a[i] = (i * K) % N;
+    }
+
+    sort(execution::par, a.begin(), a.end());
+
+    for (size_t i = 0; i < N; ++i) {
+        assert(a[i] == i); // because N and K are coprime
+    }
+
+    g_max_memory = old_max_memory;
+}
+#endif // __cpp_lib_execution
 
 int main() {
     test();
@@ -232,4 +272,8 @@ int main() {
 
     test_after_skipping_in_position_overhaul();
     test_more();
+
+#ifdef __cpp_lib_execution
+    test_parallel_sort();
+#endif // __cpp_lib_execution
 }
