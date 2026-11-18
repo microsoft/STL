@@ -67,7 +67,7 @@ def generate_tables(
         "double": modified_ziggurat_traits("double", "", 64, 8),
         "float": modified_ziggurat_traits(
             "float", "f", 32, 7
-        ),  # 32 - 1 (sign) - 24 (magnitude)
+        ),  # 7 layer_bits = 32 - 1 (sign) - 24 (magnitude)
     }[FloatType]
     layer_division = 1 << traits.layer_bits
     regular_area = mpf(1) / layer_division
