@@ -1198,12 +1198,12 @@ struct _Fake_allocator {
 };
 
 // The placeholder base class used in containers when `_ITERATOR_DEBUG_LEVEL == 0`.
-// Does not hold meta data or need dynamic allocation, just avoids branches among different `_ITERATOR_DEBUG_LEVEL`s.
+// Does not hold metadata or need dynamic allocation, just avoids branches among different `_ITERATOR_DEBUG_LEVEL`s.
 struct _Container_base0 {
     // Does not orphan iterators, just avoids branches among different `_ITERATOR_DEBUG_LEVEL`s.
     // Called when all iterators are invalidated.
     _CONSTEXPR20 void _Orphan_all() noexcept {}
-    // Does not swap meta data for containers, just avoids branches among different `_ITERATOR_DEBUG_LEVEL`s.
+    // Does not swap metadata for containers, just avoids branches among different `_ITERATOR_DEBUG_LEVEL`s.
     // Called when two containers are swapped.
     _CONSTEXPR20 void _Swap_proxy_and_iterators(_Container_base0&) noexcept {}
     // Does not any create proxy object, just avoids branches among different `_ITERATOR_DEBUG_LEVEL`s.
@@ -1344,7 +1344,9 @@ private:
 // and not associated with a container.
 //
 // Remarks: When `_ITERATOR_DEBUG_LEVEL < 2`, a non-null `_Myproxy` does not guarantee iterator validity because
-// `_Myproxy` is not set to `nullptr` when the iterator is invalidated.
+// `_Myproxy` is not set to `nullptr` when the iterator is invalidated. For `basic_string`, sometimes invalidated
+// iterators are not orphaned if no reallocation happens and the string is not shrinked into the SSO (small string
+// optimization) buffer, which is a bug and is tracked in GH-6502.
 struct _Iterator_base12 {
 public:
     _CONSTEXPR20 _Iterator_base12() noexcept = default; // construct invalid iterator
