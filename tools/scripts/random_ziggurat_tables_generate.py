@@ -60,8 +60,8 @@ def generate_tables(
     cdf: Callable[[mpf], mpf],
     pdf_derivative: Callable[[mpf], mpf],
     pdf_2nd_derivative: Callable[[mpf], mpf],
-    height_scale: mpf = mpf(1),
-    FloatType: str = "double",
+    height_scale: mpf,
+    FloatType: str,
 ) -> None:
     traits = {
         "double": modified_ziggurat_traits("double", "", 64, 8),
