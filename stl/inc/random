@@ -2656,6 +2656,12 @@ private:
         // McFarland, C. D. (2016). A modified ziggurat algorithm for generating exponentially and normally distributed
         // pseudorandom numbers. Journal of Statistical Computation and Simulation, 86(7), 1281-1294.
         // https://doi.org/10.1080/00949655.2015.1060234
+
+        // The main differences between the paper and this code:
+        // * The layers are moved upwards to reduce the area of non-rectangular regions,
+        //   creating a bottommost layer of which the size of the rectangular region isn't equal to 1/N.
+        // * Different criteria are used for the always-sampled and always-rejected regions of ziggurat overhangs.
+
         using _Fty       = conditional_t<numeric_limits<_Ty>::digits <= 24, float, double>;
         using _Tables    = _Normal_distribution_tables<_Fty>;
         using _Traits    = decltype(_Tables::_Value);
