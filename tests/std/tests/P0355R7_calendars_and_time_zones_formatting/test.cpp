@@ -344,10 +344,12 @@ void test_clock_formatter() {
            == STR("1972-06-30 23:59:60.500"));
 
     // Test an ordinary day.
-    const auto utc_2021_05_04 = utc_clock::from_sys(sys_days{2021y / May / 4});
+    const sys_days sys_2021_05_04{2021y / May / 4};
+    const auto utc_2021_05_04 = utc_clock::from_sys(sys_2021_05_04);
 
     // This is both the last day of a leap year (366th day) and the day of a leap second insertion.
-    const auto utc_2016_12_31 = utc_clock::from_sys(sys_days{2016y / December / 31});
+    const sys_days sys_2016_12_31{2016y / December / 31};
+    const auto utc_2016_12_31 = utc_clock::from_sys(sys_2016_12_31);
 
     for (const auto& h : {0h, 1h, 7h, 22h, 23h}) { // Accelerate testing; 24 * 60 * 61 iterations would be a lot.
         for (const auto& m : {0min, 1min, 7min, 58min, 59min}) {
@@ -365,10 +367,9 @@ void test_clock_formatter() {
         }
     }
 
-    empty_braces_helper(file_clock::from_utc(utc_2016_12_31), STR("2016-12-31 00:00:00"));
-    empty_braces_helper(file_clock::from_utc(utc_2016_12_31) + 24h, STR("2017-01-01 00:00:00"));
-    empty_braces_helper(file_clock::from_utc(utc_2021_05_04), STR("2021-05-04 00:00:00"));
-    // TRANSITION: Test a leap second insertion after 2018-06 when there is one
+    empty_braces_helper(file_clock::from_sys(sys_2016_12_31), STR("2016-12-31 00:00:00"));
+    empty_braces_helper(file_clock::from_sys(sys_2016_12_31) + 24h, STR("2017-01-01 00:00:00"));
+    empty_braces_helper(file_clock::from_sys(sys_2021_05_04), STR("2021-05-04 00:00:00"));
 }
 
 template <typename CharT>

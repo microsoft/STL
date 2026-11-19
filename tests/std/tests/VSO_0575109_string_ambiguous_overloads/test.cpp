@@ -8,7 +8,7 @@ using namespace std;
 
 // VSO-575109 "[RWC][std:c++latest][prod/fe] ClangLLVM failed with error C2593"
 // was fixed by the PR for
-// LWG-2946 "LWG 2758's resolution missed further corrections"
+// LWG-2946 "LWG-2758's resolution missed further corrections"
 
 int main() {
     string s({"abc", 2});

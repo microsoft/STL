@@ -1,0 +1,9 @@
+schemaVersion: 1.0.0
+providers:
+- provider: InventoryAsCode
+  version: 1.0.0
+  metadata:
+    routing:
+      defaultAreaPath:
+        org: devdiv
+        path: DevDiv\Cpp Language and Toolset\Libraries\Core Libraries\STL

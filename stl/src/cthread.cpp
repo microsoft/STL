@@ -39,12 +39,12 @@ namespace {
 
 extern "C" {
 
-// TRANSITION, ABI: _Thrd_exit() is preserved for binary compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 [[noreturn]] _CRTIMP2_PURE void __cdecl _Thrd_exit(int res) noexcept { // terminate execution of calling thread
     _endthreadex(res);
 }
 
-// TRANSITION, ABI: _Thrd_start() is preserved for binary compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) noexcept {
     // start a thread
     thr->_Hnd = reinterpret_cast<HANDLE>(_beginthreadex(nullptr, 0, func, b, 0, &thr->_Id));
@@ -72,7 +72,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_detach(_Thrd_t thr) noexcept {
     return CloseHandle(thr._Hnd) ? _Thrd_result::_Success : _Thrd_result::_Error;
 }
 
-// TRANSITION, ABI: _Thrd_sleep() is preserved for binary compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE void __cdecl _Thrd_sleep(const _timespec64* xt) noexcept { // suspend thread until time xt
     _timespec64 now;
     _Timespec64_get_sys(&now);
@@ -86,13 +86,13 @@ _CRTIMP2_PURE void __cdecl _Thrd_yield() noexcept { // surrender remainder of ti
     SwitchToThread();
 }
 
-// TRANSITION, ABI: _Thrd_equal() is preserved for binary compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE int __cdecl _Thrd_equal(_Thrd_t thr0, _Thrd_t thr1) noexcept {
     // return 1 if thr0 and thr1 identify same thread
     return thr0._Id == thr1._Id;
 }
 
-// TRANSITION, ABI: _Thrd_current() is preserved for binary compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE _Thrd_t __cdecl _Thrd_current() noexcept { // return _Thrd_t identifying current thread
     _Thrd_t result;
     result._Hnd = nullptr;
@@ -156,7 +156,7 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
     }
 }
 
-// TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_create(_Thrd_t* thr, _Thrd_start_t func, void* d) noexcept { // create thread
     _Thrd_result res;
     _Thrd_binder b;

@@ -34,7 +34,7 @@ def download_unicode_data_files():
     print(f"   Base URL: {base_url}")
 
     for data_file in Unicode_data_files:
-        url = base_url + data_file
+        url = f'{base_url}{data_file}'
         filename = PurePosixPath(data_file).name
         print(f"Downloading: {url}")
         try:

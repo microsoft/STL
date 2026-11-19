@@ -48,7 +48,7 @@ extern "C" {
 void __stdcall __std_release_shared_mutex_for_instance(void* _Ptr) noexcept {
     _STD scoped_lock _Guard(_Lookup_mutex);
     const auto _Instance_mutex_iter = _Lookup_map.find(_Ptr);
-    _ASSERT_EXPR(_Instance_mutex_iter != _Lookup_map.end(), "No mutex exists for given instance!");
+    _ASSERT_EXPR(_Instance_mutex_iter != _Lookup_map.end(), L"No mutex exists for given instance!");
     auto& _Refs = _Instance_mutex_iter->second._Ref_count;
     if (--_Refs == 0) {
         _Lookup_map.erase(_Instance_mutex_iter);

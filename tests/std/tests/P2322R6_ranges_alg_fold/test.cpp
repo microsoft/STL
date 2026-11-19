@@ -284,9 +284,7 @@ int main() {
     static_assert((test_bidi<instantiator, const double>(), true));
     test_bidi<instantiator, const double>();
 
-#if !(defined(_DEBUG) && defined(__EDG__)) // TRANSITION, VSO-1949414, see also GH-1566
     static_assert(instantiator::non_dependent());
-#endif // ^^^ no workaround ^^^
     instantiator::non_dependent();
 
     static_assert(test_in_value_result());

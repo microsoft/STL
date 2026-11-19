@@ -1352,7 +1352,7 @@ public:
     }
 
     template <class>
-    friend class _Hash;
+    friend class _STD _Hash;
 
     template <class _Other_traits>
     void merge(_Hash<_Other_traits>& _That) { // transfer all nodes from _That into *this

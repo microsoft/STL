@@ -637,6 +637,22 @@ void test_map_or_multimap() {
     static_assert(is_same_v<decltype(m12), M<long, char, MyGreater, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(m13), M<long, char, less<long>, MyAlloc<CPurr>>>);
 
+    using PairIter = pair<int, float>*;
+    static_assert(is_same_v<decltype(M{PairIter{}, PairIter{}}), M<int, float>>);
+
+    using PairIter2 = pair<const int, double>*;
+    static_assert(is_same_v<decltype(M{PairIter2{}, PairIter2{}}), M<int, double>>);
+
+    // Verify fixes from LWG-4223
+    using PairIter3 = pair<int, const double>*;
+    static_assert(is_same_v<decltype(M{PairIter3{}, PairIter3{}}), M<int, double>>);
+
+    using PairIter4 = pair<const int&, double>*;
+    static_assert(is_same_v<decltype(M{PairIter4{}, PairIter4{}}), M<int, double>>);
+
+    using PairIter5 = pair<int&&, const double&>*;
+    static_assert(is_same_v<decltype(M{PairIter5{}, PairIter5{}}), M<int, double>>);
+
 #if _HAS_CXX23
     M m14(from_range, first);
     M m15(from_range, first, gt);
@@ -648,19 +664,43 @@ void test_map_or_multimap() {
     static_assert(is_same_v<decltype(m16), M<long, char, MyGreater, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(m17), M<long, char, less<long>, MyAlloc<CPurr>>>);
 
-    { // Verify changes from P2165R4
-        using TupleIter = tuple<int, double>*;
-        static_assert(is_same_v<decltype(M{TupleIter{}, TupleIter{}}), M<int, double>>);
+    // Verify fixes from LWG-4223
+    static_assert(is_same_v<decltype(M{from_range, ranges::subrange<pair<long, const char>*>{}}), M<long, char>>);
+    static_assert(is_same_v<decltype(M{from_range, ranges::subrange<const pair<long&, const char&&>*>{}, gt}),
+        M<long, char, MyGreater>>);
+    static_assert(is_same_v<decltype(M{from_range, ranges::subrange<pair<const long&&, char&>*>{}, gt, myal}),
+        M<long, char, MyGreater, MyAlloc<CPurr>>>);
+    static_assert(is_same_v<decltype(M{from_range, ranges::subrange<tuple<long, const char>*>{}}), M<long, char>>);
+    static_assert(is_same_v<decltype(M{from_range, ranges::subrange<const tuple<long&, const char&&>*>{}, gt}),
+        M<long, char, MyGreater>>);
+    static_assert(is_same_v<decltype(M{from_range, ranges::subrange<tuple<const long&&, char&>*>{}, gt, myal}),
+        M<long, char, MyGreater, MyAlloc<CPurr>>>);
 
-        using PairIter = pair<int, float>*;
-        static_assert(is_same_v<decltype(M{PairIter{}, PairIter{}}), M<int, float>>);
+    static_assert(is_same_v<decltype(M{from_range, ranges::subrange<const array<long, 2>*>{}}), M<long, long>>);
+    static_assert(is_same_v<decltype(M{from_range, ranges::subrange<ranges::subrange<char*, const char*>*>{}, gt}),
+        M<char*, const char*, MyGreater>>);
 
-        using ArrayIter = array<int, 2>*;
-        static_assert(is_same_v<decltype(M{ArrayIter{}, ArrayIter{}}), M<int, int>>);
+    // Verify changes from P2165R4 as fixed by LWG-4223
+    using TupleIter = tuple<int, double>*;
+    static_assert(is_same_v<decltype(M{TupleIter{}, TupleIter{}}), M<int, double>>);
 
-        using SubrangeIter = ranges::subrange<int*, int*>*;
-        static_assert(is_same_v<decltype(M{SubrangeIter{}, SubrangeIter{}}), M<int*, int*>>);
-    }
+    using TupleIter2 = tuple<const int, double>*;
+    static_assert(is_same_v<decltype(M{TupleIter2{}, TupleIter2{}}), M<int, double>>);
+
+    using TupleIter3 = tuple<int, const double>*;
+    static_assert(is_same_v<decltype(M{TupleIter3{}, TupleIter3{}}), M<int, double>>);
+
+    using TupleIter4 = tuple<const int&, double>*;
+    static_assert(is_same_v<decltype(M{TupleIter4{}, TupleIter4{}}), M<int, double>>);
+
+    using TupleIter5 = tuple<int&&, const double&>*;
+    static_assert(is_same_v<decltype(M{TupleIter5{}, TupleIter5{}}), M<int, double>>);
+
+    using ArrayIter = array<int, 2>*;
+    static_assert(is_same_v<decltype(M{ArrayIter{}, ArrayIter{}}), M<int, int>>);
+
+    using SubrangeIter = ranges::subrange<int*, int*>*;
+    static_assert(is_same_v<decltype(M{SubrangeIter{}, SubrangeIter{}}), M<int*, int*>>);
 #endif // _HAS_CXX23
 }
 
@@ -755,6 +795,16 @@ void test_unordered_map_or_unordered_multimap() {
     static_assert(is_same_v<decltype(um24), UM<long, char, hash<long>, equal_to<long>, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(um25), UM<long, char, MyHash, equal_to<long>, MyAlloc<CPurr>>>);
 
+    // Verify fixes from LWG-4223
+    using PairIter1 = pair<int, const double>*;
+    static_assert(is_same_v<decltype(UM{PairIter1{}, PairIter1{}}), UM<int, double>>);
+
+    using PairIter2 = pair<const long&, char>*;
+    static_assert(is_same_v<decltype(UM{PairIter2{}, PairIter2{}, 42, hf}), UM<long, char, MyHash>>);
+
+    using PairIter3 = pair<long&&, const char&>*;
+    static_assert(is_same_v<decltype(UM{PairIter3{}, PairIter3{}, 42, hf, eq}), UM<long, char, MyHash, MyEqual>>);
+
 #if _HAS_CXX23
     UM um26(from_range, first);
     UM um27(from_range, first, 7);
@@ -773,6 +823,28 @@ void test_unordered_map_or_unordered_multimap() {
     static_assert(is_same_v<decltype(um31), UM<long, char, hash<long>, equal_to<long>, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(um32), UM<long, char, hash<long>, equal_to<long>, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(um33), UM<long, char, MyHash, equal_to<long>, MyAlloc<CPurr>>>);
+
+    // Verify fixes from LWG-4223
+    using TupleIter1 = tuple<int, const double>*;
+    static_assert(is_same_v<decltype(UM{TupleIter1{}, TupleIter1{}}), UM<int, double>>);
+    static_assert(is_same_v<decltype(UM{from_range, ranges::subrange<TupleIter1>{}}), UM<int, double>>);
+
+    using TupleIter2 = tuple<const long&, char>*;
+    static_assert(is_same_v<decltype(UM{TupleIter2{}, TupleIter2{}, 42, hf}), UM<long, char, MyHash>>);
+    static_assert(is_same_v<decltype(UM{from_range, ranges::subrange<TupleIter2>{}, 42, hf}), UM<long, char, MyHash>>);
+
+    using TupleIter3 = tuple<long&&, const char&>*;
+    static_assert(is_same_v<decltype(UM{TupleIter3{}, TupleIter3{}, 42, hf, eq}), UM<long, char, MyHash, MyEqual>>);
+    static_assert(is_same_v<decltype(UM{from_range, ranges::subrange<TupleIter3>{}, 42, hf, eq}),
+        UM<long, char, MyHash, MyEqual>>);
+
+    using ArrayIter = const array<unsigned int, 2>*;
+    static_assert(is_same_v<decltype(UM{ArrayIter{}, ArrayIter{}}), UM<unsigned int, unsigned int>>);
+    static_assert(is_same_v<decltype(UM{from_range, ranges::subrange<ArrayIter>{}}), UM<unsigned int, unsigned int>>);
+
+    using SubrangeIter = ranges::subrange<const char*, char*>*;
+    static_assert(is_same_v<decltype(UM{SubrangeIter{}, SubrangeIter{}}), UM<const char*, char*>>);
+    static_assert(is_same_v<decltype(UM{from_range, ranges::subrange<SubrangeIter>{}}), UM<const char*, char*>>);
 #endif // _HAS_CXX23
 }
 

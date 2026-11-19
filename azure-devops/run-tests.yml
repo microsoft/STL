@@ -23,12 +23,11 @@ steps:
       $PSNativeCommandUseErrorActionPreference = $true
       & "$(launchVsDevShell)" -Preview -NoLogo -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
       ninja --verbose -k 0 ${{ parameters.testTargets }}
-  timeoutInMinutes: 30
+  timeoutInMinutes: 15
   condition: and(succeeded(), ${{ parameters.runTesting }})
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
-  timeoutInMinutes: 5
   condition: and(succeededOrFailed(), ${{ parameters.runTesting }})
   inputs:
     searchFolder: $(buildOutputLocation)

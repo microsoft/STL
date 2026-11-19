@@ -1383,7 +1383,7 @@ protected:
     }
 
     template <class _Ty0>
-    friend class weak_ptr; // specifically, weak_ptr::lock()
+    friend class _STD weak_ptr; // specifically, weak_ptr::lock()
 
     template <class _Ty2>
     bool _Construct_from_weak(const weak_ptr<_Ty2>& _Other) noexcept {
@@ -1476,12 +1476,14 @@ private:
     _Ref_count_base* _Rep{nullptr};
 
     template <class _Ty0>
-    friend class _Ptr_base;
+    friend class _STD _Ptr_base;
 
     friend shared_ptr<_Ty>;
 
+#if _HAS_CXX20
     template <class _Ty0>
-    friend struct atomic;
+    friend struct _STD atomic;
+#endif // _HAS_CXX20
 
     friend _Exception_ptr_access;
 
@@ -3321,7 +3323,7 @@ protected:
 
 private:
     template <class _Yty>
-    friend class shared_ptr;
+    friend class _STD shared_ptr;
 
     mutable weak_ptr<_Ty> _Wptr;
 };
@@ -3517,7 +3519,7 @@ public:
 
 private:
     template <class, class>
-    friend class unique_ptr;
+    friend class _STD unique_ptr;
 
     _Compressed_pair<_Dx, pointer> _Mypair;
 };
@@ -3660,7 +3662,7 @@ public:
 
 private:
     template <class, class>
-    friend class unique_ptr;
+    friend class _STD unique_ptr;
 
     _Compressed_pair<_Dx, pointer> _Mypair;
 };

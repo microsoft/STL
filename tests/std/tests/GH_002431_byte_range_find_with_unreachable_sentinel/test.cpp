@@ -51,7 +51,7 @@ int main() {
     void* p2 = VirtualAlloc(p, page, MEM_COMMIT, PAGE_READWRITE);
     assert(p2 != nullptr);
 
-    run_tests_with_different_isa_levels([&] { test_all_element_sizes(p, page); });
+    run_tests_with_different_isa_levels([&](IsaLevel) { test_all_element_sizes(p, page); });
 
     VirtualFree(p, 0, MEM_RELEASE);
 }

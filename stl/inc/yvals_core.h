@@ -157,6 +157,8 @@
 //     __cpp_lib_freestanding_variant)
 // P2517R1 Conditional noexcept For apply()
 // P2875R4 Undeprecate polymorphic_allocator::destroy
+// P2944R3 Comparisons For reference_wrapper
+//     (only for optional)
 // LWG-2385 function::assign allocator argument doesn't make sense
 // Enforcement of matching allocator value_types
 
@@ -332,6 +334,7 @@
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0429R9 <flat_map>
 // P0448R4 <spanstream>
+// P0533R9 constexpr For <cmath> And <cstdlib>
 // P0627R6 unreachable()
 // P0798R8 Monadic Operations For optional
 // P0881R7 <stacktrace>
@@ -408,8 +411,11 @@
 // P3107R5 Permit An Efficient Implementation Of <print>
 // P3142R0 Printing Blank Lines With println()
 // P3235R3 std::print More Types Faster With Less Memory
-//     (partial implementation; see GH-4924)
 // P3567R2 flat_meow Fixes
+
+// _HAS_CXX26 controls:
+// P1383R2 More constexpr For <cmath> And <complex>
+//     (partial implementation)
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -548,14 +554,6 @@
 #if _STL_WARNING_LEVEL > 4
 #error _STL_WARNING_LEVEL cannot be greater than 4.
 #endif // _STL_WARNING_LEVEL > 4
-
-#ifndef __has_cpp_attribute
-#define _FALLTHROUGH
-#elif __has_cpp_attribute(fallthrough) >= 201603L // TRANSITION, VSO-2696854
-#define _FALLTHROUGH [[fallthrough]]
-#else
-#define _FALLTHROUGH
-#endif
 
 // vcruntime.h defines _NODISCARD to [[nodiscard]]
 
@@ -710,18 +708,6 @@
 #define _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES _NO_SPECIALIZATIONS_CITING("N5014 [namespace.std]/4.3")
 #define _NO_SPECIALIZATIONS_OF_TYPE_TRAITS            _NO_SPECIALIZATIONS_CITING("N5014 [meta.rqmts]/4")
 
-#if _HAS_CXX23 // TRANSITION, ABI, should just use [[no_unique_address]] when _HAS_CXX20.
-// Should we enable use of [[msvc::no_unique_address]] or [[no_unique_address]] to allow potentially-overlapping member
-// subobjects?
-#if _HAS_MSVC_ATTRIBUTE(no_unique_address)
-#define _MSVC_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
-#elif __has_cpp_attribute(no_unique_address) // TRANSITION, DevCom-10747012, EDG recognizes [[no_unique_address]].
-#define _MSVC_NO_UNIQUE_ADDRESS [[no_unique_address]]
-#else
-#error Either [[msvc::no_unique_address]] or [[no_unique_address]] must be supported because this is ABI-critical.
-#endif
-#endif // _HAS_CXX23
-
 #undef _HAS_MSVC_ATTRIBUTE
 #pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
@@ -786,8 +772,8 @@
 //                copy/move constructors and copy/move assignment operators are not trivial (/Wall)
 // warning C5246: 'member': the initialization of a subobject should be wrapped in braces (/Wall)
 // warning C5278: adding a specialization for 'type trait' has undefined behavior
-// warning C5280: a static operator '()' requires at least '/std:c++23preview'
-// warning C5281: a static lambda requires at least '/std:c++23preview'
+// warning C5280: a static operator '()' requires at least '/std:c++23'
+// warning C5281: a static lambda requires at least '/std:c++23'
 // warning C5285: cannot declare a specialization for 'meow'
 // warning C5291: 'DERIVED': deriving from the base class 'BASE' can cause potential runtime issues
 //                due to an ABI bug. Recommend adding a 4-byte data member to the base class
@@ -906,12 +892,12 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202607L
+#define _MSVC_STL_UPDATE  202611L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 3)
-_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.3 or newer.");
+#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 5)
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.5 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -920,8 +906,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.3 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 22 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1951 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.51 or newer.");
+#if _MSC_VER < 1952 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.52 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -959,6 +945,22 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19
 #else // ^^^ constexpr in C++23 and later / inline (not constexpr) in C++20 and earlier vvv
 #define _CONSTEXPR23 inline
 #endif // ^^^ inline (not constexpr) in C++20 and earlier ^^^
+
+// Math functions that became constexpr in C++23
+#if _HAS_CXX23 && defined(_MSVC_LIBC_MATH)
+#define _CONSTEXPR_CMATH23 constexpr
+#else // ^^^ constexpr in C++23 and later / inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier vvv
+#define _CONSTEXPR_CMATH23 inline
+#endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier ^^^
+
+// Math functions that became constexpr in C++26
+#if _HAS_CXX26 && defined(_MSVC_LIBC_MATH)
+#define _CONSTEXPR_CMATH26 constexpr
+#else // ^^^ constexpr in C++26 and later / inline when /Zc:cmath- opts out of constexpr, and in C++23 and earlier vvv
+#define _CONSTEXPR_CMATH26 inline
+#endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++23 and earlier ^^^
+
+#define _CONSTEXPR_CMATH26_NYI inline // TRANSITION, GH-3789
 
 // P2465R3 Standard Library Modules std And std.compat
 #ifdef _BUILD_STD_MODULE
@@ -1681,7 +1683,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_common_reference_wrapper        202302L
 #define __cpp_lib_concepts                        202207L
 #define __cpp_lib_constexpr_algorithms            201806L
-#define __cpp_lib_constexpr_complex               201711L
 #define __cpp_lib_constexpr_dynamic_alloc         201907L
 #define __cpp_lib_constexpr_functional            201907L
 #define __cpp_lib_constexpr_iterator              201811L
@@ -1718,7 +1719,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
+#ifndef __EDG__ // TRANSITION, EDG support for modules
 #define __cpp_lib_modules 202207L
 #endif // ^^^ no workaround ^^^
 
@@ -1788,7 +1789,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_spanstream                        202106L
 #define __cpp_lib_stacktrace                        202011L
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and VSO-2846756
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and EDG-275
 #define __cpp_lib_start_lifetime_as 202207L
 #endif // ^^^ no workaround ^^^
 
@@ -1813,6 +1814,20 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
 #else
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
+#endif
+
+// The option /Zc:cmath- disables support for constexpr <cmath>.
+// TRANSITION, GH-6412, Clang and EDG lack support for constexpr <cmath>.
+#if 0 && _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789
+#define __cpp_lib_constexpr_cmath 202306L // P1383R2 More constexpr For <cmath> And <complex>
+#elif _HAS_CXX23 && defined(_MSVC_LIBC_MATH)
+#define __cpp_lib_constexpr_cmath 202202L // P0533R9 constexpr For <cmath> And <cstdlib>
+#endif
+
+#if 0 && _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789
+#define __cpp_lib_constexpr_complex 202306L // P1383R2 More constexpr For <cmath> And <complex>
+#elif _HAS_CXX20
+#define __cpp_lib_constexpr_complex 201711L // P0415R1 constexpr For <complex> (Again)
 #endif
 
 #if _HAS_CXX23

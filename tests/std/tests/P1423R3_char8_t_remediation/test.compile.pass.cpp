@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING 1
-#include <filesystem>
 #include <ostream>
-#include <string_view>
 #include <type_traits>
 #include <utility>
+
+#if _HAS_CXX17
+#include <filesystem>
+#include <string_view>
+#endif // _HAS_CXX17
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
