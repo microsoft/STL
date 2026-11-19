@@ -1889,8 +1889,9 @@ public:
     _CONSTEXPR20 basic_string& erase(const size_type _Off, const size_type _Count) {
         // erase elements [_Off, _Off + _Count)
         _Mypair._Myval2._Check_offset(_Off);
-        if (_Count > 0) { // conservatively invalidate out-of-range iterators
-            _Orphan_iterators_since_offset(static_cast<size_type>(_Mypair._Myval2._Mysize - _Count));
+        const auto _Shortened_count = _Mypair._Myval2._Clamp_suffix_size(_Off, _Count);
+        if (_Shortened_count > 0) { // conservatively invalidate out-of-range iterators
+            _Orphan_iterators_since_offset(static_cast<size_type>(_Mypair._Myval2._Mysize - _Shortened_count));
         }
         return _Erase_noexcept(_Off, _Count);
     }
@@ -3296,6 +3297,11 @@ private:
             }
         }
     }
+
+    void _Orphan_iterators_since_offset_locked(const size_type _Offset) noexcept {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Orphan_iterators_since_offset_unlocked(_Offset);
+    }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
     // conservatively orphans out-of-range itertors in erasure that neither reallocates nor shrinks into the SSO buffer
@@ -3308,9 +3314,10 @@ private:
         } else
 #endif // _HAS_CXX20
         {
-            _Lockit _Lock(_LOCK_DEBUG);
-            _Orphan_iterators_since_offset_unlocked(_Offset);
+            _Orphan_iterators_since_offset_locked(_Offset);
         }
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
+        (void) _Offset;
 #endif // _ITERATOR_DEBUG_LEVEL == 2
     }
 

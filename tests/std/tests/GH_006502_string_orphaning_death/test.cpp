@@ -505,7 +505,7 @@ template <class CharT>
 void test_long_replace_offset_count_string_view_offset_count() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     auto it = s.end() - 1;
-    s.replace(0, s.size() / 2, basic_string_view{s}, 0, 0);
+    s.replace(0, s.size() / 2, basic_string_view<CharT>{s}, 0, 0);
     (void) (it - 1);
 }
 
@@ -707,14 +707,14 @@ void test_short_replace_iterator_pair_initializer_list() {
     basic_string<CharT> s(2, static_cast<CharT>('*'));
     basic_string<CharT> empty_str{};
     auto it = s.end() - 1;
-    s.replace_with_range(s.cbegin(), s.cbegin() + 1, initializer_list<CharT>{});
+    s.replace(s.cbegin(), s.cbegin() + 1, initializer_list<CharT>{});
     (void) (it - 1);
 }
 
 int main(int argc, char** argv) {
     std_testing::death_test_executive exec;
 
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _ITERATOR_DEBUG_LEVEL == 2
     exec.add_death_tests({
         test_long_resize<char>,
         test_short_resize<char>,
@@ -811,7 +811,7 @@ int main(int argc, char** argv) {
         test_short_replace_with_range<char>,
 #endif // _HAS_CXX23
     });
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _ITERATOR_DEBUG_LEVEL == 2
 
     return exec.run(argc, argv);
 }
