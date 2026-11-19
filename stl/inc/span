@@ -557,7 +557,7 @@ public:
     }
 };
 
-template <class _It, class _EndOrSize>
+template <contiguous_iterator _It, class _EndOrSize>
 span(_It, _EndOrSize) -> span<remove_reference_t<iter_reference_t<_It>>, _Maybe_static_ext<_EndOrSize>>;
 
 template <class _Ty, size_t _Extent>
