@@ -1295,10 +1295,11 @@ public:
         _New_proxy->_Mycont = this;
     }
 
-    // Called when a container is assigned from another and both allocators are not equal.
-    // In this case, the allocator is replaced and reallocation needs to happen to ensure every proxy object to be
-    // deallocated with deleted by a correct allocator.
-    // A replacement proxy is allocated and constructed before the destination container's old proxy is destroyed.
+    // Called when a container is assigned from another, allocator propagation is necessary, and both allocators are not
+    // equal.
+    // In this case, the destination allocator is replaced, which in turn requires deallocating the old proxy with the
+    // old allocator. A replacement proxy is allocated and constructed before the destination container's old proxy is
+    // destroyed. It will be eventually deallocated with the new allocator.
     // Preconditions: No iterators refer to the existing proxy.
     template <class _Alloc>
     _CONSTEXPR20 void _Reload_proxy(_Alloc&& _Old_alloc, _Alloc&& _New_alloc) {
@@ -1445,8 +1446,10 @@ public:
 private:
     // During constant evaluation, the implementation cannot hold the lock, so there is a separated unlocked version for
     // convenience.
-    // Sets the parent container and appends the iterator to the linked list if `_Right` has one. Otherwise, invalidats
-    // the iterator and removes it from its belonging linked list, if the iterator is not previously invalidated.
+    // If `*this` and `_Right` are both orphaned or associated with the same container, does nothing.
+    // Otherwise, if `_Right` is not orphaned and has a different container proxy, adopts its container and prepends
+    // `*this` to its iterator list.
+    // Otherwise (`_Right` is orphaned), orphans the iterator of `*this` and removes it from its current list, if any.
     _CONSTEXPR20 void _Assign_unlocked(const _Iterator_base12& _Right) noexcept {
         if (_Myproxy == _Right._Myproxy) {
             return;
@@ -1460,8 +1463,10 @@ private:
     }
 
     // During runtime, *locking* is necessary for concurrent modification of the iterator linked list.
-    // Sets the parent container and appends the iterator to the linked list if `_Right` has one. Otherwise, invalidats
-    // the iterator and removes it from its belonging linked list, if the iterator is not previously invalidated.
+    // If `*this` and `_Right` are both orphaned or associated with the same container, does nothing.
+    // Otherwise, if `_Right` is not orphaned and has a different container proxy, adopts its container and prepends
+    // `*this` to its iterator list.
+    // Otherwise (`_Right` is orphaned), orphans the iterator of `*this` and removes it from its current list, if any.
     void _Assign_locked(const _Iterator_base12& _Right) noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
         _Assign_unlocked(_Right);
