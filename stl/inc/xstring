@@ -1671,6 +1671,13 @@ public:
     _CONSTEXPR20 basic_string& assign(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch) {
         // assign _Count * _Ch
         if (_Count <= _Mypair._Myval2._Myres) {
+            if (_Count < _Mypair._Myval2._Mysize) {
+                // conservatively orphan iterators like other assign() overloads
+                // Per N5054 [sequence.reqmts]/63, this assign() overload invalidates all iterators to elements of
+                // *this, but the Standard wording has not explicitly mentioned basic_string in the case of the
+                // past-of-end iterator.
+                _Orphan_iterators_since_offset(_Count);
+            }
             _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _Count);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Mypair._Myval2._Mysize = _Count;
@@ -1857,6 +1864,9 @@ public:
 
     _CONSTEXPR20 basic_string& erase(const size_type _Off = 0) { // erase elements [_Off, ...)
         _Mypair._Myval2._Check_offset(_Off);
+        if (_Off < _Mypair._Myval2._Mysize) { // conservatively invalidate out-of-range iterators
+            _Orphan_iterators_since_offset(_Off);
+        }
         _Eos(_Off);
         return *this;
     }
@@ -1879,6 +1889,10 @@ public:
     _CONSTEXPR20 basic_string& erase(const size_type _Off, const size_type _Count) {
         // erase elements [_Off, _Off + _Count)
         _Mypair._Myval2._Check_offset(_Off);
+        const auto _Shortened_count = _Mypair._Myval2._Clamp_suffix_size(_Off, _Count);
+        if (_Shortened_count > 0) { // conservatively invalidate out-of-range iterators
+            _Orphan_iterators_since_offset(static_cast<size_type>(_Mypair._Myval2._Mysize - _Shortened_count));
+        }
         return _Erase_noexcept(_Off, _Count);
     }
 
@@ -1887,6 +1901,8 @@ public:
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
+        // conservatively invalidate out-of-range iterators
+        _Orphan_iterators_since_offset(static_cast<size_type>(_Mypair._Myval2._Mysize - 1));
         _Erase_noexcept(_Off, 1);
         return begin() + static_cast<difference_type>(_Off);
     }
@@ -1897,11 +1913,17 @@ public:
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr());
+        if (_First != _Last) { // conservatively invalidate out-of-range iterators
+            _Orphan_iterators_since_offset(
+                static_cast<size_type>(_Mypair._Myval2._Mysize - (_Last._Ptr - _First._Ptr)));
+        }
         _Erase_noexcept(_Off, static_cast<size_type>(_Last._Ptr - _First._Ptr));
         return begin() + static_cast<difference_type>(_Off);
     }
 
     _CONSTEXPR20 void clear() noexcept { // erase all
+        // invalidates all iterators per N5054 [sequence.reqmts]/54
+        _Mypair._Myval2._Orphan_all();
         _Eos(0);
     }
 
@@ -1960,6 +1982,9 @@ public:
             // either we are shrinking, or the growth fits
             // may temporarily overflow; OK because size_type must be unsigned
             const auto _New_size = static_cast<size_type>(_Old_size + _Count - _Nx);
+            if (_New_size < _Mypair._Myval2._Mysize) { // conservatively invalidate out-of-range iterators
+                _Orphan_iterators_since_offset(_New_size);
+            }
             _ASAN_STRING_REMOVE(*this);
             _Mypair._Myval2._Mysize = _New_size;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
@@ -2241,6 +2266,7 @@ public:
         _STL_VERIFY(_Old_size != 0, "pop_back() called on empty string");
 #endif
 
+        _Orphan_iterators_since_offset(static_cast<size_type>(_Old_size - 1));
         _Eos(static_cast<size_type>(_Old_size - 1));
     }
 
@@ -2311,6 +2337,9 @@ public:
         // determine new length, padding with _Ch elements as needed
         const size_type _Old_size = size();
         if (_New_size <= _Old_size) {
+            if (_New_size < _Old_size) { // conservatively invalidate out-of-range iterators
+                _Orphan_iterators_since_offset(_New_size);
+            }
             _Eos(_New_size);
         } else {
             append(static_cast<size_type>(_New_size - _Old_size), _Ch);
@@ -2332,6 +2361,7 @@ public:
                 });
         } else {
             _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
+            _Mypair._Myval2._Orphan_all();
             _Mypair._Myval2._Mysize = _New_size;
         }
 
@@ -3078,6 +3108,13 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_UElem, _Elem, volatile _Elem>);
 
         if (_Count <= _Mypair._Myval2._Myres) {
+            if (_Count < _Mypair._Myval2._Mysize) {
+                // conservatively invalidate out-of-range iterators
+                // Per N5054 [sequence.reqmts]/59, /63, /65, and /68, some assign() overloads and assign_range()
+                // unconditionally invalidate all iterators. However, the situation is unclear for operator=(), see also
+                // [string.require]/4.
+                _Orphan_iterators_since_offset(_Count);
+            }
             _ASAN_STRING_REMOVE(*this);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Mypair._Myval2._Mysize = _Count;
@@ -3168,6 +3205,9 @@ private:
             _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, static_cast<size_t>(_Suffix_size));
 
             const auto _New_size = static_cast<size_type>(_Old_size - (_Nx - _Count));
+            if (_New_size < _Mypair._Myval2._Mysize) { // conservatively invalidate out-of-range iterators
+                _Orphan_iterators_since_offset(_New_size);
+            }
             _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
             return *this;
@@ -3242,6 +3282,45 @@ public:
     }
 
 private:
+#if _ITERATOR_DEBUG_LEVEL == 2
+    _CONSTEXPR20 void _Orphan_iterators_since_offset_unlocked(const size_type _Offset) noexcept {
+        auto _Pnext      = &_Mypair._Myval2._Myproxy->_Myfirstiter;
+        const auto _Last = _STD _Refancy<const_pointer>(_Mypair._Myval2._Myptr() + _Offset);
+        while (*_Pnext) {
+            const auto _Pnextptr = static_cast<const_iterator&>(**_Pnext)._Ptr;
+            const auto _Temp     = *_Pnext;
+            if (_Pnextptr < _Last) { // skip the iterator
+                _Pnext = &_Temp->_Mynextiter;
+            } else { // orphan the iterator
+                _Temp->_Myproxy = nullptr;
+                *_Pnext         = _Temp->_Mynextiter;
+            }
+        }
+    }
+
+    void _Orphan_iterators_since_offset_locked(const size_type _Offset) noexcept {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Orphan_iterators_since_offset_unlocked(_Offset);
+    }
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+    // conservatively orphans out-of-range itertors in erasure that neither reallocates nor shrinks into the SSO buffer
+    // Standard invalidation strategy is merely incompletely mentioned in N5054 [string.require]/4.
+    _CONSTEXPR20 void _Orphan_iterators_since_offset(const size_type _Offset) noexcept {
+#if _ITERATOR_DEBUG_LEVEL == 2
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            _Orphan_iterators_since_offset_unlocked(_Offset);
+        } else
+#endif // _HAS_CXX20
+        {
+            _Orphan_iterators_since_offset_locked(_Offset);
+        }
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
+        (void) _Offset;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+    }
+
     _CONSTEXPR20 void _Swap_proxy_and_iterators(basic_string& _Right) noexcept {
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
     }
