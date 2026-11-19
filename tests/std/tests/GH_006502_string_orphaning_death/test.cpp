@@ -194,7 +194,7 @@ template <class CharT>
 void test_long_erase_iterator_pair() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     auto it = s.end() - 1;
-    s.erase(s.cbegin(), s.cbegin() + s.size() / 2);
+    s.erase(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2));
     (void) (it - 1);
 }
 
@@ -374,7 +374,7 @@ template <class CharT>
 void test_long_assign_iterator_pair() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     auto it = s.end() - 1;
-    s.assign(s.cbegin(), s.cbegin() + s.size() / 2);
+    s.assign(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2));
     (void) (it - 1);
 }
 
@@ -382,7 +382,7 @@ template <class CharT>
 void test_short_assign_iterator_pair() {
     basic_string<CharT> s(2, static_cast<CharT>('*'));
     auto it = s.end() - 1;
-    s.assign(s.cbegin(), s.cbegin() + s.size() / 2);
+    s.assign(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2));
     (void) (it - 1);
 }
 
@@ -570,7 +570,7 @@ template <class CharT>
 void test_long_replace_iterator_pair_string() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     auto it = s.end() - 1;
-    s.replace(s.cbegin(), s.cbegin() + s.size() / 2, basic_string<CharT>{});
+    s.replace(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2), basic_string<CharT>{});
     (void) (it - 1);
 }
 
@@ -587,7 +587,7 @@ template <class CharT>
 void test_long_replace_iterator_pair_string_view() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     auto it = s.end() - 1;
-    s.replace(s.cbegin(), s.cbegin() + s.size() / 2, basic_string_view<CharT>{});
+    s.replace(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2), basic_string_view<CharT>{});
     (void) (it - 1);
 }
 
@@ -604,7 +604,7 @@ template <class CharT>
 void test_long_replace_iterator_pair_pointer_count() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     auto it = s.end() - 1;
-    s.replace(s.cbegin(), s.cbegin() + s.size() / 2, s.data(), 0);
+    s.replace(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2), s.data(), 0);
     (void) (it - 1);
 }
 
@@ -620,7 +620,7 @@ template <class CharT>
 void test_long_replace_iterator_pair_ntcts() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     auto it = s.end() - 1;
-    s.replace(s.cbegin(), s.cbegin() + s.size() / 2, basic_string<CharT>{}.c_str());
+    s.replace(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2), basic_string<CharT>{}.c_str());
     (void) (it - 1);
 }
 
@@ -636,7 +636,7 @@ template <class CharT>
 void test_long_replace_iterator_pair_repitition_element() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     auto it = s.end() - 1;
-    s.replace(s.cbegin(), s.cbegin() + s.size() / 2, 0, ' ');
+    s.replace(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2), 0, ' ');
     (void) (it - 1);
 }
 
@@ -653,7 +653,7 @@ void test_long_replace_iterator_pair_iterator_pair() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     basic_string<CharT> empty_str{};
     auto it = s.end() - 1;
-    s.replace(s.cbegin(), s.cbegin() + s.size() / 2, empty_str.data(), empty_str.data());
+    s.replace(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2), empty_str.data(), empty_str.data());
     (void) (it - 1);
 }
 
@@ -672,7 +672,7 @@ void test_long_replace_with_range() {
     basic_string<CharT> s(sizeof(basic_string<CharT>), static_cast<CharT>('*'));
     basic_string<CharT> empty_str{};
     auto it = s.end() - 1;
-    s.replace_with_range(s.cbegin(), s.cbegin() + s.size() / 2, array<CharT, 0>{});
+    s.replace_with_range(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2), array<CharT, 0>{});
     (void) (it - 1);
 }
 
@@ -691,7 +691,7 @@ void test_long_replace_iterator_pair_initializer_list() {
     basic_string<CharT> s(42, static_cast<CharT>('*'));
     basic_string<CharT> empty_str{};
     auto it = s.end() - 1;
-    s.replace(s.cbegin(), s.cbegin() + s.size() / 2,
+    s.replace(s.cbegin(), s.cbegin() + static_cast<ptrdiff_t>(s.size() / 2),
         {
             static_cast<CharT>('Q'),
             static_cast<CharT>('u'),
