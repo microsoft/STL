@@ -3108,7 +3108,7 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_UElem, _Elem, volatile _Elem>);
 
         if (_Count <= _Mypair._Myval2._Myres) {
-            if (_Count < _Mypair._Myval2._Myres) {
+            if (_Count < _Mypair._Myval2._Mysize) {
                 // conservatively invalidate out-of-range iterators
                 // Per N5054 [sequence.reqmts]/59, /63, /65, and /68, some assign() overloads and assign_range()
                 // unconditionally invalidate all iterators. However, the situation is unclear for operator=(), see also
@@ -3285,7 +3285,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 2
     _CONSTEXPR20 void _Orphan_iterators_since_offset_unlocked(const size_type _Offset) noexcept {
         auto _Pnext      = &_Mypair._Myval2._Myproxy->_Myfirstiter;
-        const auto _Last = _STD _Refancy<pointer>(_Mypair._Myval2._Myptr() + _Offset);
+        const auto _Last = _STD _Refancy<const_pointer>(_Mypair._Myval2._Myptr() + _Offset);
         while (*_Pnext) {
             const auto _Pnextptr = static_cast<const_iterator&>(**_Pnext)._Ptr;
             const auto _Temp     = *_Pnext;
