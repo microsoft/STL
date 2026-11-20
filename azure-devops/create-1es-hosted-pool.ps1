@@ -10,10 +10,14 @@ See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more
 
 .PARAMETER VMSku
 The VM SKU can be Fadsv7 or Dpdsv6.
+
+.PARAMETER LocationOverride
+A specific location can be chosen instead of cycling through known available locations.
 #>
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [Parameter(Mandatory)][ValidateSet('Fadsv7', 'Dpdsv6')][String]$VMSku
+  [Parameter(Mandatory)][ValidateSet('Fadsv7', 'Dpdsv6')][String]$VMSku,
+  [String]$LocationOverride
 )
 
 $ErrorActionPreference = 'Stop'
@@ -54,8 +58,12 @@ if ($VMSku -ieq 'Fadsv7') {
   $AvailableLocations = @('australiaeast', 'southcentralus')
 }
 
-$AvailableLocationIdx = 3 # Increment for each new set of pools, to cycle through the available locations.
-$Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
+if ($LocationOverride -ne '') {
+  $Location = $LocationOverride
+} else {
+  $AvailableLocationIdx = 3 # Increment for each new set of pools, to cycle through the available locations.
+  $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
+}
 
 if ($Arch -ieq 'x64') {
   $ImagePublisher = 'MicrosoftWindowsServer'
