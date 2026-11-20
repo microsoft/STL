@@ -1299,7 +1299,7 @@ constexpr void check_deduction_guides() {
         assert(mds6.extent(0) == 6);
 
         using RefToSize = integral_constant<const size_t&, integral_constant<size_t, 6>::value>;
-        using RefToBool = integral_constant<const bool&, integral_constant<bool, true>::value>;
+        using RefToBool = integral_constant<const bool&, true_type::value>;
         mdspan mds7{ptr, RefToSize{}, true_type{}};
         static_assert(same_as<decltype(mds7), mdspan<byte, extents<size_t, 6, dynamic_extent>>>);
         assert(mds7.extent(1) == 1);

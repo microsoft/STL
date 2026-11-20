@@ -248,7 +248,7 @@ constexpr bool test() {
         // Test LWG-4351 "integral-constant-like needs more remove_cvref_t"; the first template argument of
         // integral_constant can be an lvalue reference type, so bool must be detected through the reference.
         using RefToSize = integral_constant<const size_t&, integral_constant<size_t, 3>::value>;
-        using RefToBool = integral_constant<const bool&, integral_constant<bool, true>::value>;
+        using RefToBool = integral_constant<const bool&, true_type::value>;
         static_assert(is_same_v<decltype(span{arr, RefToSize{}}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{arr, true_type{}}), span<int>>);
         static_assert(is_same_v<decltype(span{arr, RefToBool{}}), span<int>>);
