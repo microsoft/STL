@@ -538,7 +538,7 @@ constexpr void check_deduction_guide() {
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11122321
 #pragma warning(push)
-#pragma warning(disable : 4365)
+#pragma warning(disable : 4365) // conversion from 'const int' to 'const size_t', signed/unsigned mismatch
 #endif // ^^^ workaround ^^^
         extents ext_5{integral_constant<const size_t&, integral_constant<size_t, 2>::value>{},
             integral_constant<const int&, integral_constant<int, 3>::value>{}};
