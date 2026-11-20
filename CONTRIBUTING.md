@@ -16,8 +16,7 @@ The STL repo has many open issues that track work which needs to be completed.
 If you're unsure of where to start, you may want to:
 
 * look for pinned issues, or
-* check issues under the labels [`good first issue`][label:"good first issue"],
-  [`high priority`][label:"high priority"], or [`help wanted`][label:"help wanted"].
+* check issues under the label [`help wanted`][label:"help wanted"].
 
 ### Reviewing a Pull Request
 
@@ -27,7 +26,7 @@ fewer maintainer review iterations before reaching a "Ready to Merge" state.
 
 To gain insight into our Code Review process, you can check out:
 
-* pull requests which are [undergoing review][review:changes-requested],
+* pull requests which are undergoing review,
 * [Advice for Reviewing Pull Requests][wiki:advice-for-reviewing], and
 * [Code Review Videos][wiki:videos].
 
@@ -72,11 +71,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for more information.
 
-[label:"good first issue"]:
-   https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
-[label:"high priority"]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22
 [label:"help wanted"]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22
-[review:changes-requested]: https://github.com/microsoft/STL/pulls?q=is%3Apr+is%3Aopen+review%3Achanges-requested
 [wiki:advice-for-reviewing]: https://github.com/microsoft/STL/wiki/Advice-for-Reviewing-Pull-Requests
 [NOTICE.txt]: https://github.com/microsoft/STL/blob/main/NOTICE.txt
 [wiki:videos]: https://github.com/microsoft/STL/wiki/Code-Review-Videos
