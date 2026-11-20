@@ -59,7 +59,7 @@ if ($VMSku -ieq 'Fadsv7') {
 if ($LocationOverride -ne '') {
   $Location = $LocationOverride
 } else {
-  $AvailableLocationIdx = 3 # Increment for each new set of pools, to cycle through the available locations.
+  $AvailableLocationIdx = 4 # Increment for each new set of pools, to cycle through the available locations.
   $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 }
 
