@@ -21,8 +21,9 @@ variables:
   value: 'N:'
   readonly: true
 # The arm64 SKU Dpdsv6 has local temporary storage, available as 'E:'.
+# The arm64 SKU Dpdsv7 has local temporary storage, available as 'N:' (for NVMe).
 - name: arm64PoolWorkRoot
-  value: 'E:'
+  value: ${{ iif(contains(variables.arm64PoolName, 'Dpdsv6'), 'E:', 'N:') }}
   readonly: true
 - name: tmpDir
   value: '$(workRoot)\stlTemp'
