@@ -51,7 +51,7 @@ Before submitting a pull request, please ensure that:
   an AI-generated summary if we want.
 
 * Identifiers in product code changes are properly `_Ugly` as per
-  https://eel.is/c++draft/lex.name#3.1 or there are no product code changes.
+  [\[lex.name\]/4.1][standard:ugly] or there are no product code changes.
 
 * These changes introduce no known ABI breaks (adding members, renaming
   members, adding virtual functions, changing whether a type is an aggregate
@@ -80,4 +80,4 @@ See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for more information.
 [wiki:advice-for-reviewing]: https://github.com/microsoft/STL/wiki/Advice-for-Reviewing-Pull-Requests
 [NOTICE.txt]: https://github.com/microsoft/STL/blob/main/NOTICE.txt
 [wiki:videos]: https://github.com/microsoft/STL/wiki/Code-Review-Videos
-[\[lex.name\]/3.1]: https://eel.is/c++draft/lex.name#3.1
+[standard:ugly]: https://eel.is/c++draft/lex.name#4.1

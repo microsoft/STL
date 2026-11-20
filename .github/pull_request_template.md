@@ -16,7 +16,7 @@
   an AI-generated summary if we want.
 
 * Identifiers in product code changes are properly `_Ugly` as per
-  https://eel.is/c++draft/lex.name#3.1 or there are no product code changes.
+  https://eel.is/c++draft/lex.name#4.1 or there are no product code changes.
 
 * These changes introduce no known ABI breaks (adding members, renaming
   members, adding virtual functions, changing whether a type is an aggregate
