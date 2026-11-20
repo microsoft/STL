@@ -8,7 +8,7 @@ variables:
   value: 'Stl-2026-11-11T1108-x64-Fadsv7-Pool'
   readonly: true
 - name: arm64PoolName
-  value: 'Stl-2026-11-11T1108-arm64-Dpdsv6-Pool'
+  value: 'Stl-2026-11-20T0317-arm64-Dpdsv7-Pool'
   readonly: true
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
