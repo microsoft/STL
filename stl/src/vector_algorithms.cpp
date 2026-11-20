@@ -7536,7 +7536,7 @@ namespace {
                     const __m128i _Comparand1 = _Traits::_Set_sse(_Val[_Needle_length > 1 * sizeof(_Ty) ? 1 : 0]);
                     const __m128i _Comparand2 = _Traits::_Set_sse(_Val[_Needle_length > 2 * sizeof(_Ty) ? 2 : 0]);
                     const __m128i _Comparand3 = _Traits::_Set_sse(_Val[_Needle_length > 3 * sizeof(_Ty) ? 3 : 0]);
-                    const void* _Stop_at     = _First1;
+                    const void* _Stop_at      = _First1;
                     _Advance_bytes(_Stop_at, _Sse_size);
 
                     do {
