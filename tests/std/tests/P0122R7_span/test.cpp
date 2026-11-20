@@ -160,6 +160,15 @@ constexpr bool AsBytesCompilesFor = requires { as_bytes(declval<U>()); };
 template <typename U>
 constexpr bool AsWritableBytesCompilesFor = requires { as_writable_bytes(declval<U>()); };
 
+template <class T, T Val, T Mult>
+struct WeirdIntegralConstant {
+    static constexpr T value = Val;
+
+    constexpr operator T() const noexcept {
+        return Val * Mult;
+    }
+};
+
 constexpr bool test() {
     {
         static_assert(is_nothrow_default_constructible_v<span<int>>);
@@ -252,6 +261,14 @@ constexpr bool test() {
         static_assert(is_same_v<decltype(span{arr, RefToSize{}}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{arr, true_type{}}), span<int>>);
         static_assert(is_same_v<decltype(span{arr, RefToBool{}}), span<int>>);
+
+        // Test N5054 [expos.only.entity]/2; WeirdIntegralConstant<size_t, 3, 1> is constexpr-wrapper-like.
+        static_assert(is_same_v<decltype(span{arr, WeirdIntegralConstant<size_t, 3, 1>{}}), span<int, 3>>);
+
+        // But WeirdIntegralConstant<size_t, 1, 3> isn't constexpr-wrapper-like.
+        static_assert(is_same_v<decltype(span{arr, WeirdIntegralConstant<size_t, 1, 3>{}}), span<int>>);
+        span sp_weird{arr, WeirdIntegralConstant<size_t, 1, 3>{}};
+        assert(sp_weird.size() == 3);
 
         static_assert(is_nothrow_constructible_v<span<int>, array<int, 3>::iterator, size_t>); // strengthened
         static_assert(!is_constructible_v<span<int>, array<int, 3>::const_iterator, size_t>);
