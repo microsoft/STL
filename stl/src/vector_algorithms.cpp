@@ -7568,11 +7568,8 @@ namespace {
 
                 const void* _Last1 = _First1;
                 _Advance_bytes(_Last1, _Haystack_length);
-
-
                 const void* _Last2 = _First2;
                 _Advance_bytes(_Last2, _Needle_length);
-
                 return _Fallback<_Ty, _Pred>(_First1, _Last1, _First2, _Last2);
             }
 
