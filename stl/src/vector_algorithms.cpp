@@ -7589,20 +7589,20 @@ namespace {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
                 return _Shuffle_impl_dispatch<_Ty, _Predicate::_Any_of>(_First1, _Last1, _First2, _Last2);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-                const auto _Count2 = _Byte_length(_First2, _Last2);
-                if (_Count2 <= 4 * sizeof(_Ty) && _Count2 != 0) {
+                const auto _Needle_length = _Byte_length(_First2, _Last2);
+                if (_Needle_length <= 4 * sizeof(_Ty) && _Needle_length != 0) {
                     return _Impl_needle_4_or_less<_Ty, _Predicate::_Any_of>(
-                        _First1, _Byte_length(_First1, _Last1), _First2, _Count2);
+                        _First1, _Byte_length(_First1, _Last1), _First2, _Needle_length);
                 }
 
                 if constexpr (sizeof(_Ty) <= 2) {
                     if (_Use_sse42()) {
                         return _Impl_pcmpestri<_Ty, _Predicate::_Any_of>(
-                            _First1, _Byte_length(_First1, _Last1), _First2, _Count2);
+                            _First1, _Byte_length(_First1, _Last1), _First2, _Needle_length);
                     }
                 } else {
                     if (_Use_avx2()) {
-                        return _Impl_4_8<_Ty>(_First1, _Byte_length(_First1, _Last1), _First2, _Count2);
+                        return _Impl_4_8<_Ty>(_First1, _Byte_length(_First1, _Last1), _First2, _Needle_length);
                     }
                 }
 
