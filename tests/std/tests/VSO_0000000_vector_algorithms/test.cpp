@@ -690,28 +690,35 @@ void test_gh_6373() {
     }
 }
 
-// GH-6520 <algorithm>: x64 vectorized max_element() / minmax_element() return the wrong maximum for uint8_t
+// GH-6520 <algorithm>: x64 AVX2 vectorized minmax_element() family returns incorrect results
 void test_gh_6520() {
-    vector<uint8_t> a(8192 * 2 + 6);
-    for (size_t i = 0; i < 8192; ++i) {
-        a[i * 2 + 0] = 'a';
-        a[i * 2 + 1] = 'b';
+    constexpr size_t prefix_size = 8192 * 2; // For 1-byte elements, AVX2 uses 8192-byte portions; use 2 portions here.
+    static constexpr array<uint8_t, 12> tail = {'o', 'f', 'l', 'u', 'f', 'f', 'y', 'k', 'i', 't', 't', 'y'};
+    // The tail size is important. It must be smaller than AVX2's 256-bit (32-byte) vector size.
+    // The tail size must also be a multiple of 4 because we want to exercise the vectorized tail code.
+    // The tail is consumed in 32-bit (4-byte) chunks; any remaining bytes are processed by the scalar loop.
+
+    vector<uint8_t> v(prefix_size + tail.size());
+    for (size_t i = 0; i < prefix_size; ++i) {
+        v[i] = (i % 2 == 0) ? 'r' : 's';
     }
+    copy(tail.begin(), tail.end(), v.begin() + prefix_size);
 
-    const array<uint8_t, 6> tail = {'s', 'e', 'c', 'o', 'n', 'd'};
-    copy(tail.begin(), tail.end(), a.begin() + 8192 * 2);
+    // v contains 2 portions of alternating 'r' and 's', followed by a tail where 'f' is smallest and 'y' is largest.
 
-    const auto mn_mx   = minmax_element(a.begin(), a.end());
-    const auto mn_only = min_element(a.begin(), a.end());
-    const auto mx_only = max_element(a.begin(), a.end());
-    assert(mn_mx.first == a.begin());
-    assert(*mn_mx.first == 'a');
-    assert(mn_mx.second == a.begin() + 8192 * 2);
-    assert(*mn_mx.second == 's');
-    assert(mn_only == a.begin());
-    assert(*mn_only == 'a');
-    assert(mx_only == a.begin() + 8192 * 2);
-    assert(*mx_only == 's');
+    const auto mn_mx   = minmax_element(v.cbegin(), v.cend());
+    const auto mn_only = min_element(v.cbegin(), v.cend());
+    const auto mx_only = max_element(v.cbegin(), v.cend());
+    const auto v_tail  = v.cbegin() + prefix_size;
+
+    assert(mn_mx.first == v_tail + 1);
+    assert(*mn_mx.first == 'f');
+    assert(mn_mx.second == v_tail + 11); // last largest
+    assert(*mn_mx.second == 'y');
+    assert(mn_only == v_tail + 1);
+    assert(*mn_only == 'f');
+    assert(mx_only == v_tail + 6); // first largest
+    assert(*mx_only == 'y');
 }
 
 template <class T>
