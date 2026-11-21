@@ -16,6 +16,8 @@
 #include <yvals_core.h>
 
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_int_abs.hpp> // abs(), labs(), llabs()
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -294,7 +296,7 @@ inline namespace _Msvc_math {
     _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbn, int)
     _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbln, long)
     _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, cbrt)
-    // abs() is in <__msvc_stdlib.hpp>
+    // abs() is in <__msvc_int_abs.hpp> and below
     _STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, fabs)
     _STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, hypot)
     _STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, pow)
@@ -386,6 +388,20 @@ inline namespace _Msvc_math {
 #undef _CONSTEXPR_CMATH26_NYI_DECL
 
 } // namespace _Msvc_math
+
+// N5032 [support.c.headers.other]/1 requires <math.h> to provide the abs() overloads that <cmath> declares.
+// These are the same global functions that <cstdlib> defines when <math.h> is the UCRT's.
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 double abs(_In_ double _Xx) noexcept /* strengthened */ {
+    return _CSTD fabs(_Xx);
+}
+
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float abs(_In_ float _Xx) noexcept /* strengthened */ {
+    return _CSTD fabsf(_Xx);
+}
+
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double abs(_In_ long double _Xx) noexcept /* strengthened */ {
+    return _CSTD fabsl(_Xx);
+}
 } // extern "C++"
 
 #pragma pop_macro("new")

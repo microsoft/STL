@@ -18,6 +18,7 @@
 // Prevent later inclusions of <stdlib.h> from having any effect.
 #define _INC_STDLIB
 
+#include <__msvc_int_abs.hpp> // abs(), labs(), llabs()
 #include <corecrt.h>
 #include <corecrt_malloc.h>
 #include <corecrt_search.h>
@@ -224,19 +225,6 @@ typedef struct _lldiv_t {
 
 extern "C++" {
 inline namespace _Msvc_stdlib {
-    [[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 int __cdecl abs(_In_ int _Xx) noexcept /* strengthened */ {
-        return _Xx >= 0 ? _Xx : -_Xx;
-    }
-
-    [[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 long __cdecl labs(_In_ long _Xx) noexcept /* strengthened */ {
-        return _Xx >= 0 ? _Xx : -_Xx;
-    }
-
-    [[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 long long __cdecl llabs(_In_ long long _Xx) noexcept
-    /* strengthened */ {
-        return _Xx >= 0 ? _Xx : -_Xx;
-    }
-
     [[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 div_t __cdecl div(
         _In_ int _Numerator, _In_ int _Denominator) noexcept /* strengthened */ {
         return {_Numerator / _Denominator, _Numerator % _Denominator};
@@ -294,14 +282,6 @@ _ACRTIMP errno_t __cdecl rand_s(_Out_ unsigned int* _RandomValue);
 
 extern "C++" {
 inline namespace _Msvc_stdlib {
-    [[nodiscard]] _CONSTEXPR_CSTDLIB23 long abs(long const _Xx) noexcept /* strengthened */ {
-        return _Xx >= 0 ? _Xx : -_Xx;
-    }
-
-    [[nodiscard]] _CONSTEXPR_CSTDLIB23 long long abs(long long const _Xx) noexcept /* strengthened */ {
-        return _Xx >= 0 ? _Xx : -_Xx;
-    }
-
     [[nodiscard]] _CONSTEXPR_CSTDLIB23 ldiv_t div(long const _Numerator, long const _Denominator) noexcept
     /* strengthened */ {
         return {_Numerator / _Denominator, _Numerator % _Denominator};
