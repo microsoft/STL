@@ -19,7 +19,7 @@
 #endif // ^^^ builtins unavailable ^^^
 
 // When builtins are unavailable, fall back to intrinsics for better codegen.
-#if !_HAS_CMATH_BUILTINS && !defined(_M_CEE) // TRANSITION, VSO-1663104
+#if !_HAS_CMATH_BUILTINS && !defined(_M_CEE) && !defined(__CUDACC__) // TRANSITION, VSO-1663104 (/clr), GH-6528 (CUDA)
 #define _HAS_CMATH_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_CMATH_INTRINSICS 0
