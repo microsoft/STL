@@ -7468,8 +7468,8 @@ namespace {
             template <class _Ty, _Predicate _Pred>
             const void* _Impl_needle_4_or_less(const void* _First1, size_t _Haystack_length, const void* const _First2,
                 const size_t _Needle_length) noexcept {
-                using _Traits         = _Find_first_of_traits<_Ty>;
-                const _Ty* const _Val = reinterpret_cast<const _Ty*>(_First2);
+                using _Traits   = _Find_first_of_traits<_Ty>;
+                const auto _Val = reinterpret_cast<const _Ty*>(_First2);
 
                 if (const size_t _Avx_size = _Haystack_length & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
                     _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
