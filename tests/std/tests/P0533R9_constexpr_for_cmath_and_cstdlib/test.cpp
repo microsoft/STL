@@ -689,4 +689,9 @@ int main() {
 static_assert(static_cast<int>(M_PI * 100.0) == 314, "Unexpected value for M_PI, reboot universe and try again.");
 #elif defined(M_PI)
 static_assert(false, "When _USE_MATH_DEFINES is not defined, M_PI should not be defined.");
-#endif // ^^^ defined(M_PI) ^^^
+#else // ^^^ defined(M_PI) / !defined(M_PI) vvv
+// Also test GH-6532: defining _USE_MATH_DEFINES after <math.h> has been included, then including it again
+#define _USE_MATH_DEFINES
+#include <math.h>
+static_assert(static_cast<int>(M_PI * 100.0) == 314, "Unexpected value for M_PI, reboot universe and try again.");
+#endif // ^^^ !defined(M_PI) ^^^
