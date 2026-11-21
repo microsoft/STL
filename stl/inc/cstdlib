@@ -19,6 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _EXTERN_CXX_WORKAROUND
+#ifndef __MSVC_MATH_HPP // <__msvc_math.hpp>, which replaces <math.h> under /Zc:cmath, defines these
 // <stdlib.h> has abs(long) and abs(long long)
 _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 double abs(_In_ double _Xx) noexcept /* strengthened */ {
     return _CSTD fabs(_Xx);
@@ -31,6 +32,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float abs(_In_ float _Xx) noexcept 
 _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double abs(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD fabsl(_Xx);
 }
+#endif // ^^^ !defined(__MSVC_MATH_HPP) ^^^
 _END_EXTERN_CXX_WORKAROUND
 
 _STD_BEGIN
