@@ -23,13 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-// https://learn.microsoft.com/cpp/c-runtime-library/math-constants
-// These non-Standard macros (`M_PI` etc.) are widely used, but at least they're opt-in.
-// The <numbers> header is a Standard alternative.
-#ifdef _USE_MATH_DEFINES
-#include <corecrt_math_defines.h>
-#endif
-
 extern "C++" {
 namespace _Msvc { // duplicate type traits not provided by <yvals_core.h>
     template <class _Ty>
@@ -395,3 +388,12 @@ _STL_RESTORE_CLANG_WARNINGS
 #endif // _STL_COMPILER_PREPROCESSOR
 
 #endif // __MSVC_MATH_HPP
+
+// https://learn.microsoft.com/cpp/c-runtime-library/math-constants
+// These non-Standard macros (`M_PI` etc.) are widely used, but at least they're opt-in.
+// The <numbers> header is a Standard alternative.
+// Like the UCRT's <math.h>, this is outside the include guard, so that defining _USE_MATH_DEFINES
+// before a later inclusion of <math.h> works.
+#if _STL_COMPILER_PREPROCESSOR && defined(_USE_MATH_DEFINES)
+#include <corecrt_math_defines.h>
+#endif // ^^^ _STL_COMPILER_PREPROCESSOR && defined(_USE_MATH_DEFINES) ^^^
