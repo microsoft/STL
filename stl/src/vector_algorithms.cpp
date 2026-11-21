@@ -7258,11 +7258,13 @@ namespace {
             struct _Find_first_of_traits;
 
             template <>
-            struct _Find_first_of_traits<uint32_t> {
-                static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-                    return _mm256_cmpeq_epi32(_Lhs, _Rhs);
-                }
+            struct _Find_first_of_traits<uint8_t> : _Finding::_Find_traits_1 {};
 
+            template <>
+            struct _Find_first_of_traits<uint16_t> : _Finding::_Find_traits_2 {};
+
+            template <>
+            struct _Find_first_of_traits<uint32_t> : _Finding::_Find_traits_4 {
                 template <size_t _Amount>
                 static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
                     if constexpr (_Amount == 0) {
@@ -7306,11 +7308,7 @@ namespace {
             };
 
             template <>
-            struct _Find_first_of_traits<uint64_t> {
-                static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-                    return _mm256_cmpeq_epi64(_Lhs, _Rhs);
-                }
-
+            struct _Find_first_of_traits<uint64_t> : _Finding::_Find_traits_8 {
                 template <size_t _Amount>
                 static __m256i _Spread_avx(const __m256i _Val, const size_t _Needle_length_el) noexcept {
                     if constexpr (_Amount == 0) {
@@ -7466,6 +7464,115 @@ namespace {
                         _First1, _Haystack_length, _First2, _First2, _Last_needle_length_el);
                 }
             }
+
+            template <class _Ty, _Predicate _Pred>
+            const void* _Impl_needle_4_or_less(const void* _First1, size_t _Haystack_length, const void* const _First2,
+                const size_t _Needle_length) noexcept {
+                using _Traits   = _Find_first_of_traits<_Ty>;
+                const auto _Val = reinterpret_cast<const _Ty*>(_First2);
+
+                if (const size_t _Avx_size = _Haystack_length & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
+                    _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+                    const __m256i _Comparand0 = _Traits::_Set_avx(_Val[0]);
+                    const __m256i _Comparand1 = _Traits::_Set_avx(_Val[_Needle_length > 1 * sizeof(_Ty) ? 1 : 0]);
+                    const __m256i _Comparand2 = _Traits::_Set_avx(_Val[_Needle_length > 2 * sizeof(_Ty) ? 2 : 0]);
+                    const __m256i _Comparand3 = _Traits::_Set_avx(_Val[_Needle_length > 3 * sizeof(_Ty) ? 3 : 0]);
+                    const void* _Stop_at      = _First1;
+                    _Advance_bytes(_Stop_at, _Avx_size);
+
+                    do {
+                        const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
+                        const __m256i _Cmp0 = _Traits::_Cmp_avx(_Data, _Comparand0);
+                        const __m256i _Cmp1 = _Traits::_Cmp_avx(_Data, _Comparand1);
+                        const __m256i _Cmp2 = _Traits::_Cmp_avx(_Data, _Comparand2);
+                        const __m256i _Cmp3 = _Traits::_Cmp_avx(_Data, _Comparand3);
+                        unsigned int _Bingo = _mm256_movemask_epi8(
+                            _mm256_or_si256(_mm256_or_si256(_Cmp0, _Cmp1), _mm256_or_si256(_Cmp2, _Cmp3)));
+
+                        if constexpr (_Pred == _Predicate::_None_of) {
+                            _Bingo ^= 0xFFFF'FFFF;
+                        }
+
+                        if (_Bingo != 0) {
+                            const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                            _Advance_bytes(_First1, _Offset);
+                            return _First1;
+                        }
+
+                        _Advance_bytes(_First1, 32);
+                    } while (_First1 != _Stop_at);
+
+                    if (const size_t _Avx_tail_size = _Haystack_length & 0x1C; _Avx_tail_size != 0) {
+                        const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
+                        const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
+                        const __m256i _Cmp0      = _Traits::_Cmp_avx(_Data, _Comparand0);
+                        const __m256i _Cmp1      = _Traits::_Cmp_avx(_Data, _Comparand1);
+                        const __m256i _Cmp2      = _Traits::_Cmp_avx(_Data, _Comparand2);
+                        const __m256i _Cmp3      = _Traits::_Cmp_avx(_Data, _Comparand3);
+                        unsigned int _Bingo      = _mm256_movemask_epi8(_mm256_and_si256(
+                            _mm256_or_si256(_mm256_or_si256(_Cmp0, _Cmp1), _mm256_or_si256(_Cmp2, _Cmp3)), _Tail_mask));
+
+                        if constexpr (_Pred == _Predicate::_None_of) {
+                            _Bingo ^= (1 << _Avx_tail_size) - 1;
+                        }
+
+                        if (_Bingo != 0) {
+                            const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                            _Advance_bytes(_First1, _Offset);
+                            return _First1;
+                        }
+
+                        _Advance_bytes(_First1, _Avx_tail_size);
+                    }
+
+                    if constexpr (sizeof(_Ty) >= 4) {
+                        return _First1;
+                    } else {
+                        _Haystack_length &= 0x3;
+                    }
+                } else if (const size_t _Sse_size = _Haystack_length & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
+                    const __m128i _Comparand0 = _Traits::_Set_sse(_Val[0]);
+                    const __m128i _Comparand1 = _Traits::_Set_sse(_Val[_Needle_length > 1 * sizeof(_Ty) ? 1 : 0]);
+                    const __m128i _Comparand2 = _Traits::_Set_sse(_Val[_Needle_length > 2 * sizeof(_Ty) ? 2 : 0]);
+                    const __m128i _Comparand3 = _Traits::_Set_sse(_Val[_Needle_length > 3 * sizeof(_Ty) ? 3 : 0]);
+                    const void* _Stop_at      = _First1;
+                    _Advance_bytes(_Stop_at, _Sse_size);
+
+                    do {
+                        const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                        const __m128i _Cmp0 = _Traits::_Cmp_sse(_Data, _Comparand0);
+                        const __m128i _Cmp1 = _Traits::_Cmp_sse(_Data, _Comparand1);
+                        const __m128i _Cmp2 = _Traits::_Cmp_sse(_Data, _Comparand2);
+                        const __m128i _Cmp3 = _Traits::_Cmp_sse(_Data, _Comparand3);
+                        unsigned int _Bingo =
+                            _mm_movemask_epi8(_mm_or_si128(_mm_or_si128(_Cmp0, _Cmp1), _mm_or_si128(_Cmp2, _Cmp3)));
+
+                        if constexpr (_Pred == _Predicate::_None_of) {
+                            _Bingo ^= 0xFFFF;
+                        }
+
+                        if (_Bingo != 0) {
+                            unsigned long _Offset;
+                            // CodeQL [SM02313] _Offset is always initialized: we just tested `if (_Bingo != 0)`.
+                            _BitScanForward(&_Offset, _Bingo);
+                            _Advance_bytes(_First1, _Offset);
+                            return _First1;
+                        }
+
+                        _Advance_bytes(_First1, 16);
+                    } while (_First1 != _Stop_at);
+
+                    _Haystack_length &= 0xF;
+                }
+
+                const void* _Last1 = _First1;
+                _Advance_bytes(_Last1, _Haystack_length);
+                const void* _Last2 = _First2;
+                _Advance_bytes(_Last2, _Needle_length);
+                return _Fallback<_Ty, _Pred>(_First1, _Last1, _First2, _Last2);
+            }
+
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
             template <class _Ty>
@@ -7482,15 +7589,20 @@ namespace {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
                 return _Shuffle_impl_dispatch<_Ty, _Predicate::_Any_of>(_First1, _Last1, _First2, _Last2);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
+                const auto _Needle_length = _Byte_length(_First2, _Last2);
+                if (_Needle_length <= 4 * sizeof(_Ty) && _Needle_length != 0) {
+                    return _Impl_needle_4_or_less<_Ty, _Predicate::_Any_of>(
+                        _First1, _Byte_length(_First1, _Last1), _First2, _Needle_length);
+                }
+
                 if constexpr (sizeof(_Ty) <= 2) {
                     if (_Use_sse42()) {
                         return _Impl_pcmpestri<_Ty, _Predicate::_Any_of>(
-                            _First1, _Byte_length(_First1, _Last1), _First2, _Byte_length(_First2, _Last2));
+                            _First1, _Byte_length(_First1, _Last1), _First2, _Needle_length);
                     }
                 } else {
                     if (_Use_avx2()) {
-                        return _Impl_4_8<_Ty>(
-                            _First1, _Byte_length(_First1, _Last1), _First2, _Byte_length(_First2, _Last2));
+                        return _Impl_4_8<_Ty>(_First1, _Byte_length(_First1, _Last1), _First2, _Needle_length);
                     }
                 }
 
