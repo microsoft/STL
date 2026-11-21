@@ -519,6 +519,44 @@ constexpr void check_deduction_guide() {
 
         static_assert(all_extents_dynamic<decltype(ext), 5>);
         static_assert(same_as<decltype(ext)::index_type, size_t>);
+
+        extents ext_2{integral_constant<char, '1'>{}, integral_constant<int, 2>{}, integral_constant<unsigned int, 3>{},
+            integral_constant<long long, 4>{}, integral_constant<size_t, 5>{}};
+
+        static_assert(same_as<decltype(ext_2), extents<size_t, 49, 2, 3, 4, 5>>);
+
+        // Each pack element is deduced independently, so static and dynamic extents can be interleaved.
+        extents ext_3{integral_constant<size_t, 2>{}, 3, integral_constant<size_t, 5>{}};
+        assert(ext_3.extent(1) == 3);
+
+        static_assert(same_as<decltype(ext_3), extents<size_t, 2, dynamic_extent, 5>>);
+
+        extents ext_4{6, integral_constant<size_t, 7>{}};
+        assert(ext_4.extent(0) == 6);
+
+        static_assert(same_as<decltype(ext_4), extents<size_t, dynamic_extent, 7>>);
+
+#ifndef __EDG__ // TRANSITION, EDG-580
+
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11122321
+#pragma warning(push)
+#pragma warning(disable : 4365) // conversion from 'const int' to 'const size_t', signed/unsigned mismatch
+#endif // ^^^ workaround ^^^
+        extents ext_5{integral_constant<const size_t&, integral_constant<size_t, 2>::value>{},
+            integral_constant<const int&, integral_constant<int, 3>::value>{}};
+
+        static_assert(same_as<decltype(ext_5), extents<size_t, 2, 3>>);
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11122321
+#pragma warning(pop)
+#endif // ^^^ workaround ^^^
+
+#endif // ^^^ no workaround ^^^
+
+        extents ext_6{true_type{}, integral_constant<const bool&, true_type::value>{}};
+        assert(ext_6.extent(0) == 1);
+        assert(ext_6.extent(1) == 1);
+
+        static_assert(same_as<decltype(ext_6), extents<size_t, dynamic_extent, dynamic_extent>>);
     }
 }
 
