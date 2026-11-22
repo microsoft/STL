@@ -5472,14 +5472,12 @@ namespace chrono {
                     _Validate_specifiers(_Spec, _Val);
 
                     // The ISO week-based year is the year containing this week's Thursday.
-                    const int _Days_since_monday = (_Time.tm_wday + 6) % 7;
-                    const int _Thursday_yday     = _Time.tm_yday - _Days_since_monday + 3;
-                    const int _Days_in_year      = year{_Year}.is_leap() ? 366 : 365;
+                    const int _Thursday_yday = _Time.tm_yday - _Time_parse_fields::_Prev_weekday(_Time.tm_wday, 1) + 3;
 
                     tm _Iso_time = _Time;
                     if (_Thursday_yday < 0) {
                         --_Iso_time.tm_year;
-                    } else if (_Thursday_yday >= _Days_in_year) {
+                    } else if (_Thursday_yday >= _Time_parse_fields::_Days_in_year(_Year)) {
                         ++_Iso_time.tm_year;
                     }
 
