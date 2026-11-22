@@ -5454,6 +5454,7 @@ namespace chrono {
                 return true;
             case 'g':
             case 'G':
+                // Print via %y and %Y, because put_time can't handle years outside [0, 9999].
                 if constexpr (is_same_v<_Ty, year_month>) {
                     if (_Val.month() == January || _Val.month() == December) {
                         _STD _Throw_format_error(
@@ -5466,11 +5467,22 @@ namespace chrono {
                     }
 
                     const char _Gregorian_type = _Spec._Type == 'g' ? 'y' : 'Y';
-                    _CharT _Fmt_str[4];
-                    _Os << _STD put_time(&_Time, _CHRONO _Fmt_string({._Type = _Gregorian_type}, _Fmt_str));
-                    return true;
+                    return _Custom_write(_Os, {._Type = _Gregorian_type}, _Time, _Val);
                 } else {
-                    return false;
+                    _Validate_specifiers(_Spec, _Val);
+
+                    // The ISO week-based year is the year containing this week's Thursday.
+                    const int _Thursday_yday = _Time.tm_yday - _Time_parse_fields::_Prev_weekday(_Time.tm_wday, 1) + 3;
+
+                    tm _Iso_time = _Time;
+                    if (_Thursday_yday < 0) {
+                        --_Iso_time.tm_year;
+                    } else if (_Thursday_yday >= _Time_parse_fields::_Days_in_year(_Year)) {
+                        ++_Iso_time.tm_year;
+                    }
+
+                    const char _Gregorian_type = _Spec._Type == 'g' ? 'y' : 'Y';
+                    return _Custom_write(_Os, {._Type = _Gregorian_type}, _Iso_time, _Val);
                 }
             case 'r':
                 // put_time uses _Strftime in order to bypass reference-counting that locale uses. This function
