@@ -3093,38 +3093,44 @@ namespace {
                 _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
             }
 
-            if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
-                constexpr _Ty _Correction = _Ty{1} << (sizeof(_Ty) * 8 - 1);
+            constexpr bool _Skip_scalar_tail = _Traits::_Vectorized
+                                            && (_Traits::_Tail_mask & sizeof(_Ty)) == sizeof(_Ty)
+                                            && !_Traits::_Has_portion_max;
 
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    _Cur_min_val += _Correction;
-                }
+            if constexpr (!_Skip_scalar_tail) {
+                if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
+                    constexpr _Ty _Correction = _Ty{1} << (sizeof(_Ty) * 8 - 1);
 
-                if constexpr ((_Mode & _Mode_max) != 0) {
-                    _Cur_max_val += _Correction;
-                }
-            }
+                    if constexpr ((_Mode & _Mode_min) != 0) {
+                        _Cur_min_val += _Correction;
+                    }
 
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    if (*_Ptr < _Cur_min_val) {
-                        _Res_min     = _Ptr;
-                        _Cur_min_val = *_Ptr;
+                    if constexpr ((_Mode & _Mode_max) != 0) {
+                        _Cur_max_val += _Correction;
                     }
                 }
 
-                if constexpr (_Mode == _Mode_max) {
-                    if (_Cur_max_val < *_Ptr) {
-                        _Res_max     = _Ptr;
-                        _Cur_max_val = *_Ptr;
+                for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                    if constexpr ((_Mode & _Mode_min) != 0) {
+                        if (*_Ptr < _Cur_min_val) {
+                            _Res_min     = _Ptr;
+                            _Cur_min_val = *_Ptr;
+                        }
                     }
-                } else if constexpr (_Mode == _Mode_both) {
-                    // Not using else after the _Cur_min part for _Mode_both!
-                    // * Needed for correctness if start with max, as we don't handle specially the first element.
-                    // * Promote branchless code generation.
-                    if (_Cur_max_val <= *_Ptr) {
-                        _Res_max     = _Ptr;
-                        _Cur_max_val = *_Ptr;
+
+                    if constexpr (_Mode == _Mode_max) {
+                        if (_Cur_max_val < *_Ptr) {
+                            _Res_max     = _Ptr;
+                            _Cur_max_val = *_Ptr;
+                        }
+                    } else if constexpr (_Mode == _Mode_both) {
+                        // Not using else after the _Cur_min part for _Mode_both!
+                        // * Needed for correctness if start with max, as we don't handle specially the first element.
+                        // * Promote branchless code generation.
+                        if (_Cur_max_val <= *_Ptr) {
+                            _Res_max     = _Ptr;
+                            _Cur_max_val = *_Ptr;
+                        }
                     }
                 }
             }
@@ -3335,25 +3341,30 @@ namespace {
                 _Advance_bytes(_First, sizeof(_Ty));
             }
 
+            constexpr bool _Skip_scalar_tail =
+                _Traits::_Vectorized && (_Traits::_Tail_mask & sizeof(_Ty)) == sizeof(_Ty);
+
+            if constexpr (!_Skip_scalar_tail) {
 // Avoid auto-vectorization of the scalar tail, as this is not beneficial for performance.
 #pragma loop(no_vector)
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    if (*_Ptr < _Cur_min_val) {
-                        _Cur_min_val = *_Ptr;
+                for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                    if constexpr ((_Mode & _Mode_min) != 0) {
+                        if (*_Ptr < _Cur_min_val) {
+                            _Cur_min_val = *_Ptr;
+                        }
                     }
-                }
 
-                if constexpr ((_Mode & _Mode_max) != 0) {
-                    if (_Cur_max_val < *_Ptr) {
-                        _Cur_max_val = *_Ptr;
+                    if constexpr ((_Mode & _Mode_max) != 0) {
+                        if (_Cur_max_val < *_Ptr) {
+                            _Cur_max_val = *_Ptr;
+                        }
                     }
-                }
 
-                // _Mode_both could have been handled separately with 'else'.
-                // We have _Cur_min_val / _Cur_max_val initialized by processing at least one element,
-                // so the 'else' would be correct here.
-                // But still separate 'if' statements promote branchless codegen.
+                    // _Mode_both could have been handled separately with 'else'.
+                    // We have _Cur_min_val / _Cur_max_val initialized by processing at least one element,
+                    // so the 'else' would be correct here.
+                    // But still separate 'if' statements promote branchless codegen.
+                }
             }
 
             if constexpr (_Mode == _Mode_min) {
