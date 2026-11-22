@@ -31,14 +31,6 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-struct MeowIterator;
-
-namespace std {
-    // Previously pseudo-documented way to mark iterators checked should still compile, no longer used by the STL:
-    template <>
-    struct _Is_checked_helper<MeowIterator> : true_type {};
-} // namespace std
-
 using namespace std;
 
 template <class T>
