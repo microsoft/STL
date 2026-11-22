@@ -3093,9 +3093,8 @@ namespace {
                 _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
             }
 
-            constexpr bool _Skip_scalar_tail = _Traits::_Vectorized
-                                            && (_Traits::_Tail_mask & sizeof(_Ty)) == sizeof(_Ty)
-                                            && !_Traits::_Has_portion_max;
+            constexpr bool _Skip_scalar_tail =
+                (_Traits::_Tail_mask & sizeof(_Ty)) == sizeof(_Ty) && !_Traits::_Has_portion_max;
 
             if constexpr (!_Skip_scalar_tail) {
                 if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
@@ -3341,8 +3340,7 @@ namespace {
                 _Advance_bytes(_First, sizeof(_Ty));
             }
 
-            constexpr bool _Skip_scalar_tail =
-                _Traits::_Vectorized && (_Traits::_Tail_mask & sizeof(_Ty)) == sizeof(_Ty);
+            constexpr bool _Skip_scalar_tail = (_Traits::_Tail_mask & sizeof(_Ty)) == sizeof(_Ty);
 
             if constexpr (!_Skip_scalar_tail) {
 // Avoid auto-vectorization of the scalar tail, as this is not beneficial for performance.
