@@ -22,10 +22,6 @@ stages:
     pool:
       name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
-    variables:
-    - name: workRoot
-      value: '$(x64PoolWorkRoot)'
-      readonly: true
     jobs:
       - template: build-and-test.yml
         parameters:
@@ -42,10 +38,6 @@ stages:
     pool:
       name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
-    variables:
-    - name: workRoot
-      value: '$(x64PoolWorkRoot)'
-      readonly: true
     jobs:
       - template: build-and-test.yml
         parameters:
@@ -62,10 +54,6 @@ stages:
     pool:
       name: ${{ variables.arm64PoolName }}
       demands: ${{ variables.poolDemands }}
-    variables:
-    - name: workRoot
-      value: '$(arm64PoolWorkRoot)'
-      readonly: true
     jobs:
       - template: build-and-test.yml
         parameters:
