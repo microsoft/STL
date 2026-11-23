@@ -44,14 +44,12 @@ $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
 if ($VMSku -ieq 'Fadsv7') {
   $Arch = 'x64'
-  $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_F16ads_v7'
   $PoolSkuName = 'Standard_F64ads_v7'
   $PoolSize = 32 # Locations where we have quota for at least 2048 cores (32 VMs):
   $AvailableLocations = @('australiaeast', 'swedencentral', 'uksouth')
 } elseif ($VMSku -ieq 'Dpdsv7') {
   $Arch = 'arm64'
-  $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_D16pds_v7'
   $PoolSkuName = 'Standard_D64pds_v7'
   $PoolSize = 32 # Locations where we have quota for at least 2048 cores (32 VMs):
@@ -229,13 +227,13 @@ if ($Arch -ieq 'x64') {
   $VM = New-AzVMConfig `
     -VMName $ProtoVMName `
     -VMSize $ProtoVMSize `
-    -DiskControllerType $DiskType `
+    -DiskControllerType 'NVMe' `
     -Priority 'Regular'
 } else {
   $VM = New-AzVMConfig `
     -VMName $ProtoVMName `
     -VMSize $ProtoVMSize `
-    -DiskControllerType $DiskType `
+    -DiskControllerType 'NVMe' `
     -Priority 'Regular' `
     -SecurityType 'TrustedLaunch' `
     -SharedGalleryImageId $ImageId
@@ -303,7 +301,7 @@ $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceId $VM.ID `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1" `
-  -Parameter @{ 'Arch' = $Arch; 'DiskType' = $DiskType; }
+  -Parameter @{ 'Arch' = $Arch; }
 
 Write-Host $ProvisionImageResult.value.Message
 
@@ -383,11 +381,7 @@ Display-ProgressBar -Status 'Creating image definition'
 
 $ImageDefinitionName = "$ResourceGroupName-ImageDefinition"
 $FeatureTrustedLaunch = @{ Name = 'SecurityType'; Value = 'TrustedLaunch'; }
-if ($DiskType -ieq 'NVMe') {
-  $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
-} else {
-  $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI'; }
-}
+$FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
 $ImageDefinitionFeatures = @($FeatureTrustedLaunch, $FeatureNVMe)
 New-AzGalleryImageDefinition `
   -Location $Location `
