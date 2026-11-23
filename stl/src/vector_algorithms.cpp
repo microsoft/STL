@@ -5183,13 +5183,19 @@ namespace {
                         return _First;
                     }
 
-                    _Carry = static_cast<uint32_t>(__ull_rshift(_Msk_with_carry, static_cast<int>(_Tail)));
+                    if constexpr (sizeof(_Ty) < 4) {
+                        _Advance_bytes(_First, _Tail);
 
-                    _Advance_bytes(_First, _Tail);
+                        _Carry = static_cast<uint32_t>(__ull_rshift(_Msk_with_carry, static_cast<int>(_Tail)));
+                    }
                 }
 
-                _Mid1 = static_cast<const _Ty*>(_First);
-                _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
+                if constexpr (sizeof(_Ty) < 4) {
+                    _Mid1 = static_cast<const _Ty*>(_First);
+                    _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
+                } else {
+                    return _Last;
+                }
             } else if constexpr (sizeof(_Ty) < 8) {
                 if (_Count <= 8 / sizeof(_Ty) && _Length >= 16 && _Use_sse42()) {
                     const int _Bytes_count = static_cast<int>(_Count * sizeof(_Ty));
