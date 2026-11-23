@@ -168,8 +168,7 @@ Function DownloadAndExtract {
   SleepyDeleteFile -Path $zipPath
 }
 
-# Native NVMe support is opt-in for Windows Server 2025.
-# TRANSITION, this will be enabled by default for the next version of Windows Server.
+# TRANSITION, native NVMe support will be enabled by default in Windows Server 2028.
 Function EnableNativeNVMe {
   $registryKey = 'HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides'
   $valueName = '1176759950'
