@@ -7483,12 +7483,11 @@ namespace {
 
                     do {
                         const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
-                        const __m256i _Cmp0 = _Traits::_Cmp_avx(_Data, _Comparand0);
-                        const __m256i _Cmp1 = _Traits::_Cmp_avx(_Data, _Comparand1);
-                        const __m256i _Cmp2 = _Traits::_Cmp_avx(_Data, _Comparand2);
-                        const __m256i _Cmp3 = _Traits::_Cmp_avx(_Data, _Comparand3);
-                        unsigned int _Bingo = _mm256_movemask_epi8(
-                            _mm256_or_si256(_mm256_or_si256(_Cmp0, _Cmp1), _mm256_or_si256(_Cmp2, _Cmp3)));
+                        __m256i _Cmp        = _Traits::_Cmp_avx(_Data, _Comparand0);
+                        _Cmp                = _mm256_or_si256(_Cmp, _Traits::_Cmp_avx(_Data, _Comparand1));
+                        _Cmp                = _mm256_or_si256(_Cmp, _Traits::_Cmp_avx(_Data, _Comparand2));
+                        _Cmp                = _mm256_or_si256(_Cmp, _Traits::_Cmp_avx(_Data, _Comparand3));
+                        unsigned int _Bingo = _mm256_movemask_epi8(_Cmp);
 
                         if constexpr (_Pred == _Predicate::_None_of) {
                             _Bingo ^= 0xFFFF'FFFF;
@@ -7506,12 +7505,11 @@ namespace {
                     if (const size_t _Avx_tail_size = _Haystack_length & 0x1C; _Avx_tail_size != 0) {
                         const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                         const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
-                        const __m256i _Cmp0      = _Traits::_Cmp_avx(_Data, _Comparand0);
-                        const __m256i _Cmp1      = _Traits::_Cmp_avx(_Data, _Comparand1);
-                        const __m256i _Cmp2      = _Traits::_Cmp_avx(_Data, _Comparand2);
-                        const __m256i _Cmp3      = _Traits::_Cmp_avx(_Data, _Comparand3);
-                        unsigned int _Bingo      = _mm256_movemask_epi8(_mm256_and_si256(
-                            _mm256_or_si256(_mm256_or_si256(_Cmp0, _Cmp1), _mm256_or_si256(_Cmp2, _Cmp3)), _Tail_mask));
+                        __m256i _Cmp             = _Traits::_Cmp_avx(_Data, _Comparand0);
+                        _Cmp                     = _mm256_or_si256(_Cmp, _Traits::_Cmp_avx(_Data, _Comparand1));
+                        _Cmp                     = _mm256_or_si256(_Cmp, _Traits::_Cmp_avx(_Data, _Comparand2));
+                        _Cmp                     = _mm256_or_si256(_Cmp, _Traits::_Cmp_avx(_Data, _Comparand3));
+                        unsigned int _Bingo      = _mm256_movemask_epi8(_Cmp);
 
                         if constexpr (_Pred == _Predicate::_None_of) {
                             _Bingo ^= (1 << _Avx_tail_size) - 1;
@@ -7541,12 +7539,11 @@ namespace {
 
                     do {
                         const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
-                        const __m128i _Cmp0 = _Traits::_Cmp_sse(_Data, _Comparand0);
-                        const __m128i _Cmp1 = _Traits::_Cmp_sse(_Data, _Comparand1);
-                        const __m128i _Cmp2 = _Traits::_Cmp_sse(_Data, _Comparand2);
-                        const __m128i _Cmp3 = _Traits::_Cmp_sse(_Data, _Comparand3);
-                        unsigned int _Bingo =
-                            _mm_movemask_epi8(_mm_or_si128(_mm_or_si128(_Cmp0, _Cmp1), _mm_or_si128(_Cmp2, _Cmp3)));
+                        __m128i _Cmp        = _Traits::_Cmp_sse(_Data, _Comparand0);
+                        _Cmp                = _mm_or_si128(_Cmp, _Traits::_Cmp_sse(_Data, _Comparand1));
+                        _Cmp                = _mm_or_si128(_Cmp, _Traits::_Cmp_sse(_Data, _Comparand2));
+                        _Cmp                = _mm_or_si128(_Cmp, _Traits::_Cmp_sse(_Data, _Comparand3));
+                        unsigned int _Bingo = _mm_movemask_epi8(_Cmp);
 
                         if constexpr (_Pred == _Predicate::_None_of) {
                             _Bingo ^= 0xFFFF;
