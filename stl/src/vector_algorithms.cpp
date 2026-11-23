@@ -7509,7 +7509,7 @@ namespace {
                         _Cmp                     = _mm256_or_si256(_Cmp, _Traits::_Cmp_avx(_Data, _Comparand1));
                         _Cmp                     = _mm256_or_si256(_Cmp, _Traits::_Cmp_avx(_Data, _Comparand2));
                         _Cmp                     = _mm256_or_si256(_Cmp, _Traits::_Cmp_avx(_Data, _Comparand3));
-                        unsigned int _Bingo      = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
+                        unsigned int _Bingo      = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
 
                         if constexpr (_Pred == _Predicate::_None_of) {
                             _Bingo ^= (1 << _Avx_tail_size) - 1;
