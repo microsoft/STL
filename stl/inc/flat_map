@@ -920,56 +920,55 @@ protected:
 
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
-
-        const weak_ordering _Hint_order = [&] {
-            if constexpr (_IsUnique) {
-                if (_Position == _End || _Compare_keys(_Key_val, *_Position._Key_it)) {
-                    if (_Position == _Begin || _Compare_keys(*(_Position._Key_it - 1), _Key_val)) {
-                        return weak_ordering::equivalent;
-                    } else {
-                        return weak_ordering::greater;
-                    }
-                }
-            } else {
-                if (_Position == _End || !_Compare_keys(*_Position._Key_it, _Key_val)) {
-                    if (_Position == _Begin || !_Compare_keys(_Key_val, *(_Position._Key_it - 1))) {
-                        return weak_ordering::equivalent;
-                    } else {
-                        return weak_ordering::greater;
-                    }
-                }
-            }
-            return weak_ordering::less;
-        }();
-
-        const auto _New_position = _Iterator_from_key_iterator(
-            _Hint_order == weak_ordering::equivalent ? _Position._Key_it
-            : _Hint_order == weak_ordering::less
-                ? _STD lower_bound(_Position._Key_it, _Data.keys.cend(), _Key_val, _Pass_key_comp())
-                : _STD upper_bound(_Data.keys.cbegin(), _Position._Key_it, _Key_val, _Pass_key_comp()));
+        const_iterator _Where       = _Position;
 
         if constexpr (_IsUnique) {
-            if (_Hint_order == weak_ordering::less) {
-                if (_New_position != _End && !_Compare_keys(_Key_val, *_New_position._Key_it)) {
-                    if constexpr (_OverwriteIfExists) {
-                        *_New_position._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Mapped_args)...);
-                    }
-                    return _New_position;
+            // look for lower_bound(_Key_val)
+            if (_Where == _End || !_Compare_keys(*_Where._Key_it, _Key_val)) {
+                // _Key_val <= *_Where
+                if (_Where == _Begin || _Compare_keys(*(_Where - 1)._Key_it, _Key_val)) {
+                    // _Key_val > *(_Where-1) ~ lower_bound is _Where
+                } else {
+                    // _Key_val <= *(_Where-1) ~ lower_bound is in [_Begin,_Where-1]
+                    _Where = _Iterator_from_key_iterator(
+                        _STD lower_bound(_Data.keys.cbegin(), _Where._Key_it - 1, _Key_val, _Pass_key_comp()));
                 }
-            } else if (_Hint_order == weak_ordering::greater) {
-                if (_New_position != _Begin && !_Compare_keys(*(_New_position._Key_it - 1), _Key_val)) {
-                    const auto _It = _New_position - 1;
-                    if constexpr (_OverwriteIfExists) {
-                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Mapped_args)...);
-                    }
-                    return _It;
+            } else {
+                // _Key_val > *_Where ~ lower_bound is in [_Where+1,_End]
+                _Where = _Iterator_from_key_iterator(
+                    _STD lower_bound(_Where._Key_it + 1, _Data.keys.cend(), _Key_val, _Pass_key_comp()));
+            }
+
+            if (_Where != _End && !_Compare_keys(_Key_val, *_Where._Key_it)) {
+                const auto _Dist = _Where - cbegin();
+                if constexpr (_OverwriteIfExists) {
+                    *(begin() + _Dist)._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Mapped_args)...);
                 }
+                return begin() + _Dist;
+            }
+        } else {
+            // look for closest position just prior to _Where, respecting ordering
+            if (_Where == _End || _Compare_keys(_Key_val, *_Where._Key_it)) {
+                // _Key_val < *_Where
+                if (_Where == _Begin || !_Compare_keys(_Key_val, *(_Where - 1)._Key_it)) {
+                    // _Key_val >= *(_Where-1) ~ closest valid position is _Where
+                } else {
+                    // _Key_val < *(_Where-1) ~ closest valid position is upper_bound(_Key_val) located in
+                    // [_Begin,_Where-1]
+                    _Where = _Iterator_from_key_iterator(
+                        _STD upper_bound(_Data.keys.cbegin(), _Where._Key_it - 1, _Key_val, _Pass_key_comp()));
+                }
+                // _Key_val < *_Where, so upper_bound is indeed "as close as possible"
+            } else {
+                // _Key_val >= *_Where ~ search for lower_bound in [_Where,_End] to place _Key_val "as close as
+                // possible"
+                _Where = _Iterator_from_key_iterator(
+                    _STD lower_bound(_Where._Key_it, _Data.keys.cend(), _Key_val, _Pass_key_comp()));
             }
         }
 
-        const auto _Dist = _New_position - begin();
-        _Emplace_exact(
-            _New_position, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
+        const auto _Dist = _Where - cbegin();
+        _Emplace_exact(_Where, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
         return begin() + _Dist;
     }
 
