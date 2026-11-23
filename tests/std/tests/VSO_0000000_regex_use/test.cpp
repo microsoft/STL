@@ -3305,6 +3305,9 @@ void test_gh_6540() {
     }
 
     for (const auto options : {syntax_option_type{}, regex_constants::collate}) {
+        test_wregex wide_pos_ab_star(&g_regexTester, L"^[ab]*$", options);
+        test_wregex wide_neg_ab_star(&g_regexTester, L"^[^ab]*$", options);
+
         g_regexTester.should_match("abaababb", "[ab]*", options);
         g_regexTester.should_not_match("abaababb", "[^ab]*", options);
         g_regexTester.should_not_match("abaababbcab", "[ab]*", options);
@@ -3313,13 +3316,25 @@ void test_gh_6540() {
         g_regexTester.should_not_match("aa", "[^ab]*", options);
         g_regexTester.should_match("bb", "[ab]*", options);
         g_regexTester.should_not_match("bb", "[^ab]*", options);
+        wide_pos_ab_star.should_search_match(L"aa", L"aa");
+        wide_neg_ab_star.should_search_fail(L"aa");
+        wide_pos_ab_star.should_search_match(L"bb", L"bb");
+        wide_neg_ab_star.should_search_fail(L"bb");
+
         for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
             const auto c = static_cast<char>(i);
             if (c != 'a' && c != 'b') {
                 g_regexTester.should_not_match(string(1u, c), "[ab]*", options);
                 g_regexTester.should_match(string(2u, c), "[^ab]*", options);
+                wide_pos_ab_star.should_search_fail(wstring(1u, static_cast<wchar_t>(i)));
+                wide_neg_ab_star.should_search_match(
+                    wstring(2u, static_cast<wchar_t>(i)), wstring(2u, static_cast<wchar_t>(i)));
             }
         }
+
+        // U+01CE LATIN SMALL LETTER A WITH CARON, U+0180 LATIN SMALL LETTER B WITH STROKE
+        wide_pos_ab_star.should_search_fail(L"\u01ce");
+        wide_neg_ab_star.should_search_match(L"\u01ce\u0180", L"\u01ce\u0180");
     }
 
     for (string pos_pattern : {"[AB]*", "[Ab]*", "[aB]*", "[ab]*"}) {
