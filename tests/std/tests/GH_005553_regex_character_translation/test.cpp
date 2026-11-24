@@ -322,7 +322,53 @@ void test_gh_6540() {
         check_no_match(L"afghijklmnbopqrstuvwxyz", pattern, collating_neg_class_bd_star);
         check_no_match(L"cafghijklmnopqrstuvwxyz", pattern, collating_neg_class_bd_star);
         check_no_match(L"afghijklmnopqrstuvwxyzd", pattern, collating_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyze", pattern, collating_neg_class_bd_star);
         check_search_match(L"afghijklmnbopqrstuvwxyz", L"afghijklmn", pattern, collating_neg_class_bd_star);
+    }
+
+
+    for (const wstring pattern : {L"[bd]*", L"[Bd]*", L"[bD]*", L"[BD]*"}) {
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> icase_pos_class_bd_star{
+            pattern, icase};
+        check_match(L"", pattern, icase_pos_class_bd_star);
+        check_match(L"bBcCdDeEBcDeCdEBDebCEbcD", pattern, icase_pos_class_bd_star);
+        check_no_match(L"bBcCdDeEBcDeCdEBDebCEbcDa", pattern, icase_pos_class_bd_star);
+        check_no_match(L"bBcCdDeEBcDeCdEBDebCEbcDA", pattern, icase_pos_class_bd_star);
+        check_no_match(L"bBcCdDeEBcDeCdEBDebCEbcDf", pattern, icase_pos_class_bd_star);
+        check_no_match(L"bBcCdDeEBcDeCdEBDebCEbcDF", pattern, icase_pos_class_bd_star);
+        check_search_match(L"bCdEBcDeBbCdaBcEDf", L"bCdEBcDeBbCd", pattern, icase_pos_class_bd_star);
+        check_search_match(L"bCdEBcDeBbCdABcEDF", L"bCdEBcDeBbCd", pattern, icase_pos_class_bd_star);
+    }
+
+    for (const wstring pattern : {L"[^bd]*", L"[^Bd]*", L"[^bD]*", L"[^BD]*"}) {
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> icase_neg_class_bd_star{
+            pattern, icase};
+        check_match(L"", pattern, icase_neg_class_bd_star);
+        check_no_match(L"b", pattern, icase_neg_class_bd_star);
+        check_no_match(L"c", pattern, icase_neg_class_bd_star);
+        check_no_match(L"d", pattern, icase_neg_class_bd_star);
+        check_no_match(L"e", pattern, icase_neg_class_bd_star);
+        check_no_match(L"B", pattern, icase_neg_class_bd_star);
+        check_no_match(L"C", pattern, icase_neg_class_bd_star);
+        check_no_match(L"D", pattern, icase_neg_class_bd_star);
+        check_no_match(L"E", pattern, icase_neg_class_bd_star);
+        check_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnbopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnBopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"cafghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"CafghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZd", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZD", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZe", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZE", pattern, icase_neg_class_bd_star);
+        check_search_match(
+            L"afghijklmnbopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", L"afghijklmn", pattern, icase_neg_class_bd_star);
+        check_search_match(
+            L"afghijklmnBopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", L"afghijklmn", pattern, icase_neg_class_bd_star);
+        check_search_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNcOPQRSTUVWXYZ", L"afghijklmnopqrstuvwxyzAFGHIJKLMN",
+            pattern, icase_neg_class_bd_star);
+        check_search_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNCOPQRSTUVWXYZ", L"afghijklmnopqrstuvwxyzAFGHIJKLMN",
+            pattern, icase_neg_class_bd_star);
     }
 }
 
