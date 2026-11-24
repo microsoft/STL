@@ -1256,7 +1256,8 @@ struct _Container_base12;
 // TRANSITION, ABI: In vNext, dynamically allocated proxy objects, which block addition of `noexcept` to move
 // functions, must be eliminated.
 struct _Container_proxy {
-    // only used for creating later-bound proxy objects (see also `_Container_proxy_ptr12`)
+    // only used for creating later-bound proxy objects during container assignment (see also `_Container_proxy_ptr12`)
+    // invariants needs to be re-established via a later `_Bind()` call
     _CONSTEXPR20 _Container_proxy() noexcept = default;
     // normally used constructor
     _CONSTEXPR20 _Container_proxy(_Container_base12* _Mycont_) noexcept : _Mycont(_Mycont_) {}
@@ -1596,7 +1597,9 @@ using _Container_base = _Container_base12;
 using _Iterator_base = _Iterator_base12;
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL > 0 ^^^
 
-// tag to indicate that a proxy is being allocated before it is safe to bind to a _Container_base12
+// Tag type to indicate that a proxy is being allocated before it is safe to bind to a `_Container_base12`.
+// This tag should only be used during container assignment, and `_Container_proxy_ptr::_Bind()` needs to be called
+// later to properly bind the proxy.
 struct _Leave_proxy_unbound {
     explicit _Leave_proxy_unbound() = default;
 };
@@ -1606,12 +1609,13 @@ struct _Leave_proxy_unbound {
 struct _Fake_proxy_ptr_impl {
     _Fake_proxy_ptr_impl(const _Fake_proxy_ptr_impl&)            = delete;
     _Fake_proxy_ptr_impl& operator=(const _Fake_proxy_ptr_impl&) = delete;
-    // Called when creating a non-existing "proxy" not bound to any container.
+    // Called when creating a non-existing "proxy" not bound to any container during container assignment.
+    // `_Bind()` should be called later to properly bind the "proxy".
     _CONSTEXPR20 _Fake_proxy_ptr_impl(const _Fake_allocator&, _Leave_proxy_unbound) noexcept {}
     // Called when creating a non-existing "proxy" associated with a certain container.
     _CONSTEXPR20 _Fake_proxy_ptr_impl(const _Fake_allocator&, const _Container_base0&) noexcept {}
 
-    // Called when attaching "proxy" to the container.
+    // Called when attaching "proxy" to the container during assignment.
     // Preconditions: No iterators are alive referring to `_Mycont`.
     _CONSTEXPR20 void _Bind(const _Fake_allocator&, _Container_base0*) noexcept {}
     // Called when the construction succeeds.
@@ -1652,8 +1656,10 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
         _Mycont._Myproxy = _Ptr;
     }
 
-    // Attach the proxy stored in *this to _Mycont, and destroy _Mycont's existing proxy with _Old_alloc.
-    // Preconditions: No iterators are alive referring to `_Mycont`.
+    // Attach the proxy pointed to by `_Ptr` to `_Mycont`, and destroy `_Mycont`'s existing proxy with `_Old_alloc`
+    // during container assignment.
+    // Preconditions : `_Ptr` points to a valid proxy object. No iterators are alive referring to `_Mycont`.
+    // Remarks: `_Bind()` should only be used for binding a later-bound proxy to re-establishing invariants.
     _CONSTEXPR20 void _Bind(_Alloc& _Old_alloc, _Container_base12* _Mycont) noexcept {
         _Ptr->_Mycont = _Mycont;
         _Delete_plain_internal(_Old_alloc, _STD exchange(_Mycont->_Myproxy, _STD exchange(_Ptr, nullptr)));
