@@ -2357,6 +2357,133 @@ namespace unwrapped_begin_end {
     }
 } // namespace unwrapped_begin_end
 
+namespace final_range_endpoints_unwrapped {
+    struct unsized_sentinel {
+        int* last;
+
+        friend constexpr bool operator==(int* first, unsized_sentinel sent) noexcept {
+            return first == sent.last;
+        }
+        friend constexpr bool operator==(unsized_sentinel sent, int* first) noexcept {
+            return first == sent.last;
+        }
+    };
+
+    template <bool NoThrowSize, bool UnsizedSentinel = true>
+    struct random_access_sized_range {
+        int* first;
+        int* last;
+        int* size_calls;
+
+        int* begin() const noexcept {
+            return first;
+        }
+        auto end() const noexcept {
+            if constexpr (UnsizedSentinel) {
+                return unsized_sentinel{last};
+            } else {
+                return last;
+            }
+        }
+        std::size_t size() const noexcept(NoThrowSize) {
+            ++*size_calls;
+            return static_cast<std::size_t>(last - first);
+        }
+    };
+
+    template <bool NoThrowSize>
+    void test_nothrow_distance_policy() {
+        int values[3]{};
+        int size_calls = 0;
+        random_access_sized_range<NoThrowSize> range{values, values + 3, &size_calls};
+
+        static_assert(std::ranges::random_access_range<decltype(range)>);
+        static_assert(std::ranges::sized_range<decltype(range)>);
+        static_assert(!std::sized_sentinel_for<std::ranges::sentinel_t<decltype(range)>, int*>);
+        static_assert(noexcept(std::ranges::distance(range)) == NoThrowSize);
+
+        auto endpoints = std::ranges::_Get_final_range_endpoints_unwrapped<true>(range, std::ranges::_Ubegin(range));
+        using expected_endpoint = std::conditional_t<NoThrowSize, int*, unsized_sentinel>;
+        static_assert(std::same_as<decltype(endpoints.second), expected_endpoint>);
+        assert(endpoints.first == values);
+
+        if constexpr (NoThrowSize) {
+            assert(endpoints.second == values + 3);
+            assert(size_calls == 1);
+        } else {
+            assert(endpoints.second.last == values + 3);
+            assert(size_calls == 0);
+        }
+    }
+
+    void test_default_policy_allows_throwing_distance() {
+        int values[3]{};
+        int size_calls = 0;
+        random_access_sized_range<false> range{values, values + 3, &size_calls};
+
+        auto endpoints = std::ranges::_Get_final_range_endpoints_unwrapped(range, std::ranges::_Ubegin(range));
+        static_assert(std::same_as<decltype(endpoints.second), int*>);
+        assert(endpoints.first == values && endpoints.second == values + 3);
+        assert(size_calls == 1);
+    }
+
+    void test_sized_sentinel_skips_size() {
+        int values[3]{};
+        int size_calls = 0;
+        random_access_sized_range<true, false> range{values, values + 3, &size_calls};
+
+        auto endpoints = std::ranges::_Get_final_range_endpoints_unwrapped(range, std::ranges::_Ubegin(range));
+        static_assert(std::same_as<decltype(endpoints.second), int*>);
+        assert(endpoints.first == values && endpoints.second == values + 3);
+        assert(size_calls == 0);
+    }
+
+    struct forward_list_sentinel {
+        std::forward_list<int>::iterator last;
+
+        friend bool operator==(std::forward_list<int>::iterator first, forward_list_sentinel sent) noexcept {
+            return first == sent.last;
+        }
+        friend bool operator==(forward_list_sentinel sent, std::forward_list<int>::iterator first) noexcept {
+            return first == sent.last;
+        }
+    };
+
+    struct forward_sized_range {
+        std::forward_list<int>::iterator first;
+        std::forward_list<int>::iterator last;
+        int* size_calls;
+
+        std::forward_list<int>::iterator begin() const noexcept {
+            return first;
+        }
+        forward_list_sentinel end() const noexcept {
+            return {last};
+        }
+        std::size_t size() const noexcept {
+            ++*size_calls;
+            return 3;
+        }
+    };
+
+    void test_forward_range_keeps_sentinel() {
+        std::forward_list<int> values{1, 2, 3};
+        int size_calls = 0;
+        forward_sized_range range{values.begin(), values.end(), &size_calls};
+
+        static_assert(std::ranges::forward_range<forward_sized_range>);
+        static_assert(std::ranges::sized_range<forward_sized_range>);
+        static_assert(!std::ranges::random_access_range<forward_sized_range>);
+        static_assert(!std::sized_sentinel_for<forward_list_sentinel, std::forward_list<int>::iterator>);
+
+        auto endpoints = std::ranges::_Get_final_range_endpoints_unwrapped(range, std::ranges::_Ubegin(range));
+        static_assert(std::same_as<decltype(endpoints.second), forward_list_sentinel>);
+        assert(endpoints.first == values.begin());
+        assert(endpoints.second.last == values.end());
+        assert(size_calls == 0);
+    }
+} // namespace final_range_endpoints_unwrapped
+
 namespace closure {
     // Verify that range adaptor closures capture with the proper value category
 
@@ -2416,6 +2543,12 @@ int main() {
 
     static_assert(unwrapped_begin_end::test());
     unwrapped_begin_end::test();
+
+    final_range_endpoints_unwrapped::test_nothrow_distance_policy<false>();
+    final_range_endpoints_unwrapped::test_nothrow_distance_policy<true>();
+    final_range_endpoints_unwrapped::test_default_policy_allows_throwing_distance();
+    final_range_endpoints_unwrapped::test_sized_sentinel_skips_size();
+    final_range_endpoints_unwrapped::test_forward_range_keeps_sentinel();
 
     closure::test();
 }
