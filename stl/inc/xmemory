@@ -786,7 +786,7 @@ constexpr bool _Self_rebindable_check =
     is_same_v<_Alloc, _Rebind_alloc_t<_Rebind_alloc_t<_Alloc, _Rebind_test>, typename _Alloc::value_type>>;
 #else // ^^^ _ENFORCE_SELF_REBINDABLE_ALLOCATORS / !_ENFORCE_SELF_REBINDABLE_ALLOCATORS vvv
 template <class _Alloc>
-constexpr bool _Is_self_rebindable = true;
+constexpr bool _Self_rebindable_check = true;
 #endif // ^^^ !_ENFORCE_SELF_REBINDABLE_ALLOCATORS ^^^
 
 // If _Alloc is already rebound appropriately, binds an lvalue reference to it, avoiding a copy. Otherwise, creates a
