@@ -3332,9 +3332,11 @@ void test_gh_6540() {
             }
         }
 
-        // U+01CE LATIN SMALL LETTER A WITH CARON, U+0180 LATIN SMALL LETTER B WITH STROKE
-        wide_pos_ab_star.should_search_fail(L"\u01ce");
-        wide_neg_ab_star.should_search_match(L"\u01ce\u0180", L"\u01ce\u0180");
+        // U+0161 LATIN SMALL LETTER S WITH CARON, U+0162 LATIN CAPITAL LETTER T WITH CEDILLA
+        // (code points of a and b + 0x100)
+        wide_pos_ab_star.should_search_fail(L"\u0161");
+        wide_pos_ab_star.should_search_fail(L"\u0162");
+        wide_neg_ab_star.should_search_match(L"\u0161\u0162", L"\u0161\u0162");
     }
 
     for (string pos_pattern : {"[AB]*", "[Ab]*", "[aB]*", "[ab]*"}) {
