@@ -1689,13 +1689,6 @@ constexpr bool test_udls() {
 }
 
 template <class CharType>
-struct CharLikeType {
-    constexpr CharLikeType() = default;
-    constexpr CharLikeType(CharType cc) : c(cc) {}
-    CharType c;
-};
-
-template <class CharType>
 constexpr bool test_iterators() {
     using str               = basic_string<CharType>;
     str literal_constructed = get_literal_input<CharType>();
@@ -1711,14 +1704,13 @@ constexpr bool test_iterators() {
     }
 
     { // op->
-        basic_string<CharLikeType<CharType>> bs{CharType{'x'}};
-        auto it = bs.begin();
-        auto c  = it->c;
-        assert(c == CharType{'x'});
+        const auto d   = literal_constructed.data();
+        const auto it  = literal_constructed.begin();
+        const auto cit = literal_constructed.cbegin();
 
-        auto cit = bs.cbegin();
-        auto cc  = cit->c;
-        assert(cc == CharType{'x'});
+        // This assumes that our iterator types are always classes instead of raw pointers:
+        assert(it.operator->() == d);
+        assert(cit.operator->() == d);
     }
 
     { // increment

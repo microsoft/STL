@@ -464,12 +464,6 @@ std/utilities/optional/optional.object/optional.object.ctor/ref_t.pass.cpp FAIL
 std/utilities/meta/meta.const.eval/is_within_lifetime.compile.pass.cpp FAIL
 std/utilities/meta/meta.rel/is_virtual_base_of.pass.cpp FAIL
 
-# P3029R1 Improving mdspan And span CTAD
-# Will be implemented by GH-5692.
-std/containers/views/mdspan/extents/ctad.pass.cpp FAIL
-std/containers/views/mdspan/mdspan/deduction.pass.cpp FAIL
-std/containers/views/views.span/span.cons/deduct.pass.cpp FAIL
-
 # P3044R2 basic_string::subview()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/strings/basic.string/string.ops/string_substr/subview.pass.cpp FAIL
