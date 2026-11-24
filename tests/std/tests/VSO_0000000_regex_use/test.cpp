@@ -3360,14 +3360,14 @@ void test_gh_6540() {
     }
 
     // U+00FF LATIN SMALL LETTER Y WITH DIAERESIS, U+0178 LATIN CAPITAL LETTER Y WITH DIAERESIS
-    for (wstring y_with_diaeresis_pattern_char : {L"\u00ff", L"\u0178"}) {
-        test_wregex pos_y_diaeresis_pattern(&g_regexTester, L"^[" + y_with_diaeresis_pattern_char + L"]*$", icase);
-        test_wregex neg_y_diaeresis_pattern(&g_regexTester, L"^[^" + y_with_diaeresis_pattern_char + L"]*$", icase);
+    for (wstring y_with_diaeresis_pattern_char : {L"\u00ff", L"\u0178"}) {
+        test_wregex pos_y_diaeresis_pattern(&g_regexTester, L"^[" + y_with_diaeresis_pattern_char + L"]*$", icase);
+        test_wregex neg_y_diaeresis_pattern(&g_regexTester, L"^[^" + y_with_diaeresis_pattern_char + L"]*$", icase);
 
-        pos_y_diaeresis_pattern.should_search_match(L"\u00ff", L"\u00ff");
-        neg_y_diaeresis_pattern.should_search_fail(L"\u00ff");
-        pos_y_diaeresis_pattern.should_search_match(L"\u0178", L"\u0178");
-        neg_y_diaeresis_pattern.should_search_fail(L"\u0178");
+        pos_y_diaeresis_pattern.should_search_match(L"\u00ff", L"\u00ff");
+        neg_y_diaeresis_pattern.should_search_fail(L"\u00ff");
+        pos_y_diaeresis_pattern.should_search_match(L"\u0178", L"\u0178");
+        neg_y_diaeresis_pattern.should_search_fail(L"\u0178");
     }
 }
 
