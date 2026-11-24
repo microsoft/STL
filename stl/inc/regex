@@ -280,6 +280,42 @@ struct _Cmp_collate_translateleft {
     const _RxTraits& _Traits;
 };
 
+template <class _RxTraits>
+struct _Rx_translate_icase {
+    // functor to perform case-insensitive translation of a character
+    using _Elem = typename _RxTraits::char_type;
+
+    explicit _Rx_translate_icase(const _RxTraits& _Tr) noexcept : _Traits(_Tr) {}
+
+    _NODISCARD _Elem operator()(const _Elem& _Ch) const {
+        return _Traits.translate_nocase(_Ch);
+    }
+
+    const _RxTraits& _Traits;
+};
+
+template <class _RxTraits>
+struct _Rx_translate_collate {
+    // functor to perform collating translation of a character
+    using _Elem = typename _RxTraits::char_type;
+
+    explicit _Rx_translate_collate(const _RxTraits& _Tr) noexcept : _Traits(_Tr) {}
+
+    _NODISCARD _Elem operator()(const _Elem& _Ch) const {
+        return _Traits.translate(_Ch);
+    }
+
+    const _RxTraits& _Traits;
+};
+
+struct _Rx_translate_identity {
+    // functor to perform identity translation of a character
+    template <class _Elem>
+    _NODISCARD _Elem&& operator()(_Elem&& _Ch) const noexcept {
+        return _STD forward<_Elem&&>(_Ch);
+    }
+};
+
 struct _Regex_traits_base { // base of all regular expression traits
     enum _Char_class_type {
         _Ch_alnum  = ctype_base::alnum,
@@ -1273,29 +1309,36 @@ _INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _B
 _INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
-    _Fl_none              = 0x00000,
-    _Fl_negate            = 0x00001,
-    _Fl_greedy            = 0x00002,
-    _Fl_longest           = 0x00008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked nodes with it
-    _Fl_class_negated_w   = 0x00100,
-    _Fl_class_negated_s   = 0x00200,
-    _Fl_class_negated_d   = 0x00400,
-    _Fl_class_cl_all_bits = 0x00800, // TRANSITION, ABI: GH-5242
-    _Fl_begin_needs_w     = 0x00100,
-    _Fl_begin_needs_s     = 0x00200,
-    _Fl_begin_needs_d     = 0x00400,
-    _Fl_rep_branchless    = 0x01000,
-    _Fl_rep_str_icase     = 0x02000, // 1 << 13
-    _Fl_rep_str_collate   = 0x04000, // 2 << 13
-    _Fl_rep_str_default   = 0x06000, // 3 << 13
-    _Fl_rep_char_icase    = 0x08000, // 4 << 13
-    _Fl_rep_char_collate  = 0x0A000, // 5 << 13
-    _Fl_rep_char_default  = 0x0C000, // 6 << 13
-    _Fl_rep_dot_ecma      = 0x0E000, // 7 << 13
-    _Fl_rep_dot_posix     = 0x10000, // 8 << 13
-    // values 9 << 13 through 15 << 13 inclusive are reserved for new special cases to optimize
-    _Fl_rep_known_subtype = 0x10000, // 8 << 13, increase to be equal to the newest special case
-    _Fl_rep_subtype_mask  = 0x1E000, // 15 << 13, don't change
+    _Fl_none   = 0x00000,
+    _Fl_negate = 0x00001,
+    _Fl_greedy = 0x00002,
+    // TRANSITION, ABI: 0x004 is unused; the parser previously marked nodes with it
+    _Fl_longest                   = 0x00008,
+    _Fl_class_negated_w           = 0x00100,
+    _Fl_class_negated_s           = 0x00200,
+    _Fl_class_negated_d           = 0x00400,
+    _Fl_class_cl_all_bits         = 0x00800, // TRANSITION, ABI: GH-5242
+    _Fl_begin_needs_w             = 0x00100,
+    _Fl_begin_needs_s             = 0x00200,
+    _Fl_begin_needs_d             = 0x00400,
+    _Fl_rep_branchless            = 0x01000,
+    _Fl_rep_str_icase             = 0x02000, // 1 << 13
+    _Fl_rep_str_collate           = 0x04000, // 2 << 13
+    _Fl_rep_str_default           = 0x06000, // 3 << 13
+    _Fl_rep_char_icase            = 0x08000, // 4 << 13
+    _Fl_rep_char_collate          = 0x0A000, // 5 << 13
+    _Fl_rep_char_default          = 0x0C000, // 6 << 13
+    _Fl_rep_dot_ecma              = 0x0E000, // 7 << 13
+    _Fl_rep_dot_posix             = 0x10000, // 8 << 13
+    _Fl_rep_class_empty_neg       = 0x12000, // 9 << 13
+    _Fl_rep_class_small_pos_icase = 0x14000, // 10 << 13
+    _Fl_rep_class_small_neg_icase = 0x16000, // 11 << 13
+    _Fl_rep_class_small_pos_coll  = 0x18000, // 12 << 13
+    _Fl_rep_class_small_pos_def   = 0x1A000, // 13 << 13
+    _Fl_rep_class_small_neg_def   = 0x1C000, // 14 << 13
+    // values 15 << 13 through 31 << 13 inclusive are reserved for new special cases to optimize
+    _Fl_rep_known_subtype = 0x1C000, // 14 << 13, increase to be equal to the newest special case
+    _Fl_rep_subtype_mask  = 0x3E000, // 31 << 13, don't change
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
@@ -4330,6 +4373,19 @@ _NODISCARD _InIt _Find_not_unchecked(_InIt _First, const _InIt _Last, const _Ty&
     }
 }
 
+template <bool _Negated, class _Elem, class _FwdIt, class _UnaryOp, class _BiPred>
+_FwdIt _Find_first_char_not_in_char_class(_FwdIt _First, _FwdIt _Last, _UnaryOp _Translator, _BiPred _Pr) {
+    for (; _First != _Last; ++_First) {
+        const _Elem _Ch   = _Translator(*_First);
+        const auto _Uchar = static_cast<unsigned char>(_Ch);
+        if (_Pr(_Ch, _Uchar) == _Negated) {
+            break;
+        }
+    }
+
+    return _First;
+}
+
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
     bool _Failed = false;
@@ -4630,7 +4686,8 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                                 _Cur = _STD _Find_next_ecmascript_line_terminator<_Elem>(_Cur, _Last);
                             } else if (_Rep_subtype == _Fl_rep_dot_posix) {
                                 _Cur = _STD _Find_unchecked(_Cur, _Last, _Elem{});
-                            } else {
+
+                            } else if (_Rep_subtype >= _Fl_rep_char_icase && _Rep_subtype <= _Fl_rep_char_default) {
                                 const _Elem _Val = *static_cast<const _Node_str<_Elem>*>(_Next)->_Data._Str();
                                 if (_Rep_subtype == _Fl_rep_char_icase) {
                                     auto _Pred = [this, _Val](const _Elem& _Ch) {
@@ -4648,6 +4705,47 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
                                     };
                                     _Cur = _STD find_if_not(_Cur, _Last, _Pred);
                                 }
+                            } else {
+                                const auto _Nclass = static_cast<const _Node_class<_Elem, _RxTraits>*>(_Next);
+                                if (_Rep_subtype == _Fl_rep_class_empty_neg) {
+                                    _Cur = _Last;
+                                } else {
+                                    const auto _Pred = [_Small = _Nclass->_Small](
+                                                           const _Elem& _Ch, const unsigned char _Uchar) {
+                                        if constexpr (sizeof(_Elem) == 1) {
+                                            return _Small->_Find(_Uchar);
+                                        } else {
+                                            return static_cast<_Elem>(_Uchar) == _Ch && _Small->_Find(_Uchar);
+                                        }
+                                    };
+                                    if (_Rep_subtype == _Fl_rep_class_small_pos_icase) {
+                                        _Cur = _STD _Find_first_char_not_in_char_class<false, _Elem>(
+                                            _Cur, _Last, _Rx_translate_icase<_RxTraits>{_Traits}, _Pred);
+                                    } else if (_Rep_subtype == _Fl_rep_class_small_neg_icase) {
+                                        _Cur = _STD _Find_first_char_not_in_char_class<true, _Elem>(
+                                            _Cur, _Last, _Rx_translate_icase<_RxTraits>{_Traits}, _Pred);
+                                    } else if constexpr (_Is_implementation_handled_regex_traits<_RxTraits>) {
+                                        if (_Rep_subtype == _Fl_rep_class_small_pos_coll
+                                            || _Rep_subtype == _Fl_rep_class_small_pos_def) {
+                                            _Cur = _STD _Find_first_char_not_in_char_class<false, _Elem>(
+                                                _Cur, _Last, _Rx_translate_identity{}, _Pred);
+                                        } else {
+                                            _STL_INTERNAL_CHECK(_Rep_subtype == _Fl_rep_class_small_neg_def);
+                                            _Cur = _STD _Find_first_char_not_in_char_class<true, _Elem>(
+                                                _Cur, _Last, _Rx_translate_identity{}, _Pred);
+                                        }
+                                    } else if (_Rep_subtype == _Fl_rep_class_small_pos_def) {
+                                        _Cur = _STD _Find_first_char_not_in_char_class<false, _Elem>(
+                                            _Cur, _Last, _Rx_translate_identity{}, _Pred);
+                                    } else if (_Rep_subtype == _Fl_rep_class_small_neg_def) {
+                                        _Cur = _STD _Find_first_char_not_in_char_class<true, _Elem>(
+                                            _Cur, _Last, _Rx_translate_identity{}, _Pred);
+                                    } else {
+                                        _STL_INTERNAL_CHECK(_Rep_subtype == _Fl_rep_class_small_pos_coll);
+                                        _Cur = _STD _Find_first_char_not_in_char_class<false, _Elem>(
+                                            _Cur, _Last, _Rx_translate_collate<_RxTraits>{_Traits}, _Pred);
+                                    }
+                                }
                             }
 
                             const auto _Count    = _STD distance(_Tgt_state._Cur, _Cur);
@@ -4660,7 +4758,9 @@ bool _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // 
 
                             // Divide by 64 because accelerated loops are cheaper than state transitions.
                             // We must account for all potential work during the last failed repetition attempt as well.
-                            _Increase_complexity_count(static_cast<_Diff_type>((_Count + _Failed_work_count) / 64));
+                            if (_Rep_subtype != _Fl_rep_class_empty_neg) {
+                                _Increase_complexity_count(static_cast<_Diff_type>((_Count + _Failed_work_count) / 64));
+                            }
 
                             _Next   = _Node->_End_rep->_Next;
                             _Failed = _Node->_Min > _Loop_idx;
@@ -6259,7 +6359,8 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                 }
 
                 const auto _First_inner = _Outer_rep->_Next;
-                if (_First_inner->_Next == _Nx && _Outer_rep->_Max != 0) {
+                if (_First_inner->_Next == _Nx && _Outer_rep->_Max != 0
+                    && (_Outer_rep->_Flags & _Fl_rep_branchless) != 0) {
                     switch (_Outer_rep->_Next->_Kind) {
                     case _N_str:
                         if (static_cast<const _Node_str<_Elem>*>(_First_inner)->_Data._Size() == 1U) {
@@ -6285,11 +6386,55 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                         _Outer_rep->_Flags |=
                             (this->_Flags & regex_constants::_Any_posix) != 0 ? _Fl_rep_dot_posix : _Fl_rep_dot_ecma;
                         break;
+                    case _N_class:
+                        {
+                            const auto _Node = static_cast<const _Node_class<_Elem, _RxTraits>*>(_First_inner);
+                            if (_Node->_Coll || _Node->_Equiv) {
+                                break;
+                            }
+
+                            const bool _Icase   = (_Flags & regex_constants::icase) != 0;
+                            const bool _Collate = (_Flags & regex_constants::collate) != 0;
+
+                            const bool _Has_ranges = _Node->_Ranges != nullptr;
+                            const bool _Is_complex = _Node->_Classes != typename _RxTraits::char_class_type{}
+                                                  || (_Node->_Flags
+                                                         & (_Fl_class_negated_w | _Fl_class_negated_s
+                                                             | _Fl_class_negated_d | _Fl_class_cl_all_bits))
+                                                         != 0
+                                                  || _Node->_Large || _Has_ranges;
+                            const bool _Negated    = (_Node->_Flags & _Fl_negate) != 0;
+
+                            _STL_INTERNAL_CHECK(!_Collate || (!_Negated && !_Has_ranges));
+                            _STL_INTERNAL_CHECK(sizeof(_Elem) > 1 || !_Is_complex);
+
+                            if (_Is_complex) {
+                                break;
+                            }
+
+                            _Node_flags _Rep_subtype{};
+                            if (_Node->_Small) {
+                                if (_Icase) {
+                                    _Rep_subtype =
+                                        _Negated ? _Fl_rep_class_small_neg_icase : _Fl_rep_class_small_pos_icase;
+                                } else if (_Collate) {
+                                    if (!_Negated) {
+                                        _Rep_subtype = _Fl_rep_class_small_pos_coll;
+                                    }
+                                } else {
+                                    _Rep_subtype = _Negated ? _Fl_rep_class_small_neg_def : _Fl_rep_class_small_pos_def;
+                                }
+                            } else if (_Negated) {
+                                _Rep_subtype = _Fl_rep_class_empty_neg;
+                            }
+
+                            _Outer_rep->_Flags |= _Rep_subtype;
+                        }
+                        break;
 
                     case _N_nop:
                     case _N_bol:
                     case _N_eol:
-                    case _N_class:
                     case _N_group:
                     case _N_end_group:
                     case _N_end_assert:

@@ -295,10 +295,88 @@ void test_gh_6506() {
         check_no_match(L"bdcfbecd", pattern, collating_bd_star);
     }
 }
+
+void test_gh_6540() {
+    // GH-6540: Accelerate greedy loops of small and negated empty character classes
+    {
+        const wstring pattern = L"[bd]*";
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> collating_pos_class_bd_star{
+            pattern, regex_constants::collate};
+        check_match(L"", pattern, collating_pos_class_bd_star);
+        check_match(L"bbccddeebcdecdebdebcebcd", pattern, collating_pos_class_bd_star);
+        check_no_match(L"bbccddeebcdecdebdebcebcda", pattern, collating_pos_class_bd_star);
+        check_no_match(L"bbccddeebcdecdebdebcebcdf", pattern, collating_pos_class_bd_star);
+        check_search_match(L"bcdebcdebbcdabcedf", L"bcdebcdebbcd", pattern, collating_pos_class_bd_star);
+    }
+
+    {
+        const wstring pattern = L"[^bd]*";
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> collating_neg_class_bd_star{
+            pattern, regex_constants::collate};
+        check_match(L"", pattern, collating_neg_class_bd_star);
+        check_no_match(L"b", pattern, collating_neg_class_bd_star);
+        check_no_match(L"c", pattern, collating_neg_class_bd_star);
+        check_no_match(L"d", pattern, collating_neg_class_bd_star);
+        check_no_match(L"e", pattern, collating_neg_class_bd_star);
+        check_match(L"afghijklmnopqrstuvwxyz", pattern, collating_neg_class_bd_star);
+        check_no_match(L"afghijklmnbopqrstuvwxyz", pattern, collating_neg_class_bd_star);
+        check_no_match(L"cafghijklmnopqrstuvwxyz", pattern, collating_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzd", pattern, collating_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyze", pattern, collating_neg_class_bd_star);
+        check_search_match(L"afghijklmnbopqrstuvwxyz", L"afghijklmn", pattern, collating_neg_class_bd_star);
+    }
+
+
+    for (const wstring pattern : {L"[bd]*", L"[Bd]*", L"[bD]*", L"[BD]*"}) {
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> icase_pos_class_bd_star{
+            pattern, icase};
+        check_match(L"", pattern, icase_pos_class_bd_star);
+        check_match(L"bBcCdDeEBcDeCdEBDebCEbcD", pattern, icase_pos_class_bd_star);
+        check_no_match(L"bBcCdDeEBcDeCdEBDebCEbcDa", pattern, icase_pos_class_bd_star);
+        check_no_match(L"bBcCdDeEBcDeCdEBDebCEbcDA", pattern, icase_pos_class_bd_star);
+        check_no_match(L"bBcCdDeEBcDeCdEBDebCEbcDf", pattern, icase_pos_class_bd_star);
+        check_no_match(L"bBcCdDeEBcDeCdEBDebCEbcDF", pattern, icase_pos_class_bd_star);
+        check_search_match(L"bCdEBcDeBbCdaBcEDf", L"bCdEBcDeBbCd", pattern, icase_pos_class_bd_star);
+        check_search_match(L"bCdEBcDeBbCdABcEDF", L"bCdEBcDeBbCd", pattern, icase_pos_class_bd_star);
+    }
+
+    for (const wstring pattern : {L"[^bd]*", L"[^Bd]*", L"[^bD]*", L"[^BD]*"}) {
+        const basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> icase_neg_class_bd_star{
+            pattern, icase};
+        check_match(L"", pattern, icase_neg_class_bd_star);
+        check_no_match(L"b", pattern, icase_neg_class_bd_star);
+        check_no_match(L"c", pattern, icase_neg_class_bd_star);
+        check_no_match(L"d", pattern, icase_neg_class_bd_star);
+        check_no_match(L"e", pattern, icase_neg_class_bd_star);
+        check_no_match(L"B", pattern, icase_neg_class_bd_star);
+        check_no_match(L"C", pattern, icase_neg_class_bd_star);
+        check_no_match(L"D", pattern, icase_neg_class_bd_star);
+        check_no_match(L"E", pattern, icase_neg_class_bd_star);
+        check_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnbopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnBopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"cafghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"CafghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZd", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZD", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZe", pattern, icase_neg_class_bd_star);
+        check_no_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZE", pattern, icase_neg_class_bd_star);
+        check_search_match(
+            L"afghijklmnbopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", L"afghijklmn", pattern, icase_neg_class_bd_star);
+        check_search_match(
+            L"afghijklmnBopqrstuvwxyzAFGHIJKLMNOPQRSTUVWXYZ", L"afghijklmn", pattern, icase_neg_class_bd_star);
+        check_search_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNcOPQRSTUVWXYZ", L"afghijklmnopqrstuvwxyzAFGHIJKLMN",
+            pattern, icase_neg_class_bd_star);
+        check_search_match(L"afghijklmnopqrstuvwxyzAFGHIJKLMNCOPQRSTUVWXYZ", L"afghijklmnopqrstuvwxyzAFGHIJKLMN",
+            pattern, icase_neg_class_bd_star);
+    }
+}
+
 int main() {
     test_gh_5553();
     test_gh_6499();
     test_gh_6506();
+    test_gh_6540();
 
     return g_regexTester.result();
 }

@@ -3294,6 +3294,83 @@ void test_gh_6506() {
     }
 }
 
+void test_gh_6540() {
+    // GH-6540: Accelerate greedy loops of small and negated empty character classes
+    for (const auto options : {syntax_option_type{}, icase, regex_constants::collate}) {
+        for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+            const auto c = static_cast<char>(i);
+            g_regexTester.should_match(string(2u, c), "[^]*", options);
+            g_regexTester.should_not_match(string(1u, c), "[]*", options);
+        }
+    }
+
+    for (const auto options : {syntax_option_type{}, regex_constants::collate}) {
+        test_wregex wide_pos_ab_star(&g_regexTester, L"^[ab]*$", options);
+        test_wregex wide_neg_ab_star(&g_regexTester, L"^[^ab]*$", options);
+
+        g_regexTester.should_match("abaababb", "[ab]*", options);
+        g_regexTester.should_not_match("abaababb", "[^ab]*", options);
+        g_regexTester.should_not_match("abaababbcab", "[ab]*", options);
+        g_regexTester.should_not_match("abaababbcab", "[^ab]*", options);
+        g_regexTester.should_match("aa", "[ab]*", options);
+        g_regexTester.should_not_match("aa", "[^ab]*", options);
+        g_regexTester.should_match("bb", "[ab]*", options);
+        g_regexTester.should_not_match("bb", "[^ab]*", options);
+        wide_pos_ab_star.should_search_match(L"aa", L"aa");
+        wide_neg_ab_star.should_search_fail(L"aa");
+        wide_pos_ab_star.should_search_match(L"bb", L"bb");
+        wide_neg_ab_star.should_search_fail(L"bb");
+
+        for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+            const auto c = static_cast<char>(i);
+            if (c != 'a' && c != 'b') {
+                g_regexTester.should_not_match(string(1u, c), "[ab]*", options);
+                g_regexTester.should_match(string(2u, c), "[^ab]*", options);
+                wide_pos_ab_star.should_search_fail(wstring(1u, static_cast<wchar_t>(i)));
+                wide_neg_ab_star.should_search_match(
+                    wstring(2u, static_cast<wchar_t>(i)), wstring(2u, static_cast<wchar_t>(i)));
+            }
+        }
+
+        // U+0161 LATIN SMALL LETTER S WITH CARON, U+0162 LATIN CAPITAL LETTER T WITH CEDILLA
+        // (code points of a and b + 0x100)
+        wide_pos_ab_star.should_search_fail(L"\u0161");
+        wide_pos_ab_star.should_search_fail(L"\u0162");
+        wide_neg_ab_star.should_search_match(L"\u0161\u0162", L"\u0161\u0162");
+    }
+
+    for (string pos_pattern : {"[AB]*", "[Ab]*", "[aB]*", "[ab]*"}) {
+        string neg_pattern = "[^" + pos_pattern.substr(1);
+        g_regexTester.should_match("abAbaBABaaAaaAAAbaBabABAbbbBbbBBB", pos_pattern, icase);
+        g_regexTester.should_not_match("abAbaBABaaAaaAAAbaBabABAbbbBbbBBB", neg_pattern, icase);
+        g_regexTester.should_not_match("abAbaBABaaAaaAAAbaBabABAbbbBbbBBBc", pos_pattern, icase);
+        g_regexTester.should_not_match("abAbaBABaaAaaAAAbaBabABAbbbBbbBBBc", neg_pattern, icase);
+        for (string input : {"aa", "aA", "Aa", "AA", "bb", "bB", "Bb", "BB"}) {
+            g_regexTester.should_match(input, pos_pattern, icase);
+            g_regexTester.should_not_match(input, neg_pattern, icase);
+        }
+
+        for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+            const auto c = static_cast<char>(i);
+            if (c != 'A' && c != 'a' && c != 'B' && c != 'b') {
+                g_regexTester.should_not_match(string(1u, c), pos_pattern, icase);
+                g_regexTester.should_match(string(2u, c), neg_pattern, icase);
+            }
+        }
+    }
+
+    // U+00FF LATIN SMALL LETTER Y WITH DIAERESIS, U+0178 LATIN CAPITAL LETTER Y WITH DIAERESIS
+    for (wstring y_with_diaeresis_pattern_char : {L"\u00ff", L"\u0178"}) {
+        test_wregex pos_y_diaeresis_pattern(&g_regexTester, L"^[" + y_with_diaeresis_pattern_char + L"]*$", icase);
+        test_wregex neg_y_diaeresis_pattern(&g_regexTester, L"^[^" + y_with_diaeresis_pattern_char + L"]*$", icase);
+
+        pos_y_diaeresis_pattern.should_search_match(L"\u00ff", L"\u00ff");
+        neg_y_diaeresis_pattern.should_search_fail(L"\u00ff");
+        pos_y_diaeresis_pattern.should_search_match(L"\u0178", L"\u0178");
+        neg_y_diaeresis_pattern.should_search_fail(L"\u0178");
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -3372,6 +3449,7 @@ int main() {
     test_gh_6480();
     test_gh_6499();
     test_gh_6506();
+    test_gh_6540();
 
     return g_regexTester.result();
 }
