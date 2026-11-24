@@ -600,7 +600,7 @@ private:
 
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Elem, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("basic_string<T, Traits, Allocator>", "T"));
-    static_assert(!_ENFORCE_SELF_REBINDABLE_ALLOCATORS || _Is_self_rebindable<_Alloc>,
+    static_assert(_Self_rebindable_check<_Alloc>,
         "The Standard requires allocators to be rebindable; see [allocator.requirements.general]");
 
     static_assert(is_same_v<_Elem, typename _Traits::char_type>,

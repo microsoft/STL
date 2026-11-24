@@ -1019,7 +1019,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _ENFORCE_MATCHING_ALLOCATORS _HAS_CXX17
 #endif // !defined(_ENFORCE_MATCHING_ALLOCATORS)
 
-// Enforcement of matching allocator value_types
+// Enforcement of allocators being capable of round-trip rebind
 #ifndef _ENFORCE_SELF_REBINDABLE_ALLOCATORS
 #define _ENFORCE_SELF_REBINDABLE_ALLOCATORS 1
 #endif // !defined(_ENFORCE_SELF_REBINDABLE_ALLOCATORS)
