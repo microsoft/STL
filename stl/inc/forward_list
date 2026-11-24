@@ -527,6 +527,8 @@ private:
 
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Ty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("forward_list<T, Allocator>", "T"));
+    static_assert(!_ENFORCE_SELF_REBINDABLE_ALLOCATORS || _Is_self_rebindable<_Alloc>,
+        "The Standard requires allocators to be rebindable; see [allocator.requirements.general]");
     static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
                                     "because of [container.requirements].");
 
