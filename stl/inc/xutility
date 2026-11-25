@@ -5259,7 +5259,11 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_copyable<_It, _Out>
     _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Output) {
-        if constexpr (_Sent_copy_cat<_It, _Se, _Out>::_Bitcopy_assignable) {
+        if constexpr (_Is_vb_iterator<_It> && _Is_vb_iterator<_Out, true> && sized_sentinel_for<_Se, _It>) {
+            auto _Last_iter = _First + (_Last - _First);
+            _Output         = _STD _Copy_vbool(_First, _Last_iter, _STD move(_Output));
+            return {_STD move(_Last_iter), _STD move(_Output)};
+        } else if constexpr (_Sent_copy_cat<_It, _Se, _Out>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 if constexpr (is_same_v<_It, _Se>) {
                     _Output = _STD _Copy_memmove(_STD move(_First), _Last, _STD move(_Output));
@@ -5657,6 +5661,12 @@ namespace ranges {
         template <class _Ty, output_iterator<const _Ty&> _It>
         static constexpr _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Value) {
             if (_Count > 0) {
+                if constexpr (_Is_vb_iterator<_It, true>) {
+                    const auto _Last = _First + _Count;
+                    _STD _Fill_vbool(_First, _Last, _Value);
+                    return _Last;
+                }
+
                 auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
                 if (!_STD is_constant_evaluated()) {
                     if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
@@ -6495,8 +6505,12 @@ namespace ranges {
         constexpr bool _Elements_are_1_byte  = sizeof(_Iter_value_t<_It>) == 1;
         constexpr bool _Elements_are_2_bytes = sizeof(_Iter_value_t<_It>) == 2;
 
-        if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && same_as<_Pj, identity> && sized_sentinel_for<_Se, _It>
-                      && (_Elements_are_1_byte || _Elements_are_2_bytes || _VECTORIZED_FIND)) {
+        if constexpr (_Is_vb_iterator<_It> && is_same_v<_Ty, bool> && same_as<_Pj, identity>
+                      && sized_sentinel_for<_Se, _It>) {
+            return _STD _Find_vbool(_First, _First + (_Last - _First), _Val);
+        } else if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && same_as<_Pj, identity>
+                             && sized_sentinel_for<_Se, _It>
+                             && (_Elements_are_1_byte || _Elements_are_2_bytes || _VECTORIZED_FIND)) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                     return _RANGES next(_STD move(_First), _Last);

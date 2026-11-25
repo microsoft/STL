@@ -10,6 +10,8 @@
 #include <functional>
 #include <memory>
 #include <random>
+#include <ranges>
+#include <utility>
 #include <vector>
 
 #if _HAS_CXX20
@@ -136,6 +138,16 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
         assert(and_actual == and_expected);
         assert(and_ret == and_actual.begin() + static_cast<ptrdiff_t>(length));
 
+#if _HAS_CXX20
+        and_actual.assign(and_actual.size(), false);
+
+        const auto ranges_ret = ranges::transform(
+            first1, last1, first2, first2 + static_cast<ptrdiff_t>(length), and_actual.begin(), logical_and<>{});
+        assert(and_actual == and_expected);
+        assert(ranges_ret.in1 == last1);
+        assert(ranges_ret.out == and_actual.begin() + static_cast<ptrdiff_t>(length));
+#endif // _HAS_CXX20
+
         and_actual.assign(and_actual.size(), false);
 
         and_ret = transform(first1, last1, first2, and_actual.begin(), bit_and<>{});
@@ -147,6 +159,16 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
         auto or_ret = transform(first1, last1, cfirst2, or_actual.begin(), logical_or<>{});
         assert(or_actual == or_expected);
         assert(or_ret == or_actual.begin() + static_cast<ptrdiff_t>(length));
+
+#if _HAS_CXX20
+        or_actual.assign(or_actual.size(), false);
+
+        const auto ranges_ret = ranges::transform(
+            first1, last1, cfirst2, cfirst2 + static_cast<ptrdiff_t>(length), or_actual.begin(), logical_or<>{});
+        assert(or_actual == or_expected);
+        assert(ranges_ret.in1 == last1);
+        assert(ranges_ret.out == or_actual.begin() + static_cast<ptrdiff_t>(length));
+#endif // _HAS_CXX20
 
         or_actual.assign(or_actual.size(), false);
 
@@ -160,6 +182,16 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
         assert(xor_actual == xor_expected);
         assert(xor_ret == xor_actual.begin() + static_cast<ptrdiff_t>(length));
 
+#if _HAS_CXX20
+        xor_actual.assign(xor_actual.size(), false);
+
+        const auto ranges_ret = ranges::transform(
+            cfirst1, clast1, first2, first2 + static_cast<ptrdiff_t>(length), xor_actual.begin(), not_equal_to<>{});
+        assert(xor_actual == xor_expected);
+        assert(ranges_ret.in1 == clast1);
+        assert(ranges_ret.out == xor_actual.begin() + static_cast<ptrdiff_t>(length));
+#endif // _HAS_CXX20
+
         xor_actual.assign(xor_actual.size(), false);
 
         xor_ret = transform(cfirst1, clast1, first2, xor_actual.begin(), bit_xor<>{});
@@ -172,6 +204,16 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
         assert(xnor_actual == xnor_expected);
         assert(xnor_ret == xnor_actual.begin() + static_cast<ptrdiff_t>(length));
 
+#if _HAS_CXX20
+        xnor_actual.assign(xnor_actual.size(), false);
+
+        const auto ranges_ret = ranges::transform(
+            cfirst1, clast1, cfirst2, cfirst2 + static_cast<ptrdiff_t>(length), xnor_actual.begin(), equal_to<>{});
+        assert(xnor_actual == xnor_expected);
+        assert(ranges_ret.in1 == clast1);
+        assert(ranges_ret.out == xnor_actual.begin() + static_cast<ptrdiff_t>(length));
+#endif // _HAS_CXX20
+
         // bit_xnor doesn't exist in the Standard
     }
 
@@ -179,18 +221,48 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
         const auto less_ret = transform(cfirst1, clast1, cfirst2, less_actual.begin(), less<>{});
         assert(less_actual == less_expected);
         assert(less_ret == less_actual.begin() + static_cast<ptrdiff_t>(length));
+
+#if _HAS_CXX20
+        less_actual.assign(less_actual.size(), false);
+
+        const auto ranges_ret = ranges::transform(
+            cfirst1, clast1, cfirst2, cfirst2 + static_cast<ptrdiff_t>(length), less_actual.begin(), less<>{});
+        assert(less_actual == less_expected);
+        assert(ranges_ret.in1 == clast1);
+        assert(ranges_ret.out == less_actual.begin() + static_cast<ptrdiff_t>(length));
+#endif // _HAS_CXX20
     }
 
     {
         const auto less_equal_ret = transform(cfirst1, clast1, cfirst2, less_equal_actual.begin(), less_equal<>{});
         assert(less_equal_actual == less_equal_expected);
         assert(less_equal_ret == less_equal_actual.begin() + static_cast<ptrdiff_t>(length));
+
+#if _HAS_CXX20
+        less_equal_actual.assign(less_equal_actual.size(), false);
+
+        const auto ranges_ret = ranges::transform(cfirst1, clast1, cfirst2, cfirst2 + static_cast<ptrdiff_t>(length),
+            less_equal_actual.begin(), less_equal<>{});
+        assert(less_equal_actual == less_equal_expected);
+        assert(ranges_ret.in1 == clast1);
+        assert(ranges_ret.out == less_equal_actual.begin() + static_cast<ptrdiff_t>(length));
+#endif // _HAS_CXX20
     }
 
     {
         const auto greater_ret = transform(cfirst1, clast1, cfirst2, greater_actual.begin(), greater<>{});
         assert(greater_actual == greater_expected);
         assert(greater_ret == greater_actual.begin() + static_cast<ptrdiff_t>(length));
+
+#if _HAS_CXX20
+        greater_actual.assign(greater_actual.size(), false);
+
+        const auto ranges_ret = ranges::transform(
+            cfirst1, clast1, cfirst2, cfirst2 + static_cast<ptrdiff_t>(length), greater_actual.begin(), greater<>{});
+        assert(greater_actual == greater_expected);
+        assert(ranges_ret.in1 == clast1);
+        assert(ranges_ret.out == greater_actual.begin() + static_cast<ptrdiff_t>(length));
+#endif // _HAS_CXX20
     }
 
     {
@@ -198,12 +270,31 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
             transform(cfirst1, clast1, cfirst2, greater_equal_actual.begin(), greater_equal<>{});
         assert(greater_equal_actual == greater_equal_expected);
         assert(greater_equal_ret == greater_equal_actual.begin() + static_cast<ptrdiff_t>(length));
+
+#if _HAS_CXX20
+        greater_equal_actual.assign(greater_equal_actual.size(), false);
+
+        const auto ranges_ret = ranges::transform(cfirst1, clast1, cfirst2, cfirst2 + static_cast<ptrdiff_t>(length),
+            greater_equal_actual.begin(), greater_equal<>{});
+        assert(greater_equal_actual == greater_equal_expected);
+        assert(ranges_ret.in1 == clast1);
+        assert(ranges_ret.out == greater_equal_actual.begin() + static_cast<ptrdiff_t>(length));
+#endif // _HAS_CXX20
     }
 
     {
         auto not_ret = transform(first1, last1, not_actual.begin(), logical_not<>{});
         assert(not_actual == not_expected);
         assert(not_ret == not_actual.begin() + static_cast<ptrdiff_t>(length));
+
+#if _HAS_CXX20
+        not_actual.assign(not_actual.size(), false);
+
+        const auto ranges_ret = ranges::transform(first1, last1, not_actual.begin(), logical_not<>{});
+        assert(not_actual == not_expected);
+        assert(ranges_ret.in == last1);
+        assert(ranges_ret.out == not_actual.begin() + static_cast<ptrdiff_t>(length));
+#endif // _HAS_CXX20
 
         not_actual.assign(not_actual.size(), false);
 
@@ -213,6 +304,23 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
         assert(not_actual == not_expected);
         assert(not_ret == not_actual.begin() + static_cast<ptrdiff_t>(length));
     }
+
+#if _HAS_CXX20
+    { // Range overloads
+        and_actual.assign(and_actual.size(), false);
+        const auto and_ret = ranges::transform(source1, source2, and_actual.begin(), logical_and<>{});
+        assert(and_actual == and_expected);
+        assert(and_ret.in1 == source1.end());
+        assert(and_ret.in2 == source2.end());
+        assert(and_ret.out == and_actual.begin() + static_cast<ptrdiff_t>(length));
+
+        not_actual.assign(not_actual.size(), false);
+        const auto not_ret = ranges::transform(source1, not_actual.begin(), logical_not<>{});
+        assert(not_actual == not_expected);
+        assert(not_ret.in == source1.end());
+        assert(not_ret.out == not_actual.begin() + static_cast<ptrdiff_t>(length));
+    }
+#endif // _HAS_CXX20
 }
 
 CONSTEXPR20 bool test_transform() {
@@ -309,6 +417,23 @@ CONSTEXPR20 bool test_meow_of_helper(const size_t length_before, const size_t le
         assert(none_of(first_m, last_m, logical_not<>{}) == false);
     }
 
+#if _HAS_CXX20
+    {
+        const pair<vector<bool>::iterator, vector<bool>::iterator> ranges_to_test[] = {
+            {first_0, last_0}, {first_1, last_1}, {first_m, last_m}};
+        for (const auto& [first, last] : ranges_to_test) {
+            const ranges::subrange rng(first, last);
+
+            assert(ranges::all_of(first, last, identity{}) == all_of(first, last, identity{}));
+            assert(ranges::all_of(rng, logical_not<>{}) == all_of(first, last, logical_not<>{}));
+            assert(ranges::any_of(first, last, logical_not<>{}) == any_of(first, last, logical_not<>{}));
+            assert(ranges::any_of(rng, identity{}) == any_of(first, last, identity{}));
+            assert(ranges::none_of(first, last, identity{}) == none_of(first, last, identity{}));
+            assert(ranges::none_of(rng, logical_not<>{}) == none_of(first, last, logical_not<>{}));
+        }
+    }
+#endif // _HAS_CXX20
+
     return true;
 }
 
@@ -356,12 +481,30 @@ CONSTEXPR20 void test_fill_helper(const size_t length) {
         vector<bool> dest_true(length + 3, false);
         fill(dest_true.begin(), prev(dest_true.end(), 3), true);
         assert(dest_true == result_true);
+#if _HAS_CXX20
+        dest_true.assign(dest_true.size(), !true);
+        assert(ranges::fill(dest_true.begin(), prev(dest_true.end(), 3), true) == prev(dest_true.end(), 3));
+        assert(dest_true == result_true);
+        dest_true.assign(dest_true.size(), !true);
+        assert(ranges::fill(ranges::subrange(dest_true.begin(), prev(dest_true.end(), 3)), true)
+               == prev(dest_true.end(), 3));
+        assert(dest_true == result_true);
+#endif // _HAS_CXX20
 
         vector<bool> result_false(length, false);
         result_false.resize(length + 3, true);
         vector<bool> dest_false(length + 3, true);
         fill(dest_false.begin(), prev(dest_false.end(), 3), false);
         assert(dest_false == result_false);
+#if _HAS_CXX20
+        dest_false.assign(dest_false.size(), !false);
+        assert(ranges::fill(dest_false.begin(), prev(dest_false.end(), 3), false) == prev(dest_false.end(), 3));
+        assert(dest_false == result_false);
+        dest_false.assign(dest_false.size(), !false);
+        assert(ranges::fill(ranges::subrange(dest_false.begin(), prev(dest_false.end(), 3)), false)
+               == prev(dest_false.end(), 3));
+        assert(dest_false == result_false);
+#endif // _HAS_CXX20
 
         vector<bool> result_true_n(length, true);
         result_true_n.resize(length + 3, false);
@@ -369,12 +512,24 @@ CONSTEXPR20 void test_fill_helper(const size_t length) {
         const auto res_fill_n = fill_n(dest_true_n.begin(), length, true);
         assert(dest_true_n == result_true_n);
         assert(res_fill_n == prev(dest_true_n.end(), 3));
+#if _HAS_CXX20
+        dest_true_n.assign(dest_true_n.size(), !true);
+        assert(ranges::fill_n(dest_true_n.begin(), static_cast<ptrdiff_t>(length), true)
+               == dest_true_n.begin() + static_cast<ptrdiff_t>(length));
+        assert(dest_true_n == result_true_n);
+#endif // _HAS_CXX20
 
         vector<bool> result_false_n(length, false);
         result_false_n.resize(length + 3, true);
         vector<bool> dest_false_n(length + 3, true);
         fill_n(dest_false_n.begin(), length, false);
         assert(dest_false_n == result_false_n);
+#if _HAS_CXX20
+        dest_false_n.assign(dest_false_n.size(), !false);
+        assert(ranges::fill_n(dest_false_n.begin(), static_cast<ptrdiff_t>(length), false)
+               == dest_false_n.begin() + static_cast<ptrdiff_t>(length));
+        assert(dest_false_n == result_false_n);
+#endif // _HAS_CXX20
     }
 
     // With offset
@@ -385,6 +540,15 @@ CONSTEXPR20 void test_fill_helper(const size_t length) {
         vector<bool> dest_true(length + 4, false);
         fill(next(dest_true.begin()), prev(dest_true.end(), 3), true);
         assert(dest_true == result_true);
+#if _HAS_CXX20
+        dest_true.assign(dest_true.size(), !true);
+        assert(ranges::fill(next(dest_true.begin()), prev(dest_true.end(), 3), true) == prev(dest_true.end(), 3));
+        assert(dest_true == result_true);
+        dest_true.assign(dest_true.size(), !true);
+        assert(ranges::fill(ranges::subrange(next(dest_true.begin()), prev(dest_true.end(), 3)), true)
+               == prev(dest_true.end(), 3));
+        assert(dest_true == result_true);
+#endif // _HAS_CXX20
 
         vector<bool> result_false(length, false);
         result_false.resize(length + 3, true);
@@ -392,6 +556,15 @@ CONSTEXPR20 void test_fill_helper(const size_t length) {
         vector<bool> dest_false(length + 4, true);
         fill(next(dest_false.begin()), prev(dest_false.end(), 3), false);
         assert(dest_false == result_false);
+#if _HAS_CXX20
+        dest_false.assign(dest_false.size(), !false);
+        assert(ranges::fill(next(dest_false.begin()), prev(dest_false.end(), 3), false) == prev(dest_false.end(), 3));
+        assert(dest_false == result_false);
+        dest_false.assign(dest_false.size(), !false);
+        assert(ranges::fill(ranges::subrange(next(dest_false.begin()), prev(dest_false.end(), 3)), false)
+               == prev(dest_false.end(), 3));
+        assert(dest_false == result_false);
+#endif // _HAS_CXX20
 
         vector<bool> result_true_n(length, true);
         result_true_n.resize(length + 3, false);
@@ -400,6 +573,12 @@ CONSTEXPR20 void test_fill_helper(const size_t length) {
         const auto res_fill_n = fill_n(next(dest_true_n.begin()), length, true);
         assert(dest_true_n == result_true_n);
         assert(res_fill_n == prev(dest_true_n.end(), 3));
+#if _HAS_CXX20
+        dest_true_n.assign(dest_true_n.size(), !true);
+        assert(ranges::fill_n(next(dest_true_n.begin()), static_cast<ptrdiff_t>(length), true)
+               == next(dest_true_n.begin()) + static_cast<ptrdiff_t>(length));
+        assert(dest_true_n == result_true_n);
+#endif // _HAS_CXX20
 
         vector<bool> result_false_n(length, false);
         result_false_n.resize(length + 3, true);
@@ -407,6 +586,12 @@ CONSTEXPR20 void test_fill_helper(const size_t length) {
         vector<bool> dest_false_n(length + 4, true);
         fill_n(next(dest_false_n.begin()), length, false);
         assert(dest_false_n == result_false_n);
+#if _HAS_CXX20
+        dest_false_n.assign(dest_false_n.size(), !false);
+        assert(ranges::fill_n(next(dest_false_n.begin()), static_cast<ptrdiff_t>(length), false)
+               == next(dest_false_n.begin()) + static_cast<ptrdiff_t>(length));
+        assert(dest_false_n == result_false_n);
+#endif // _HAS_CXX20
     }
 }
 
@@ -442,12 +627,24 @@ CONSTEXPR20 void test_find_helper(const size_t length) {
         input_true[length + 1].flip();
         const auto result_true = find(input_true.cbegin(), prev(input_true.cend(), 3), true);
         assert(result_true == next(input_true.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+#if _HAS_CXX20
+        assert(ranges::find(input_true.cbegin(), prev(input_true.cend(), 3), true)
+               == next(input_true.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+        assert(ranges::find(ranges::subrange(input_true.cbegin(), prev(input_true.cend(), 3)), true)
+               == next(input_true.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+#endif // _HAS_CXX20
 
         vector<bool> input_false(length + 3, true);
         input_false.resize(length + 6, false);
         input_false[length + 1].flip();
         const auto result_false = find(input_false.cbegin(), prev(input_false.cend(), 3), false);
         assert(result_false == next(input_false.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+#if _HAS_CXX20
+        assert(ranges::find(input_false.cbegin(), prev(input_false.cend(), 3), false)
+               == next(input_false.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+        assert(ranges::find(ranges::subrange(input_false.cbegin(), prev(input_false.cend(), 3)), false)
+               == next(input_false.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+#endif // _HAS_CXX20
     }
 
     // With offset
@@ -458,6 +655,12 @@ CONSTEXPR20 void test_find_helper(const size_t length) {
         input_true[0].flip();
         const auto result_true = find(next(input_true.cbegin()), prev(input_true.cend(), 3), true);
         assert(result_true == next(input_true.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+#if _HAS_CXX20
+        assert(ranges::find(next(input_true.cbegin()), prev(input_true.cend(), 3), true)
+               == next(input_true.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+        assert(ranges::find(ranges::subrange(next(input_true.cbegin()), prev(input_true.cend(), 3)), true)
+               == next(input_true.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+#endif // _HAS_CXX20
 
         vector<bool> input_false(length + 3, true);
         input_false.resize(length + 6, false);
@@ -465,6 +668,12 @@ CONSTEXPR20 void test_find_helper(const size_t length) {
         input_false[0].flip();
         const auto result_false = find(next(input_false.cbegin()), prev(input_false.cend(), 3), false);
         assert(result_false == next(input_false.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+#if _HAS_CXX20
+        assert(ranges::find(next(input_false.cbegin()), prev(input_false.cend(), 3), false)
+               == next(input_false.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+        assert(ranges::find(ranges::subrange(next(input_false.cbegin()), prev(input_false.cend(), 3)), false)
+               == next(input_false.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+#endif // _HAS_CXX20
     }
 }
 
@@ -495,9 +704,17 @@ CONSTEXPR20 void test_count_helper(const ptrdiff_t length) {
     {
         const auto result_true = static_cast<int>(count(source.cbegin(), next(source.cbegin(), length), true));
         assert(result_true == expected.quot * 5 + counts_true[expected.rem]);
+#if _HAS_CXX20
+        assert(ranges::count(source.cbegin(), next(source.cbegin(), length), true) == result_true);
+        assert(ranges::count(ranges::subrange(source.cbegin(), next(source.cbegin(), length)), true) == result_true);
+#endif // _HAS_CXX20
 
         const auto result_false = static_cast<int>(count(source.cbegin(), next(source.cbegin(), length), false));
         assert(result_false == expected.quot * 3 + counts_false[expected.rem]);
+#if _HAS_CXX20
+        assert(ranges::count(source.cbegin(), next(source.cbegin(), length), false) == result_false);
+        assert(ranges::count(ranges::subrange(source.cbegin(), next(source.cbegin(), length)), false) == result_false);
+#endif // _HAS_CXX20
     }
 
     // With offset
@@ -505,10 +722,20 @@ CONSTEXPR20 void test_count_helper(const ptrdiff_t length) {
         const auto result_true =
             static_cast<int>(count(next(source.cbegin(), 2), next(source.cbegin(), length + 2), true));
         assert(result_true == expected.quot * 5 + counts_true[expected.rem]);
+#if _HAS_CXX20
+        assert(ranges::count(next(source.cbegin(), 2), next(source.cbegin(), length + 2), true) == result_true);
+        assert(ranges::count(ranges::subrange(next(source.cbegin(), 2), next(source.cbegin(), length + 2)), true)
+               == result_true);
+#endif // _HAS_CXX20
 
         const auto result_false =
             static_cast<int>(count(next(source.cbegin(), 2), next(source.cbegin(), length + 2), false));
         assert(result_false == expected.quot * 3 + counts_false[expected.rem]);
+#if _HAS_CXX20
+        assert(ranges::count(next(source.cbegin(), 2), next(source.cbegin(), length + 2), false) == result_false);
+        assert(ranges::count(ranges::subrange(next(source.cbegin(), 2), next(source.cbegin(), length + 2)), false)
+               == result_false);
+#endif // _HAS_CXX20
     }
 }
 
@@ -622,12 +849,31 @@ CONSTEXPR20 void test_copy_no_offset(const size_t length) {
         assert(res_copy == dest.end());
     }
 
+#if _HAS_CXX20
+    {
+        vector<bool> dest(length, false);
+        const auto ranges_res_copy =
+            ranges::copy(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), dest.begin());
+        assert(dest == result);
+        assert(ranges_res_copy.out == dest.end());
+    }
+#endif // _HAS_CXX20
+
     {
         vector<bool> dest_n(length, false);
         const auto res_copy_n = copy_n(source.begin(), static_cast<ptrdiff_t>(length), dest_n.begin());
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_n(length, false);
+        const auto ranges_res_copy_n = ranges::copy_n(source.begin(), static_cast<ptrdiff_t>(length), dest_n.begin());
+        assert(dest_n == result);
+        assert(ranges_res_copy_n.out == dest_n.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_backward(length, false);
@@ -643,6 +889,16 @@ CONSTEXPR20 void test_copy_no_offset(const size_t length) {
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_move(length, false);
+        const auto ranges_res_move =
+            ranges::move(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), dest_move.begin());
+        assert(dest_move == result);
+        assert(ranges_res_move.out == dest_move.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_move_backward(length, false);
@@ -711,12 +967,32 @@ CONSTEXPR20 void test_copy_offset_source(const size_t length) {
         assert(res_copy == dest.end());
     }
 
+#if _HAS_CXX20
+    {
+        vector<bool> dest(length, false);
+        const auto ranges_res_copy =
+            ranges::copy(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length) + 1, dest.begin());
+        assert(dest == result);
+        assert(ranges_res_copy.out == dest.end());
+    }
+#endif // _HAS_CXX20
+
     {
         vector<bool> dest_n(length, false);
         const auto res_copy_n = copy_n(next(source.begin()), static_cast<ptrdiff_t>(length), dest_n.begin());
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_n(length, false);
+        const auto ranges_res_copy_n =
+            ranges::copy_n(next(source.begin()), static_cast<ptrdiff_t>(length), dest_n.begin());
+        assert(dest_n == result);
+        assert(ranges_res_copy_n.out == dest_n.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_backward(length, false);
@@ -733,6 +1009,16 @@ CONSTEXPR20 void test_copy_offset_source(const size_t length) {
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_move(length, false);
+        const auto ranges_res_move =
+            ranges::move(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length) + 1, dest_move.begin());
+        assert(dest_move == result);
+        assert(ranges_res_move.out == dest_move.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_move_backward(length, false);
@@ -805,12 +1091,32 @@ CONSTEXPR20 void test_copy_offset_dest(const size_t length) {
         assert(res_copy == dest.end());
     }
 
+#if _HAS_CXX20
+    {
+        vector<bool> dest(length + 1, false);
+        const auto ranges_res_copy =
+            ranges::copy(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), next(dest.begin()));
+        assert(dest == result);
+        assert(ranges_res_copy.out == dest.end());
+    }
+#endif // _HAS_CXX20
+
     {
         vector<bool> dest_n(length + 1, false);
         const auto res_copy_n = copy_n(source.begin(), static_cast<ptrdiff_t>(length), next(dest_n.begin()));
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_n(length + 1, false);
+        const auto ranges_res_copy_n =
+            ranges::copy_n(source.begin(), static_cast<ptrdiff_t>(length), next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(ranges_res_copy_n.out == dest_n.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_backward(length + 1, false);
@@ -827,6 +1133,16 @@ CONSTEXPR20 void test_copy_offset_dest(const size_t length) {
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_move(length + 1, false);
+        const auto ranges_res_move =
+            ranges::move(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(ranges_res_move.out == dest_move.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_move_backward(length + 1, false);
@@ -900,12 +1216,32 @@ CONSTEXPR20 void test_copy_offset_match(const size_t length) {
         assert(res_copy == dest.end());
     }
 
+#if _HAS_CXX20
+    {
+        vector<bool> dest(length, false);
+        const auto ranges_res_copy =
+            ranges::copy(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), next(dest.begin()));
+        assert(dest == result);
+        assert(ranges_res_copy.out == dest.end());
+    }
+#endif // _HAS_CXX20
+
     {
         vector<bool> dest_n(length, false);
         const auto res_copy_n = copy_n(next(source.begin()), static_cast<ptrdiff_t>(length) - 1, next(dest_n.begin()));
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_n(length, false);
+        const auto ranges_res_copy_n =
+            ranges::copy_n(next(source.begin()), static_cast<ptrdiff_t>(length) - 1, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(ranges_res_copy_n.out == dest_n.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_backward(length, false);
@@ -922,6 +1258,16 @@ CONSTEXPR20 void test_copy_offset_match(const size_t length) {
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_move(length, false);
+        const auto ranges_res_move = ranges::move(
+            next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(ranges_res_move.out == dest_move.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_move_backward(length, false);
@@ -995,6 +1341,16 @@ CONSTEXPR20 void test_copy_offset_mismatch_leftshift(const size_t length) {
         assert(res_copy == dest.end());
     }
 
+#if _HAS_CXX20
+    {
+        vector<bool> dest(length + 1, false);
+        const auto ranges_res_copy =
+            ranges::copy(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), next(dest.begin(), 2));
+        assert(dest == result);
+        assert(ranges_res_copy.out == dest.end());
+    }
+#endif // _HAS_CXX20
+
     {
         vector<bool> dest_n(length + 1, false);
         const auto res_copy_n =
@@ -1002,6 +1358,16 @@ CONSTEXPR20 void test_copy_offset_mismatch_leftshift(const size_t length) {
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_n(length + 1, false);
+        const auto ranges_res_copy_n =
+            ranges::copy_n(next(source.begin()), static_cast<ptrdiff_t>(length) - 1, next(dest_n.begin(), 2));
+        assert(dest_n == result);
+        assert(ranges_res_copy_n.out == dest_n.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_backward(length + 1, false);
@@ -1018,6 +1384,16 @@ CONSTEXPR20 void test_copy_offset_mismatch_leftshift(const size_t length) {
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_move(length + 1, false);
+        const auto ranges_res_move = ranges::move(
+            next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), next(dest_move.begin(), 2));
+        assert(dest_move == result);
+        assert(ranges_res_move.out == dest_move.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_move_backward(length + 1, false);
@@ -1093,6 +1469,16 @@ CONSTEXPR20 void test_copy_offset_mismatch_rightshift(const size_t length) {
         assert(res_copy == dest.end());
     }
 
+#if _HAS_CXX20
+    {
+        vector<bool> dest(length, false);
+        const auto ranges_res_copy = ranges::copy(
+            next(source.begin(), 2), source.begin() + static_cast<ptrdiff_t>(length) + 1, next(dest.begin()));
+        assert(dest == result);
+        assert(ranges_res_copy.out == dest.end());
+    }
+#endif // _HAS_CXX20
+
     {
         vector<bool> dest_n(length, false);
         const auto res_copy_n =
@@ -1100,6 +1486,16 @@ CONSTEXPR20 void test_copy_offset_mismatch_rightshift(const size_t length) {
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_n(length, false);
+        const auto ranges_res_copy_n =
+            ranges::copy_n(next(source.begin(), 2), static_cast<ptrdiff_t>(length) - 1, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(ranges_res_copy_n.out == dest_n.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_backward(length, false);
@@ -1116,6 +1512,16 @@ CONSTEXPR20 void test_copy_offset_mismatch_rightshift(const size_t length) {
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_move(length, false);
+        const auto ranges_res_move = ranges::move(
+            next(source.begin(), 2), source.begin() + static_cast<ptrdiff_t>(length) + 1, next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(ranges_res_move.out == dest_move.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_move_backward(length, false);
@@ -1189,6 +1595,16 @@ CONSTEXPR20 void test_copy_offset_aligned(const size_t length) {
         assert(res_copy == dest.end());
     }
 
+#if _HAS_CXX20
+    {
+        vector<bool> dest(length, false);
+        const auto ranges_res_copy = ranges::copy(
+            next(source.begin(), 9), source.begin() + static_cast<ptrdiff_t>(length) + 8, next(dest.begin()));
+        assert(dest == result);
+        assert(ranges_res_copy.out == dest.end());
+    }
+#endif // _HAS_CXX20
+
     {
         vector<bool> dest_n(length, false);
         const auto res_copy_n =
@@ -1196,6 +1612,16 @@ CONSTEXPR20 void test_copy_offset_aligned(const size_t length) {
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_n(length, false);
+        const auto ranges_res_copy_n =
+            ranges::copy_n(next(source.begin(), 9), static_cast<ptrdiff_t>(length) - 1, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(ranges_res_copy_n.out == dest_n.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_backward(length, false);
@@ -1212,6 +1638,16 @@ CONSTEXPR20 void test_copy_offset_aligned(const size_t length) {
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
+
+#if _HAS_CXX20
+    {
+        vector<bool> dest_move(length, false);
+        const auto ranges_res_move = ranges::move(
+            next(source.begin(), 9), source.begin() + static_cast<ptrdiff_t>(length) + 8, next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(ranges_res_move.out == dest_move.end());
+    }
+#endif // _HAS_CXX20
 
     {
         vector<bool> dest_move_backward(length, false);
