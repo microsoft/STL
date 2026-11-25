@@ -1556,6 +1556,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23 (_HAS_FEATURES_REMOVED_IN_CXX23)
 #endif // !defined(_HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23)
 
+// Enforcement of allocators being capable of round-trip rebind
+#ifndef _ENFORCE_SELF_REBINDABLE_ALLOCATORS
+#define _ENFORCE_SELF_REBINDABLE_ALLOCATORS !(_HAS_DEPRECATED_ALLOCATOR_MEMBERS)
+#endif // !defined(_ENFORCE_SELF_REBINDABLE_ALLOCATORS)
+
 // C++14
 #define __cpp_lib_chrono_udls                      201304L
 #define __cpp_lib_complex_udls                     201309L

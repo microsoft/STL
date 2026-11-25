@@ -778,6 +778,17 @@ constexpr _Pocma_values _Choose_pocma_v = allocator_traits<_Alloc>::is_always_eq
 template <class _Alloc, class _Value_type>
 using _Rebind_alloc_t = typename allocator_traits<_Alloc>::template rebind_alloc<_Value_type>;
 
+struct _Rebind_test {};
+
+#if _ENFORCE_SELF_REBINDABLE_ALLOCATORS
+template <class _Alloc>
+constexpr bool _Self_rebindable_check =
+    is_same_v<_Alloc, _Rebind_alloc_t<_Rebind_alloc_t<_Alloc, _Rebind_test>, typename _Alloc::value_type>>;
+#else // ^^^ _ENFORCE_SELF_REBINDABLE_ALLOCATORS / !_ENFORCE_SELF_REBINDABLE_ALLOCATORS vvv
+template <class _Alloc>
+constexpr bool _Self_rebindable_check = true;
+#endif // ^^^ !_ENFORCE_SELF_REBINDABLE_ALLOCATORS ^^^
+
 // If _Alloc is already rebound appropriately, binds an lvalue reference to it, avoiding a copy. Otherwise, creates a
 // rebound copy.
 template <class _Alloc, class _Value_type>
