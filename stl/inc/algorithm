@@ -978,6 +978,11 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
+            if constexpr (_Is_vb_iterator<_It> && is_same_v<_Ty, bool> && is_same_v<_Pj, identity>
+                          && sized_sentinel_for<_Se, _It>) {
+                return _STD _Count_vbool(_First, _First + (_Last - _First), _Val);
+            }
+
 #if _VECTORIZED_COUNT
             if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
@@ -1724,6 +1729,12 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
 
+            if constexpr (_Is_vb_iterator<_It> && sized_sentinel_for<_Se, _It> && is_same_v<_Pj, identity>
+                          && !is_void_v<_Map_vb_functor_t<_Pr>>) {
+                return _STD _Meow_of_vbool<_All_of_vbool_traits>(
+                    _First, _First + (_Last - _First), _Map_vb_functor_t<_Pr>{});
+            }
+
             for (; _First != _Last; ++_First) {
                 if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                     return false;
@@ -1789,6 +1800,12 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
 
+            if constexpr (_Is_vb_iterator<_It> && sized_sentinel_for<_Se, _It> && is_same_v<_Pj, identity>
+                          && !is_void_v<_Map_vb_functor_t<_Pr>>) {
+                return _STD _Meow_of_vbool<_Any_of_vbool_traits>(
+                    _First, _First + (_Last - _First), _Map_vb_functor_t<_Pr>{});
+            }
+
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                     return true;
@@ -1852,6 +1869,12 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            if constexpr (_Is_vb_iterator<_It> && sized_sentinel_for<_Se, _It> && is_same_v<_Pj, identity>
+                          && !is_void_v<_Map_vb_functor_t<_Pr>>) {
+                return _STD _Meow_of_vbool<_None_of_vbool_traits>(
+                    _First, _First + (_Last - _First), _Map_vb_functor_t<_Pr>{});
+            }
 
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
@@ -1932,6 +1955,12 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         static constexpr copy_n_result<_It, _Out> operator()(_It _First, iter_difference_t<_It> _Count, _Out _Output) {
             if (_Count > 0) {
+                if constexpr (_Is_vb_iterator<_It> && _Is_vb_iterator<_Out, true>) {
+                    auto _Last = _First + _Count;
+                    _Output    = _STD _Copy_vbool(_First, _Last, _STD move(_Output));
+                    return {_STD move(_Last), _STD move(_Output)};
+                }
+
                 auto _UFirst  = _STD _Get_unwrapped_n(_STD move(_First), _Count);
                 auto _UOutput = _STD _Get_unwrapped_n(_STD move(_Output), _Count);
                 if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UOutput)>::_Bitcopy_assignable) {
@@ -2081,7 +2110,11 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_movable<_It, _Out>
     constexpr move_result<_It, _Out> _Move_unchecked(_It _First, _Se _Last, _Out _Output) {
-        if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_assignable) {
+        if constexpr (_Is_vb_iterator<_It> && _Is_vb_iterator<_Out, true> && sized_sentinel_for<_Se, _It>) {
+            auto _Last_iter = _First + (_Last - _First);
+            _Output         = _STD _Copy_vbool(_First, _Last_iter, _STD move(_Output));
+            return {_STD move(_Last_iter), _STD move(_Output)};
+        } else if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 auto _Final = _RANGES next(_First, _STD move(_Last));
                 _Output     = _STD _Copy_memmove(_STD move(_First), _Final, _STD move(_Output));
@@ -4442,6 +4475,16 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_Out, indirect_result_t<_Fn&, projected<_It, _Pj>>>);
 
+            if constexpr (_Is_vb_iterator<_It> && _Is_vb_iterator<_Out, true> && sized_sentinel_for<_Se, _It>
+                          && is_same_v<_Pj, identity> && !is_void_v<_Map_vb_functor_t<_Fn>>) {
+                if (_First._Myoff == 0 && _Output._Myoff == 0) {
+                    auto _Last_iter = _First + (_Last - _First);
+                    _Output =
+                        _STD _Transform_vbool_aligned(_First, _Last_iter, _STD move(_Output), _Map_vb_functor_t<_Fn>{});
+                    return {_STD move(_Last_iter), _STD move(_Output)};
+                }
+            }
+
             for (; _First != _Last; ++_First, (void) ++_Output) {
                 *_Output = _STD invoke(_Func, _STD invoke(_Proj, *_First));
             }
@@ -4458,6 +4501,22 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
             _STL_INTERNAL_STATIC_ASSERT(
                 indirectly_writable<_Out, indirect_result_t<_Fn&, projected<_It1, _Pj1>, projected<_It2, _Pj2>>>);
+
+            if constexpr (_Is_vb_iterator<_It1> && _Is_vb_iterator<_It2> && _Is_vb_iterator<_Out, true>
+                          && sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>
+                          && is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>
+                          && !is_void_v<_Map_vb_functor_t<_Fn>>) {
+                if (_First1._Myoff == 0 && _First2._Myoff == 0 && _Output._Myoff == 0) {
+                    const auto _Count1 = static_cast<iter_difference_t<_It1>>(_Last1 - _First1);
+                    const auto _Count2 = static_cast<iter_difference_t<_It1>>(_Last2 - _First2);
+                    const auto _Count  = (_STD min) (_Count1, _Count2);
+                    auto _Last1_iter   = _First1 + _Count;
+                    _Output            = _STD _Transform_vbool_aligned(
+                        _First1, _Last1_iter, _First2, _STD move(_Output), _Map_vb_functor_t<_Fn>{});
+                    _First2 += static_cast<iter_difference_t<_It2>>(_Count);
+                    return {_STD move(_Last1_iter), _STD move(_First2), _STD move(_Output)};
+                }
+            }
 
             for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2, ++_Output) {
                 *_Output = _STD invoke(_Func, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2));
@@ -4903,6 +4962,14 @@ namespace ranges {
             _STD _Adl_verify_range(_First, _Last);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             const auto _ULast = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
+            if constexpr (_Is_vb_iterator<decltype(_UFirst), true>
+                          && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
+                const auto _ULast_iter = _UFirst + (_ULast - _UFirst);
+                _STD _Fill_vbool(_UFirst, _ULast_iter, _Value);
+                _STD _Seek_wrapped(_First, _ULast_iter);
+                return _First;
+            }
+
             if (!_STD is_constant_evaluated()) {
                 if constexpr (sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                     if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
