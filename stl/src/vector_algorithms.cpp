@@ -11383,6 +11383,11 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
 
 namespace {
     namespace _Sorted_ranges {
+        struct _Traits_scalar {
+            static constexpr size_t _Vec_size  = 0;
+            static constexpr size_t _Tail_mask = 0;
+        };
+
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_neon {
             using _Guard                                = char;
@@ -11666,7 +11671,7 @@ namespace {
         template <class _Traits, class _Ty>
         bool _Includes_impl(
             const void* _First1, const void* const _Last1, const void* _First2, const void* const _Last2) noexcept {
-            if constexpr (!std::is_void_v<_Traits>) {
+            if constexpr (_Traits::_Vec_size != 0) {
                 // Only skipping some parts of haystack that are less than current needle element is vectorized.
                 // Otherwise this is scalar algorithm.
 
@@ -11767,29 +11772,35 @@ namespace {
                     }
                 }
 
-                if (_First1 == _Last1) {
+                if constexpr ((_Traits::_Tail_mask & sizeof(_Ty)) != sizeof(_Ty)) {
+                    if (_First1 == _Last1) {
+                        return false;
+                    }
+                } else {
                     return false;
                 }
             }
 
-            auto _Ptr1 = static_cast<const _Ty*>(_First1);
-            auto _Ptr2 = static_cast<const _Ty*>(_First2);
+            if constexpr ((_Traits::_Tail_mask & sizeof(_Ty)) != sizeof(_Ty)) {
+                auto _Ptr1 = static_cast<const _Ty*>(_First1);
+                auto _Ptr2 = static_cast<const _Ty*>(_First2);
 
-            for (;;) {
-                if (*_Ptr1 < *_Ptr2) {
-                    ++_Ptr1;
-                    if (_Ptr1 == _Last1) {
+                for (;;) {
+                    if (*_Ptr1 < *_Ptr2) {
+                        ++_Ptr1;
+                        if (_Ptr1 == _Last1) {
+                            return false;
+                        }
+                    } else if (*_Ptr2 < *_Ptr1) {
                         return false;
-                    }
-                } else if (*_Ptr2 < *_Ptr1) {
-                    return false;
-                } else {
-                    ++_Ptr1;
-                    ++_Ptr2;
-                    if (_Ptr2 == _Last2) {
-                        return true;
-                    } else if (_Ptr1 == _Last1) {
-                        return false;
+                    } else {
+                        ++_Ptr1;
+                        ++_Ptr2;
+                        if (_Ptr2 == _Last2) {
+                            return true;
+                        } else if (_Ptr1 == _Last1) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -11855,7 +11866,7 @@ namespace {
                 return _Includes_impl<typename _Traits::_Sse, _Ty>(_First1, _Last1, _First2, _Last2);
             }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
-            return _Includes_impl<void, _Ty>(_First1, _Last1, _First2, _Last2);
+            return _Includes_impl<_Traits_scalar, _Ty>(_First1, _Last1, _First2, _Last2);
         }
     } // namespace _Sorted_ranges
 } // unnamed namespace
