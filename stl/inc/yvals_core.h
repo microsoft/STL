@@ -1019,11 +1019,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _ENFORCE_MATCHING_ALLOCATORS _HAS_CXX17
 #endif // !defined(_ENFORCE_MATCHING_ALLOCATORS)
 
-// Enforcement of allocators being capable of round-trip rebind
-#ifndef _ENFORCE_SELF_REBINDABLE_ALLOCATORS
-#define _ENFORCE_SELF_REBINDABLE_ALLOCATORS 1
-#endif // !defined(_ENFORCE_SELF_REBINDABLE_ALLOCATORS)
-
 #define _MISMATCHED_ALLOCATOR_MESSAGE(_CONTAINER, _VALUE_TYPE)                                                      \
     _CONTAINER " requires that Allocator's value_type match " _VALUE_TYPE " (See N4950 [container.alloc.reqmts]/5)" \
                " Either fix the allocator value_type or define _ENFORCE_MATCHING_ALLOCATORS=0"                      \
@@ -1560,6 +1555,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifndef _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 #define _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23 (_HAS_FEATURES_REMOVED_IN_CXX23)
 #endif // !defined(_HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23)
+
+// Enforcement of allocators being capable of round-trip rebind
+#ifndef _ENFORCE_SELF_REBINDABLE_ALLOCATORS
+#define _ENFORCE_SELF_REBINDABLE_ALLOCATORS !(_HAS_DEPRECATED_ALLOCATOR_MEMBERS)
+#endif // !defined(_ENFORCE_SELF_REBINDABLE_ALLOCATORS)
 
 // C++14
 #define __cpp_lib_chrono_udls                      201304L
